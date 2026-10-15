@@ -1,97 +1,166 @@
-name: Bootstrap full TGF source publication
+name: Publish TGF source snapshot
 
 on:
   push:
     branches: [main]
     paths:
-      - ".bootstrap/part-*.bin"
       - ".github/workflows/bootstrap-publish.yml"
+  workflow_dispatch:
 
 permissions:
   contents: write
-  actions: write
 
 concurrency:
-  group: tgf-source-bootstrap
+  group: tgf-source-bootstrap-api
   cancel-in-progress: false
 
 jobs:
   publish-source:
     runs-on: ubuntu-26.04
     timeout-minutes: 15
+    env:
+      GH_TOKEN: ${{ github.token }}
+      REPOSITORY: ${{ github.repository }}
     steps:
-      - name: Check out bootstrap commit
-        uses: actions/checkout@v7
-        with:
-          persist-credentials: true
-
-      - name: Reconstruct and verify archive
+      - name: Download, verify, and publish the project through the Git database API
         shell: bash
         run: |
           set -euo pipefail
-          shopt -s nullglob
-          parts=(.bootstrap/part-*.bin)
-          test "${#parts[@]}" -eq 15
-          archive="$RUNNER_TEMP/TGF_Revision16.zip"
-          cat "${parts[@]}" > "$archive"
-          echo "38cf5cebd423b8733d3ab68856baaf081135409b5e021bb5a81eb761bc5ca2ad  $archive" | sha256sum --check
-          python3 - "$archive" <<'PY'
-          import sys
-          from pathlib import PurePosixPath
-          from zipfile import ZipFile
-          archive = sys.argv[1]
-          with ZipFile(archive) as zf:
+          python3 - <<'PY'
+          import base64
+          import hashlib
+          import json
+          import os
+          import re
+          import urllib.request
+          import zipfile
+          from io import BytesIO
+
+          repo = os.environ["REPOSITORY"]
+          token = os.environ["GH_TOKEN"]
+          api = f"https://api.github.com/repos/{repo}"
+          headers = {
+              "Accept": "application/vnd.github+json",
+              "Authorization": f"Bearer {token}",
+              "X-GitHub-Api-Version": "2022-11-28",
+              "User-Agent": "TGF-source-publisher",
+          }
+
+          part_shas = [
+              "839e0e700784330feba49e58ceda7c4e4f3752f0",
+              "74a83a3d2506c369762f918046b6c768b7cc8493",
+              "7fbbf8a244f3b3e577286e885d098a707782929f",
+              "f051e7543a2fb614cd5c4a0e510560a19a8b3e39",
+              "ed598d3978a5a6cc1d2267ba629eea9786d10280",
+              "caf920e06032a82572e7e57a2b85b63ae312f2a3",
+              "c20f51cc24b7d1a391c1d3bb22969b243895530f",
+              "e3578d45f0abd002ba7533994e3314c3e248bd76",
+              "e5cab3b81dea7924c87c6c4b8d772302335deeda",
+              "b25b3686170e1e0f40b15aadfe39b5a541c69a35",
+              "2dbdaa2cfef1ed59eaf11ce397f8e253a3a88f15",
+              "23e8769ed9ec4ff3637b2c320de846bca0852897",
+              "3fcdb04204e40d07288ff666a39778ccd06382c8",
+              "fcc3e894c596cfc6809318fd3f412f82fb8d4116",
+              "61caab71dd3725b286dccd21571245e145083eee",
+          ]
+
+          def request(method, url, payload=None, accept=None):
+              h = dict(headers)
+              if accept:
+                  h["Accept"] = accept
+              data = None if payload is None else json.dumps(payload, separators=(",", ":")).encode()
+              req = urllib.request.Request(url, data=data, headers=h, method=method)
+              with urllib.request.urlopen(req, timeout=90) as response:
+                  raw = response.read()
+                  content_type = response.headers.get("Content-Type", "")
+              if "application/json" in content_type:
+                  return json.loads(raw)
+              return raw
+
+          # Git blob API raw representation returns the original archive bytes.
+          archive_bytes = bytearray()
+          for index, sha in enumerate(part_shas):
+              raw = request("GET", f"{api}/git/blobs/{sha}", accept="application/vnd.github.raw")
+              if isinstance(raw, dict):
+                  raw = base64.b64decode(raw["content"])
+              archive_bytes.extend(raw)
+              print(f"Fetched verified archive block {index + 1}/{len(part_shas)} ({len(raw)} bytes)")
+
+          expected_sha256 = "38cf5cebd423b8733d3ab68856baaf081135409b5e021bb5a81eb761bc5ca2ad"
+          actual_sha256 = hashlib.sha256(archive_bytes).hexdigest()
+          if actual_sha256 != expected_sha256:
+              raise SystemExit(f"Archive SHA-256 mismatch: {actual_sha256}")
+          print(f"Archive SHA-256 verified: {actual_sha256}")
+
+          files = {}
+          with zipfile.ZipFile(BytesIO(archive_bytes)) as zf:
               bad = zf.testzip()
               if bad:
                   raise SystemExit(f"Corrupt ZIP member: {bad}")
-              names = zf.namelist()
-              if not names or any(not name.startswith("TGF/") for name in names):
-                  raise SystemExit("All project files must be inside TGF/")
-              for name in names:
-                  p = PurePosixPath(name)
-                  if p.is_absolute() or ".." in p.parts:
+              for info in zf.infolist():
+                  if info.is_dir():
+                      continue
+                  name = info.filename
+                  if not name.startswith("TGF/"):
+                      raise SystemExit(f"Unexpected archive root: {name}")
+                  rel = name[len("TGF/"):]
+                  if not rel or rel.startswith("/") or ".." in rel.split("/"):
                       raise SystemExit(f"Unsafe archive path: {name}")
-          PY
+                  # CI workflows are installed separately using the connected GitHub app,
+                  # because the Actions token is not allowed to create workflow files.
+                  if rel in {
+                      ".github/workflows/ci.yml",
+                      ".github/workflows/nightly-benchmarks.yml",
+                  }:
+                      continue
+                  try:
+                      files[rel] = zf.read(name).decode("utf-8")
+                  except UnicodeDecodeError as exc:
+                      raise SystemExit(f"Unexpected binary project file: {name}") from exc
 
-      - name: Extract project at repository root
-        shell: bash
-        run: |
-          set -euo pipefail
-          mkdir -p "$RUNNER_TEMP/tgf-source"
-          unzip -q "$RUNNER_TEMP/TGF_Revision16.zip" -d "$RUNNER_TEMP/tgf-source"
-          test -f "$RUNNER_TEMP/tgf-source/TGF/CMakeLists.txt"
-          test -f "$RUNNER_TEMP/tgf-source/TGF/TODO.md"
-          cp -a "$RUNNER_TEMP/tgf-source/TGF/." .
-          chmod -R u+w .
-          test -f CMakeLists.txt
-          test -f TODO.md
-          test -f .github/workflows/ci.yml
-          test -f .github/workflows/nightly-benchmarks.yml
-          mkdir -p "$RUNNER_TEMP/tgf-workflows"
-          cp -a .github/workflows/ci.yml .github/workflows/nightly-benchmarks.yml "$RUNNER_TEMP/tgf-workflows/"
-          rm -rf .bootstrap .github/workflows
+          if "CMakeLists.txt" not in files or "TODO.md" not in files or "README.md" not in files:
+              raise SystemExit("Project root is incomplete")
 
-      - name: Record source publication in the master TODO
-        shell: bash
-        run: |
-          python3 - <<'PY'
-          from pathlib import Path
-          p = Path("TODO.md")
-          lines = p.read_text(encoding="utf-8").splitlines()
+          # Update the project-root checklist only after all project files are prepared
+          # for the commit that publishes them.
+          lines = files["TODO.md"].splitlines()
           matches = [i for i, line in enumerate(lines) if "P0.1.4.e.7.a" in line and "- [ ]" in line]
           if len(matches) != 1:
-              raise SystemExit(f"Expected one unfinished P0.1.4.e.7.a TODO item, found {len(matches)}")
+              raise SystemExit(f"Expected one unfinished P0.1.4.e.7.a item, found {len(matches)}")
           lines[matches[0]] = lines[matches[0]].replace("- [ ]", "- [x]", 1)
-          p.write_text("\n".join(lines) + "\n", encoding="utf-8")
-          PY
+          files["TODO.md"] = "\n".join(lines) + "\n"
 
-      - name: Commit the complete project
-        shell: bash
-        run: |
-          set -euo pipefail
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A
-          git diff --cached --check -- '*.c' '*.cc' '*.cpp' '*.cxx' '*.h' '*.hpp' '*.hxx' '*.cmake' 'CMakeLists.txt' '*.py' '*.yml' '*.yaml'
-          git commit -m "Publish complete TGF source, CI, documentation, and master TODO"
-          git push origin HEAD:main
+          # Read the current branch and its base tree.
+          ref = request("GET", f"{api}/git/ref/heads/main")
+          parent_sha = ref["object"]["sha"]
+          parent = request("GET", f"{api}/git/commits/{parent_sha}")
+          base_tree = parent["tree"]["sha"]
+
+          tree_entries = [
+              {"path": path, "mode": "100644", "type": "blob", "content": content}
+              for path, content in sorted(files.items())
+          ]
+          # Remove the temporary archive payload while retaining the temporary bootstrap
+          # workflow until it is removed in a follow-up app-authorized commit.
+          for index in range(len(part_shas)):
+              tree_entries.append({
+                  "path": f".bootstrap/part-{index:03d}.bin",
+                  "mode": "100644",
+                  "type": "blob",
+                  "sha": None,
+              })
+
+          tree = request("POST", f"{api}/git/trees", {"base_tree": base_tree, "tree": tree_entries})
+          commit = request("POST", f"{api}/git/commits", {
+              "message": "Publish complete TGF source, tests, documentation, and master TODO",
+              "tree": tree["sha"],
+              "parents": [parent_sha],
+          })
+          update = request("PATCH", f"{api}/git/refs/heads/main", {
+              "sha": commit["sha"],
+              "force": False,
+          })
+          print(f"Published {len(files)} project files")
+          print(f"Source commit: {commit['sha']}")
+          print(f"Branch update accepted: {update['ref']}")
+          PY
