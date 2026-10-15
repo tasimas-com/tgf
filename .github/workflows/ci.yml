@@ -107,14 +107,14 @@ jobs:
         shell: pwsh
         run: |
           $ErrorActionPreference = "Stop"
-          $installerRoot = Join-Path $env:ProgramFiles(x86) "Microsoft Visual Studio\\Installer"
+          $installerRoot = Join-Path [Environment]::GetFolderPath('ProgramFilesX86') "Microsoft Visual Studio\Installer"
           $vswhere = Join-Path $installerRoot "vswhere.exe"
           $vsPath = & $vswhere -latest -products '*' -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
           if (-not $vsPath) {
             throw "No Visual Studio installation with the x64 C++ tools was found."
           }
 
-          $toolsetRoot = Join-Path $vsPath "VC\\Tools\\MSVC"
+          $toolsetRoot = Join-Path $vsPath "VC\Tools\MSVC"
           $toolset = Get-ChildItem -LiteralPath $toolsetRoot -Directory -ErrorAction SilentlyContinue |
             Where-Object { $_.Name -like "14.50.*" } |
             Sort-Object Name -Descending |
@@ -184,10 +184,10 @@ jobs:
           if ($compilerExitCode -ne 0) { exit $compilerExitCode }
 
           $expectedMinor = '${{ matrix.target.compiler-minor }}'
-          if ($compilerText -notmatch "cl\\.exe:\\s+Version\\s+19\\.$expectedMinor\\.") {
+          if ($compilerText -notmatch "cl\.exe:\s+Version\s+19\.$expectedMinor\.") {
             throw "Expected MSVC compiler 19.$expectedMinor.x, but the selected cl.exe reported a different version."
           }
-          if ($env:VCToolsVersion -notmatch "^14\\.$expectedMinor\\.") {
+          if ($env:VCToolsVersion -notmatch "^14\.$expectedMinor\.") {
             throw "Expected VCTools 14.$expectedMinor.x, found '$env:VCToolsVersion'."
           }
           Write-Host "Verified compiler: MSVC 19.$expectedMinor.x using VCTools $env:VCToolsVersion"
