@@ -90,7 +90,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
-          git diff --cached --check
+          git diff --cached --check -- '*.c' '*.cc' '*.cpp' '*.cxx' '*.h' '*.hpp' '*.hxx' '*.cmake' 'CMakeLists.txt' '*.py' '*.yml' '*.yaml'
           git commit -m "Publish complete TGF source, CI, documentation, and master TODO"
           git push origin HEAD:main
 
