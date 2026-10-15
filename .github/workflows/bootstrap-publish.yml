@@ -75,13 +75,12 @@ jobs:
           python3 - <<'PY'
           from pathlib import Path
           p = Path("TODO.md")
-          text = p.read_text(encoding="utf-8")
-          import re
-          pattern = r"(?m)^(\\s*- )\\[ \\]( P0\\.1\\.4\\.e\\.7\\.a .*)$"
-          text, count = re.subn(pattern, r"\\1[x]\\2", text)
-          if count != 1:
-              raise SystemExit(f"Expected one P0.1.4.e.7.a TODO item, found {count}")
-          p.write_text(text, encoding="utf-8", newline="\\n")
+          lines = p.read_text(encoding="utf-8").splitlines()
+          matches = [i for i, line in enumerate(lines) if "P0.1.4.e.7.a" in line and "- [ ]" in line]
+          if len(matches) != 1:
+              raise SystemExit(f"Expected one unfinished P0.1.4.e.7.a TODO item, found {len(matches)}")
+          lines[matches[0]] = lines[matches[0]].replace("- [ ]", "- [x]", 1)
+          p.write_text("\n".join(lines) + "\n", encoding="utf-8")
           PY
 
       - name: Commit the complete project
