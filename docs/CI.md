@@ -1,6 +1,6 @@
 # Continuous integration and benchmark infrastructure
 
-**Hosted baseline verified twice:** 15 October 2026 — GitHub Actions runs [#13](https://github.com/tasimas-com/tgf/actions/runs/38730051352) and [#14](https://github.com/tasimas-com/tgf/actions/runs/38738723466).
+**Full Tier-1 matrix verified:** 15 October 2026 — GitHub Actions [PR run #30](https://github.com/tasimas-com/tgf/actions/runs/38745686719), commit `a4169289e8ea031b005aefba7a89d9e13a4075c2`, passed all 14 compiler/configuration jobs.
 
 TGF uses two GitHub Actions workflows:
 
@@ -10,7 +10,54 @@ TGF uses two GitHub Actions workflows:
   runs the core showcase benchmarks only on a dedicated Linux host after its CPU-frequency
   preflight passes.
 
-## Actual hosted build-and-test matrix
+## Full hosted Tier-1 matrix (P0.1.3.g and P0.1.4.g)
+
+Run #30 completed successfully with **14/14 jobs**: seven compiler targets, each built and tested in Debug and Release. The compiler-version probes assert GCC/Clang major versions and both the MSVC compiler version and selected `VCToolsVersion`; no job may silently substitute another toolset. All configure steps explicitly set `TGF_WARNINGS_AS_ERRORS=ON`.
+
+| Hosted runner | Compiler actually reported by the job | Debug | Release |
+|---|---|---:|---:|
+| `ubuntu-26.04` | GCC 16.0.1 | Pass | Pass |
+| `ubuntu-26.04` | GCC 15.2.0 | Pass | Pass |
+| `ubuntu-26.04` | Ubuntu LLVM Clang 23.1.4 | Pass | Pass |
+| `ubuntu-26.04` | Ubuntu LLVM Clang 22.1.2 | Pass | Pass |
+| `windows-2025` | MSVC 19.51.36260.0, toolset 14.51.36231 | Pass | Pass |
+| `windows-2025` | MSVC 19.50.35739.0, toolset 14.50.35717 | Pass | Pass |
+| `macos-15` | AppleClang 17.0.0 (Xcode compatibility lane) | Pass | Pass |
+
+The MSVC 14.50 lane installs the exact Visual Studio component when absent, then checks
+`cl /Bv` and `VCToolsVersion` before configuring. Its selected path was
+`Microsoft Visual Studio/18/Enterprise/VC/Tools/MSVC/14.50.35717`; the 14.51 path was
+`Microsoft Visual Studio/18/Enterprise/VC/Tools/MSVC/14.51.36231`.
+
+Every job passed all seven CTest entries: `showcase_checks`, `dependency_dag`,
+`dependency_dag_bindings_rule`, `cmake_preset_matrix`, `ci_workflow_contract`,
+`benchmark_host_policy`, and `compiler_policy`. All 14 uploaded artifacts were downloaded
+and inspected: each ZIP passed its integrity check and contained a `LastTest.log` with seven
+passing tests. That is **98/98 successful CTest executions**. Every showcase log also reported
+**26 checks, 0 failed**.
+
+| Artifact | GitHub artifact ID |
+|---|---:|
+| `ctest-msvc-14.50-release-Windows` | 11980290689 |
+| `ctest-msvc-14.51-release-Windows` | 11979055145 |
+| `ctest-appleclang-debug-macOS` | 11978820974 |
+| `ctest-gcc-15-release-Linux` | 11978656249 |
+| `ctest-msvc-14.51-debug-Windows` | 11978606404 |
+| `ctest-msvc-14.50-debug-Windows` | 11978577365 |
+| `ctest-clang-23-release-Linux` | 11978356521 |
+| `ctest-clang-22-debug-Linux` | 11978311464 |
+| `ctest-clang-22-release-Linux` | 11978217757 |
+| `ctest-gcc-16-release-Linux` | 11977538647 |
+| `ctest-clang-23-debug-Linux` | 11977389139 |
+| `ctest-appleclang-release-macOS` | 11977284004 |
+| `ctest-gcc-15-debug-Linux` | 11977063741 |
+| `ctest-gcc-16-debug-Linux` | 11976839382 |
+
+Run #30: <https://github.com/tasimas-com/tgf/actions/runs/38745686719>
+(commit `a4169289e8ea031b005aefba7a89d9e13a4075c2`). The run was triggered by the pull request
+and validates the exact PR head.
+
+## Historical initial hosted baseline (runs #13 and #14)
 
 Runs #13 and #14 each completed successfully with **8/8 jobs**. Each compiler target ran Debug and Release.
 
@@ -61,15 +108,11 @@ compiler, configuration, and relevant source/configuration hash. This is **incre
 caching**, not an sccache compiler cache. The CTest log is uploaded per job with
 `actions/upload-artifact@v7` and retained for 14 days.
 
-The CI contract test checks the explicit four-target/two-configuration matrix, Windows MSVC/Ninja
-configuration, compiler-version probe, cache path, artifact upload, and nightly runner guard.
+The CI contract test checks the explicit seven-target/two-configuration matrix, exact compiler binaries/toolsets and version probes, Windows MSVC/Ninja configuration, cache path, artifact upload, and nightly runner guard.
 
 ## What this run does not prove
 
-This is a successful cross-platform baseline verified twice, not the full two-generation Tier-1 compiler matrix.
-It verified GCC 15, Clang 22, and MSVC toolset 14.51; it did not verify GCC 16, Clang 23, or
-MSVC 14.50. AppleClang 17 is the macOS native compatibility lane, not a substitute for the
-separate Clang 22/23 requirement. P0.1.3.g and P0.1.4.g therefore remain partial.
+The full two-generation Tier-1 compiler matrix and the native Windows/macOS compatibility builds are now verified by run #30. This result does not execute the separate clang-format, clang-tidy, or IWYU analyses; their actual-tool runs remain independent quality checks. It also does not provision or enable the dedicated pinned-frequency benchmark runner, prove Tier-A competitor benchmarks, close the remaining ADR/research-spike work, or satisfy the Phase 0 exit criteria.
 
 ## Second-run artifact evidence
 
