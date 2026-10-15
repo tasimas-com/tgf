@@ -1,0 +1,119 @@
+name: Bootstrap full TGF source publication
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".bootstrap/part-*.bin"
+      - ".github/workflows/bootstrap-publish.yml"
+
+permissions:
+  contents: write
+  actions: write
+
+concurrency:
+  group: tgf-source-bootstrap
+  cancel-in-progress: false
+
+jobs:
+  publish-source:
+    runs-on: ubuntu-26.04
+    timeout-minutes: 15
+    steps:
+      - name: Check out bootstrap commit
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: true
+
+      - name: Reconstruct and verify archive
+        shell: bash
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          parts=(.bootstrap/part-*.bin)
+          test "${#parts[@]}" -eq 15
+          archive="$RUNNER_TEMP/TGF_Revision16.zip"
+          cat "${parts[@]}" > "$archive"
+          echo "38cf5cebd423b8733d3ab68856baaf081135409b5e021bb5a81eb761bc5ca2ad  $archive" | sha256sum --check
+          python3 - "$archive" <<'PY'
+          import sys
+          from pathlib import PurePosixPath
+          from zipfile import ZipFile
+          archive = sys.argv[1]
+          with ZipFile(archive) as zf:
+              bad = zf.testzip()
+              if bad:
+                  raise SystemExit(f"Corrupt ZIP member: {bad}")
+              names = zf.namelist()
+              if not names or any(not name.startswith("TGF/") for name in names):
+                  raise SystemExit("All project files must be inside TGF/")
+              for name in names:
+                  p = PurePosixPath(name)
+                  if p.is_absolute() or ".." in p.parts:
+                      raise SystemExit(f"Unsafe archive path: {name}")
+          PY
+
+      - name: Extract project at repository root
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/tgf-source"
+          unzip -q "$RUNNER_TEMP/TGF_Revision16.zip" -d "$RUNNER_TEMP/tgf-source"
+          test -f "$RUNNER_TEMP/tgf-source/TGF/CMakeLists.txt"
+          test -f "$RUNNER_TEMP/tgf-source/TGF/TODO.md"
+          cp -a "$RUNNER_TEMP/tgf-source/TGF/." .
+          rm -rf .bootstrap
+          rm -f .github/workflows/bootstrap-publish.yml
+          test -f CMakeLists.txt
+          test -f TODO.md
+          test -f .github/workflows/ci.yml
+
+      - name: Record source publication in the master TODO
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path("TODO.md")
+          text = p.read_text(encoding="utf-8")
+          old = "- [ ] P0.1.4.e.7.a Publish the full project root, including this `TODO.md`, workflows, source, tests, and documentation, as the initial repository history."
+          new = "- [x] P0.1.4.e.7.a Publish the full project root, including the authoritative `TODO.md`, workflows, source, tests, and documentation, as the initial repository history; published by the bootstrap workflow on 2026-10-15."
+          if old in text:
+              text = text.replace(old, new, 1)
+          p.write_text(text, encoding="utf-8", newline="\n")
+          PY
+
+      - name: Commit the complete project
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --check
+          git commit -m "Publish complete TGF source, CI, documentation, and master TODO"
+          git push origin HEAD:main
+
+      - name: Dispatch the eight-job cross-platform CI matrix
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          for attempt in {1..15}; do
+            if curl -fsS "https://raw.githubusercontent.com/${REPOSITORY}/main/.github/workflows/ci.yml" >/dev/null; then
+              break
+            fi
+            if [ "$attempt" -eq 15 ]; then
+              echo "ci.yml did not become visible after publication" >&2
+              exit 1
+            fi
+            sleep 2
+          done
+          curl --fail-with-body --silent --show-error \
+            -X POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${GH_TOKEN}" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "https://api.github.com/repos/${REPOSITORY}/actions/workflows/ci.yml/dispatches" \
+            -d '{"ref":"main"}'
