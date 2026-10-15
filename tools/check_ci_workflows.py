@@ -68,7 +68,7 @@ def main() -> int:
                 "actual_major",
                 "compiler-minor",
                 "VCToolsVersion",
-                "cl.exe:\\s+Version",
+                "cl.exe",
                 "Restore incremental CMake build cache",
                 "msvc-ninja-",
                 "cl /nologo /Bv",
