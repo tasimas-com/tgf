@@ -62,6 +62,7 @@ jobs:
           test -f "$RUNNER_TEMP/tgf-source/TGF/CMakeLists.txt"
           test -f "$RUNNER_TEMP/tgf-source/TGF/TODO.md"
           cp -a "$RUNNER_TEMP/tgf-source/TGF/." .
+          chmod -R u+w .
           rm -rf .bootstrap
           rm -f .github/workflows/bootstrap-publish.yml
           test -f CMakeLists.txt
@@ -75,11 +76,12 @@ jobs:
           from pathlib import Path
           p = Path("TODO.md")
           text = p.read_text(encoding="utf-8")
-          old = "- [ ] P0.1.4.e.7.a Publish the full project root, including this `TODO.md`, workflows, source, tests, and documentation, as the initial repository history."
-          new = "- [x] P0.1.4.e.7.a Publish the full project root, including the authoritative `TODO.md`, workflows, source, tests, and documentation, as the initial repository history; published by the bootstrap workflow on 2026-10-15."
-          if old in text:
-              text = text.replace(old, new, 1)
-          p.write_text(text, encoding="utf-8", newline="\n")
+          import re
+          pattern = r"(?m)^(\\s*- )\\[ \\]( P0\\.1\\.4\\.e\\.7\\.a .*)$"
+          text, count = re.subn(pattern, r"\\1[x]\\2", text)
+          if count != 1:
+              raise SystemExit(f"Expected one P0.1.4.e.7.a TODO item, found {count}")
+          p.write_text(text, encoding="utf-8", newline="\\n")
           PY
 
       - name: Commit the complete project
