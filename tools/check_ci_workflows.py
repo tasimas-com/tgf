@@ -94,7 +94,10 @@ def main() -> int:
                 "tgf-benchmark-pinned",
                 "TGF_BENCHMARK_RUNNER_READY",
                 "actions/checkout@v7",
-                "tools/check_benchmark_host.py",
+                "tools/check_benchmark_host.py --require-bare-metal",
+                "tools/collect_benchmark_host_inventory.py",
+                "benchmark-artifacts/host-inventory.json",
+                "Capture hardware, thermal, and software inventory",
                 "tgf_showcase",
                 "benchmark-results.json",
                 "DTGF_ENABLE_LTO=OFF",
@@ -226,6 +229,14 @@ def main() -> int:
                 errors.append("nightly-benchmarks.yml: benchmark job must require all dedicated-runner labels")
             if job.get("if") != "${{ vars.TGF_BENCHMARK_RUNNER_READY == 'true' }}":
                 errors.append("nightly-benchmarks.yml: benchmark runner readiness gate must remain fail-closed")
+            steps = job.get("steps", [])
+            steps_by_name = {step.get("name"): step for step in steps if isinstance(step, dict)}
+            preflight = steps_by_name.get("Verify pinned CPU frequency and bare-metal host", {})
+            if preflight.get("run") != "python3 tools/check_benchmark_host.py --require-bare-metal":
+                errors.append("nightly-benchmarks.yml: benchmark preflight must verify pinned frequency and bare-metal x86-64")
+            inventory = steps_by_name.get("Capture hardware, thermal, and software inventory", {})
+            if "tools/collect_benchmark_host_inventory.py" not in inventory.get("run", "") or "host-inventory.json" not in inventory.get("run", ""):
+                errors.append("nightly-benchmarks.yml: benchmark run must capture a machine-readable host inventory")
 
     if errors:
         for error in errors:
