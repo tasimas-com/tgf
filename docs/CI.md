@@ -77,6 +77,9 @@ Run #14 artifact IDs: `11975135189`, `11975130127`, `11974769084`, `11974489507`
 
 ## Dedicated nightly benchmark runner
 
+See the step-by-step [dedicated benchmark runner setup guide](BENCHMARK_RUNNER_SETUP.md) before provisioning or enabling a host.
+
+
 The nightly workflow remains intentionally gated. It requires a self-hosted Linux x64 runner with
 all labels:
 

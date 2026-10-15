@@ -1,6 +1,6 @@
 # TGF implementation status
 
-**Status date:** 15 October 2026 — Revision 18  
+**Status date:** 15 October 2026 — Revision 19  
 **Audited input:** supplied `tgf-project.tar.gz`, subsequently updated through TODO Revision 10 on 14 October 2026  
 **Canonical task checklist:** [`../TODO.md`](../TODO.md)  
 **Full source-audit evidence:** [`audit/2026-10-14/`](audit/2026-10-14/)
@@ -281,3 +281,14 @@ All sixteen CTest artifacts across both runs were downloaded and inspected; ever
 The verified matrix is a first baseline. GCC 16, Clang 23, and MSVC 14.50 remain unverified,
 and the dedicated pinned-frequency benchmark runner remains unprovisioned. P0.1.4.e is complete;
 P0.1.4.f, P0.1.4.g, and P0.1.3.g remain partial. Phase 0 is not complete.
+
+
+## Revision 19 — dedicated nightly benchmark runner preparation
+
+Added `docs/BENCHMARK_RUNNER_SETUP.md` with hardware, CPU-frequency, runner registration,
+security, Actions-variable, and artifact-review instructions. The five preflight unit tests pass.
+The real-host preflight was executed in this environment and failed closed because no CPU
+frequency policy is exposed; this is not a qualifying benchmark runner. No self-hosted runner or
+`TGF_BENCHMARK_RUNNER_READY` variable is claimed as configured. P0.1.4.f remains partial until
+the dedicated machine is physically provisioned, registered, and produces an inspected benchmark
+artifact.

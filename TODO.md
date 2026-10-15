@@ -1,5 +1,5 @@
 # TGF — TASIMAS GUI Framework
-## Master Plan & Complete TODO  (Revision 18 — two successful eight-job hosted CI baselines verified)
+## Master Plan & Complete TODO  (Revision 19 — benchmark runner setup documented; physical host and full compiler matrix remain open)
 
 > Goal: the fastest, leanest GUI framework for **large professional software and games** — Photoshop, Blender, After Effects, Cubase, Dorico, FL Studio, Cinema 4D, Unreal/Unity-class editors, and in-game UI for 2D/3D games — written in C++, minimal CPU / GPU / RAM / disk, with an architecture future engineers can extend for decades.
 > License intent: free and open source (TASIMAS policy).
@@ -323,7 +323,11 @@ Each becomes a file `docs/adr/NNNN-title.md` in Phase 0. Recommended decision an
     - [x] P0.1.4.e.7.a Publish the full project root, including the authoritative root `TODO.md`, source, tests, workflows, and documentation.
     - [x] P0.1.4.e.7.b Inspect all eight hosted jobs and record exact compilers: GCC 15.2.0, LLVM Clang 22.1.2, MSVC 19.51.36260.0/toolset 14.51.36231, and AppleClang 17.0.0; each Debug/Release job passed 7/7 CTest tests.
     - [x] P0.1.4.e.7.c Download and inspect all eight uploaded artifact ZIPs; each archive is valid and contains `LastTest.log` reporting 100% (7/7) passing tests.
-  - [p] P0.1.4.f Provision and enable the dedicated pinned-frequency benchmark runner; the workflow remains safely skipped until its labels and repository variable are configured.
+  - [p] P0.1.4.f Provision and enable the dedicated pinned-frequency benchmark runner; the workflow remains safely skipped until an actual dedicated host is registered and its preflight passes.
+    - [x] P0.1.4.f.1 Write `docs/BENCHMARK_RUNNER_SETUP.md` covering hardware, CPU-frequency policy, runner registration, security isolation, repository-variable gating, and artifact review.
+    - [x] P0.1.4.f.2 Validate the fail-closed host preflight and its five unit-test scenarios; this environment correctly fails the real-host check because it exposes no CPU frequency policy.
+    - [p] P0.1.4.f.3 Provision a dedicated bare-metal Linux x86-64 host, pin all exposed CPU frequency policies, and record the hardware/thermal/software inventory.
+    - [p] P0.1.4.f.4 Register the repository-scoped runner with the four required labels, verify it online, then enable `TGF_BENCHMARK_RUNNER_READY=true` only after the preflight passes; run and inspect the first nightly artifact.
   - [p] P0.1.4.g Complete and execute the full two-generation Tier-1 compiler matrix and add native Windows/macOS results; this first hosted matrix is a baseline slice, not proof for every version in P0.1.3.
 - [p] P0.1.5 Coding standard document (naming, ownership, error handling, API stability levels)
 - [p] P0.1.6 Dependency-DAG checker script (fails CI on illegal includes, using the §4 table)
@@ -1184,4 +1188,19 @@ compatibility lane. The dedicated pinned-frequency benchmark runner in P0.1.4.f 
 unprovisioned and the nightly workflow remains safely gated. Phase 0 is not complete; Phase 1
 remains gated by the documented Phase 0 exit criteria.
 
-*End of TGF master TODO (Revision 18 — two successful eight-job hosted CI runs; benchmark runner and full compiler generations remain open, 2026-10-15).*
+
+## Revision 19 notes — dedicated benchmark runner preparation
+
+Added `docs/BENCHMARK_RUNNER_SETUP.md`, a complete operator runbook for the dedicated Linux
+x86-64 benchmark host: hardware/thermal inventory, CPU governor and fixed min/max policy, real-host
+preflight, repository-scoped runner registration, security isolation, Actions-variable gate, and
+manual/nightly artifact review. `docs/CI.md` now links to the runbook.
+
+The five unit-test scenarios in `tools/test_check_benchmark_host.py` pass. The real preflight was
+executed in the current environment and correctly failed closed with `No CPU frequency policy found
+under /sys/devices/system/cpu`; this environment cannot serve as the pinned-frequency runner.
+No self-hosted runner or Actions repository variable has been enabled, and no benchmark success is
+claimed. P0.1.4.f.1 and .f.2 are done; .f.3 and .f.4 remain partial. Keep the nightly workflow safely
+gated until a dedicated physical host passes the preflight. Phase 0 remains incomplete.
+
+*End of TGF master TODO (Revision 19 — benchmark runner runbook and preflight verification complete; physical runner provisioning remains open, 2026-10-15).*
