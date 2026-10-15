@@ -63,7 +63,7 @@ function(tgf_apply_policy target)
 
   if(MSVC)
     # C4324 (padding due to alignas) is intentional in cache-line-separated lock-free types.
-    target_compile_options(${target} PRIVATE /W4 /wd4324 /permissive- /utf-8 /Zc:__cplusplus /fp:precise /FS
+    target_compile_options(${target} PRIVATE /W4 /wd4324 /permissive- /utf-8 /Zc:__cplusplus /fp:precise /FS)
     # Embedded debug data avoids a shared compiler PDB in parallel Ninja builds.
     target_compile_options(${target} PRIVATE $<$<CONFIG:Debug>:/Z7>
       $<$<NOT:$<CONFIG:Debug>>:/O2 /Gy /Gw /GL>)
