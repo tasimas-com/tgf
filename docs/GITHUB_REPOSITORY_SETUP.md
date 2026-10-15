@@ -37,3 +37,14 @@ The dedicated pinned-frequency benchmark workflow remains gated. Do not set
 
 The hosted matrix is only a first compiler baseline. Complete the second supported generations
 (GCC 16, Clang 23, and MSVC 14.50) before marking the full Tier-1 compiler matrix complete.
+
+
+## Hosted execution verified twice
+
+- [Run #13](https://github.com/tasimas-com/tgf/actions/runs/38730051352): 8/8 jobs passed.
+- [Run #14](https://github.com/tasimas-com/tgf/actions/runs/38738723466): 8/8 jobs passed after workflow-label corrections.
+- Compilers: GCC 15.2.0, LLVM Clang 22.1.2, MSVC 19.51.36260.0/toolset 14.51.36231, AppleClang 17.0.0.
+- All jobs passed 7/7 CTest tests. All sixteen CTest artifact ZIPs across both runs were downloaded and inspected.
+
+The full run-#14 evidence and artifact IDs are recorded in `docs/CI.md` and the root `TODO.md`.
+The pinned-frequency benchmark runner and second-generation compiler matrix remain outstanding.

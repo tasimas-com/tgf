@@ -1,6 +1,6 @@
 # Continuous integration and benchmark infrastructure
 
-**Hosted baseline verified:** 15 October 2026 — GitHub Actions run [#13](https://github.com/tasimas-com/tgf/actions/runs/38730051352).
+**Hosted baseline verified twice:** 15 October 2026 — GitHub Actions runs [#13](https://github.com/tasimas-com/tgf/actions/runs/38730051352) and [#14](https://github.com/tasimas-com/tgf/actions/runs/38738723466).
 
 TGF uses two GitHub Actions workflows:
 
@@ -12,7 +12,7 @@ TGF uses two GitHub Actions workflows:
 
 ## Actual hosted build-and-test matrix
 
-Run #13 completed successfully with **8/8 jobs**. Each compiler target ran Debug and Release.
+Runs #13 and #14 each completed successfully with **8/8 jobs**. Each compiler target ran Debug and Release.
 
 | Hosted runner | Compiler actually reported by the job | Debug | Release |
 |---|---|---:|---:|
@@ -36,7 +36,7 @@ Every one of the eight jobs passed all seven CTest entries:
 6. `benchmark_host_policy`
 7. `compiler_policy`
 
-That is **56 successful test executions**. Each job uploaded a `LastTest.log` artifact. All eight
+That is **56 successful test executions per run, 112 across both accepted runs**. Each job uploaded a `LastTest.log` artifact. All eight
 artifact ZIPs were downloaded, checked for ZIP integrity, and inspected; every log reported
 `100% tests passed, 0 tests failed out of 7`.
 
@@ -51,8 +51,8 @@ artifact ZIPs were downloaded, checked for ZIP integrity, and inspected; every l
 | `ctest-gcc-15-release-Linux` | 11968903986 |
 | `ctest-clang-22-release-Linux` | 11968869037 |
 
-Run URL: <https://github.com/tasimas-com/tgf/actions/runs/38730051352>  
-Commit: `c73987167e7bf761ba6fe9ca558cf85b9b0b5780`.
+Run #13: <https://github.com/tasimas-com/tgf/actions/runs/38730051352> (commit `c73987167e7bf761ba6fe9ca558cf85b9b0b5780`).  
+Run #14: <https://github.com/tasimas-com/tgf/actions/runs/38738723466> (commit `8a2cfff31e4502ba142e444a01c0308a489dfac0`).
 
 ## Caching and artifacts
 
@@ -66,10 +66,14 @@ configuration, compiler-version probe, cache path, artifact upload, and nightly 
 
 ## What this run does not prove
 
-This is a successful cross-platform baseline, not the full two-generation Tier-1 compiler matrix.
+This is a successful cross-platform baseline verified twice, not the full two-generation Tier-1 compiler matrix.
 It verified GCC 15, Clang 22, and MSVC toolset 14.51; it did not verify GCC 16, Clang 23, or
 MSVC 14.50. AppleClang 17 is the macOS native compatibility lane, not a substitute for the
 separate Clang 22/23 requirement. P0.1.3.g and P0.1.4.g therefore remain partial.
+
+## Second-run artifact evidence
+
+Run #14 artifact IDs: `11975135189`, `11975130127`, `11974769084`, `11974489507`, `11973969685`, `11973939741`, `11973764489`, and `11973644936`. Each archive passed ZIP integrity checks and contained a LastTest.log with seven successful test entries.
 
 ## Dedicated nightly benchmark runner
 

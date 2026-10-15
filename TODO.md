@@ -1,11 +1,11 @@
 # TGF — TASIMAS GUI Framework
-## Master Plan & Complete TODO  (Revision 17 — initial publication and eight-job hosted CI baseline verified)
+## Master Plan & Complete TODO  (Revision 18 — two successful eight-job hosted CI baselines verified)
 
 > Goal: the fastest, leanest GUI framework for **large professional software and games** — Photoshop, Blender, After Effects, Cubase, Dorico, FL Studio, Cinema 4D, Unreal/Unity-class editors, and in-game UI for 2D/3D games — written in C++, minimal CPU / GPU / RAM / disk, with an architecture future engineers can extend for decades.
 > License intent: free and open source (TASIMAS policy).
 > Final deliverable of this plan: **TGF 1.0.0**, a professional, API-stable, documented, accessible, cross-platform release (criteria in §10).
 
-Legend: `★` marks a task, decision or section added or materially changed during the audit. Revision 3 added the project-specific implementation contract; Revision 5 recorded core-safety remediation; Revision 6 records tagged memory diagnostics; Revisions 7–9 record lifecycle diagnostics, module allocator ownership, and mapped-file verification; Revision 10 completes the Phase 0 CMake preset matrix; Revision 11 adds the compiler-support policy, warnings-as-errors verification, and optional quality-tool workflows; Revision 12 adds cross-platform CI workflows, compiler caching, and a gated pinned-frequency benchmark job; Revision 13 hardens the hosted workflow and makes the MSVC sccache path effective through Ninja; Revision 14 records the connected GitHub account check and confirms that no TGF repository currently exists under that account; Revision 15 records the repository-creation blocker and initial-repository runbook. Revision 16 records creation of `tasimas-com/tgf`; Revision 17 records the published source, successful eight-job hosted baseline, exact compiler versions, and inspected CTest artifacts. Existing P0–P13 task IDs and ADR-0001–ADR-0027 are preserved wherever possible. Original task IDs are preserved so existing commits/issues still resolve; new tasks use new IDs.
+Legend: `★` marks a task, decision or section added or materially changed during the audit. Revision 3 added the project-specific implementation contract; Revision 5 recorded core-safety remediation; Revision 6 records tagged memory diagnostics; Revisions 7–9 record lifecycle diagnostics, module allocator ownership, and mapped-file verification; Revision 10 completes the Phase 0 CMake preset matrix; Revision 11 adds the compiler-support policy, warnings-as-errors verification, and optional quality-tool workflows; Revision 12 adds cross-platform CI workflows, compiler caching, and a gated pinned-frequency benchmark job; Revision 13 hardens the hosted workflow and makes the MSVC sccache path effective through Ninja; Revision 14 records the connected GitHub account check and confirms that no TGF repository currently exists under that account; Revision 15 records the repository-creation blocker and initial-repository runbook. Revision 16 records creation of `tasimas-com/tgf`; Revision 17 records the published source and first hosted eight-job baseline; Revision 18 records the second successful eight-job run after the workflow-label/cache documentation corrections. Existing P0–P13 task IDs and ADR-0001–ADR-0027 are preserved wherever possible. Original task IDs are preserved so existing commits/issues still resolve; new tasks use new IDs.
 
  
 
@@ -313,12 +313,13 @@ Each becomes a file `docs/adr/NNNN-title.md` in Phase 0. Recommended decision an
   - [x] P0.1.4.d Add a fail-closed CPU-frequency preflight plus unit tests and CTest workflow-contract checks.
   - [x] P0.1.4.e Execute and review the hosted GitHub Actions matrix on `tasimas-com/tgf`; run #13 passed all eight jobs, compiler versions were recorded, and all eight downloaded CTest ZIP artifacts were inspected.
     - [x] P0.1.4.e.1 Re-run the local workflow contract, YAML parser, preset graph, and existing GCC/Clang CTest builds; all available local checks pass.
-    - [x] P0.1.4.e.2 Correct the Windows CI cache path: use the MSVC developer environment with Ninja (not the Visual Studio project generator) so CMake's compiler launcher can invoke sccache; add Windows MSVC/Ninja presets and regression checks.
+    - [x] P0.1.4.e.2 Use the MSVC developer environment with Ninja (not the Visual Studio project generator), add Windows MSVC/Ninja presets, and serialize native PDB writes with /FS; the hosted workflow uses GitHub Actions build-directory caching, not an MSVC sccache compiler launcher.
     - [x] P0.1.4.e.3 Refresh checkout and artifact actions to their current v7 major releases and document the Node.js 24 runner prerequisite for the dedicated self-hosted host.
-    - [x] P0.1.4.e.4 Execute the hosted matrix on `main`; GitHub Actions run [#13](https://github.com/tasimas-com/tgf/actions/runs/38730051352), commit `c73987167e7bf761ba6fe9ca558cf85b9b0b5780`, completed successfully with 8/8 jobs.
+    - [x] P0.1.4.e.4 Execute the hosted matrix on `main`; run [#13](https://github.com/tasimas-com/tgf/actions/runs/38730051352) passed 8/8 jobs, and run [#14](https://github.com/tasimas-com/tgf/actions/runs/38738723466) passed 8/8 again after the workflow-label and documentation corrections.
     - [x] P0.1.4.e.5 Complete the initial account/repository discovery before creation; the earlier check found no TGF repository, and the user subsequently created the dedicated `tasimas-com/tgf` repository (recorded in .e.6).
   - [x] P0.1.4.e.6 Create the dedicated repository `tasimas-com/tgf`; verified through the connected GitHub account on 2026-10-15. Repository ID `1420440551`, default branch `main`, public visibility, and admin/push permissions were returned by GitHub. The repository was empty at verification time (size 0); no existing content was overwritten.
   - [x] P0.1.4.e.7 Publish the full project at the `main` root, execute all eight hosted jobs, inspect compiler versions and CTest artifacts, and record the successful run.
+    - [x] P0.1.4.e.7.d Repeat the eight-job matrix after workflow-label and CI contract corrections in run [#14](https://github.com/tasimas-com/tgf/actions/runs/38738723466); all eight jobs passed and all eight new CTest artifacts were verified to contain seven passing tests.
     - [x] P0.1.4.e.7.a Publish the full project root, including the authoritative root `TODO.md`, source, tests, workflows, and documentation.
     - [x] P0.1.4.e.7.b Inspect all eight hosted jobs and record exact compilers: GCC 15.2.0, LLVM Clang 22.1.2, MSVC 19.51.36260.0/toolset 14.51.36231, and AppleClang 17.0.0; each Debug/Release job passed 7/7 CTest tests.
     - [x] P0.1.4.e.7.c Download and inspect all eight uploaded artifact ZIPs; each archive is valid and contains `LastTest.log` reporting 100% (7/7) passing tests.
@@ -1164,4 +1165,23 @@ AppleClang 17; it does not establish GCC 16, Clang 23, MSVC 14.50, or a dedicate
 P0.1.3.g also remains partial. Phase 0 is not complete, and Phase 1 remains gated by the
 documented Phase 0 exit criteria.
 
-*End of TGF master TODO (Revision 17 — hosted cross-platform CI baseline verified; benchmark runner and full compiler matrix remain open, 2026-10-15).*
+
+## Revision 18 notes — hosted CI verification repeated after corrections
+
+The corrected workflow and its regression checker were committed as
+`8a2cfff31e4502ba142e444a01c0308a489dfac0`. GitHub Actions run
+[#14](https://github.com/tasimas-com/tgf/actions/runs/38738723466) completed successfully.
+All eight jobs passed again: GCC 15.2.0 Debug/Release; LLVM Clang 22.1.2 Debug/Release;
+MSVC 19.51.36260.0/toolset 14.51.36231 Debug/Release; AppleClang 17.0.0 Debug/Release.
+Every job passed 7/7 CTest tests (56 successful test executions). All eight new artifact ZIPs
+were downloaded, passed ZIP integrity checks, and each contained a `LastTest.log` with seven
+`Test Passed.` entries. Artifact IDs: 11975135189, 11975130127, 11974769084, 11974489507,
+11973969685, 11973939741, 11973764489, and 11973644936.
+
+The hosted baseline does not complete the full compiler generations in P0.1.3.g/P0.1.4.g:
+GCC 16, Clang 23, and MSVC 14.50 remain unverified. AppleClang 17 verifies the native macOS
+compatibility lane. The dedicated pinned-frequency benchmark runner in P0.1.4.f remains
+unprovisioned and the nightly workflow remains safely gated. Phase 0 is not complete; Phase 1
+remains gated by the documented Phase 0 exit criteria.
+
+*End of TGF master TODO (Revision 18 — two successful eight-job hosted CI runs; benchmark runner and full compiler generations remain open, 2026-10-15).*

@@ -1,6 +1,6 @@
 # TGF implementation status
 
-**Status date:** 15 October 2026 — Revision 17  
+**Status date:** 15 October 2026 — Revision 18  
 **Audited input:** supplied `tgf-project.tar.gz`, subsequently updated through TODO Revision 10 on 14 October 2026  
 **Canonical task checklist:** [`../TODO.md`](../TODO.md)  
 **Full source-audit evidence:** [`audit/2026-10-14/`](audit/2026-10-14/)
@@ -267,3 +267,17 @@ caching (`actions/cache@v4`), not sccache.
 P0.1.4.e (hosted matrix publication and review) is complete. P0.1.4.f (dedicated pinned-frequency
 benchmark runner) and P0.1.4.g (full two-generation compiler matrix) remain partial. Phase 0 is
 not complete.
+
+
+## Revision 18 — hosted CI matrix verified twice
+
+GitHub Actions runs [#13](https://github.com/tasimas-com/tgf/actions/runs/38730051352) and
+[#14](https://github.com/tasimas-com/tgf/actions/runs/38738723466) each passed all eight
+Windows/Linux/macOS × compiler × Debug/Release jobs. Exact compiler versions: GCC 15.2.0,
+LLVM Clang 22.1.2, MSVC 19.51.36260.0/toolset 14.51.36231, and AppleClang 17.0.0.
+All sixteen CTest artifacts across both runs were downloaded and inspected; every job passed
+7/7 CTest tests. See `audit/2026-10-15/TGF_HOSTED_CI_RESULTS.md`.
+
+The verified matrix is a first baseline. GCC 16, Clang 23, and MSVC 14.50 remain unverified,
+and the dedicated pinned-frequency benchmark runner remains unprovisioned. P0.1.4.e is complete;
+P0.1.4.f, P0.1.4.g, and P0.1.3.g remain partial. Phase 0 is not complete.
