@@ -1,0 +1,7 @@
+BasedOnStyle: Google
+ColumnLimit: 120
+IndentWidth: 2
+AccessModifierOffset: -1
+AllowShortFunctionsOnASingleLine: Inline
+PointerAlignment: Left
+SortIncludes: CaseSensitive

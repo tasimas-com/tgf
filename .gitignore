@@ -1,0 +1,28 @@
+build*/
+.vs/
+out/
+*.user
+CMakeUserPresets.json
+compile_commands.json
+
+# CMake / Ninja / compiler outputs
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+.ninja_deps
+.ninja_log
+.ninja_*
+Testing/
+
+# Python tooling artifacts
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# IDE / local metadata
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+

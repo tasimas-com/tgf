@@ -1,0 +1,18 @@
+{
+  "policy_date": "2026-10-15",
+  "language_standard": "C++20",
+  "tier_one_compilers": {
+    "msvc": ["14.51", "14.50"],
+    "clang": ["23", "22"],
+    "gcc": ["16", "15"]
+  },
+  "tooling": {
+    "clang_format_major": [22, 23],
+    "clang_tidy_major": [22, 23],
+    "include_what_you_use": {
+      "llvm_23": "0.27",
+      "llvm_22": "0.26"
+    }
+  },
+  "warnings_as_errors_default": true
+}

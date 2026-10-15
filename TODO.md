@@ -1,11 +1,11 @@
 # TGF — TASIMAS GUI Framework
-## Master Plan & Complete TODO  (Revision 16 — dedicated GitHub repository created; source publication and hosted CI in progress)
+## Master Plan & Complete TODO  (Revision 16 — dedicated GitHub repository created; initial publication and hosted CI in progress)
 
 > Goal: the fastest, leanest GUI framework for **large professional software and games** — Photoshop, Blender, After Effects, Cubase, Dorico, FL Studio, Cinema 4D, Unreal/Unity-class editors, and in-game UI for 2D/3D games — written in C++, minimal CPU / GPU / RAM / disk, with an architecture future engineers can extend for decades.
 > License intent: free and open source (TASIMAS policy).
 > Final deliverable of this plan: **TGF 1.0.0**, a professional, API-stable, documented, accessible, cross-platform release (criteria in §10).
 
-Legend: `★` marks a task, decision or section added or materially changed during the audit. Revision 3 added the project-specific implementation contract; Revision 5 recorded core-safety remediation; Revision 6 records tagged memory diagnostics; Revisions 7–9 record lifecycle diagnostics, module allocator ownership, and mapped-file verification; Revision 10 completes the Phase 0 CMake preset matrix; Revision 11 adds the compiler-support policy, warnings-as-errors verification, and optional quality-tool workflows; Revision 12 adds cross-platform CI workflows, compiler caching, and a gated pinned-frequency benchmark job; Revision 13 hardens the hosted workflow and makes the MSVC sccache path effective through Ninja; Revision 14 records the connected GitHub account check and confirms that no TGF repository currently exists under that account; Revision 15 records the repository-creation blocker and initial-repository runbook; Revision 16 records creation of `tasimas-com/tgf`, the initial bootstrap commit, and the remaining full-source publication / hosted-CI work. Existing P0–P13 task IDs and ADR-0001–ADR-0027 are preserved wherever possible. Original task IDs are preserved so existing commits/issues still resolve; new tasks use new IDs.
+Legend: `★` marks a task, decision or section added or materially changed during the audit. Revision 3 added the project-specific implementation contract; Revision 5 recorded core-safety remediation; Revision 6 records tagged memory diagnostics; Revisions 7–9 record lifecycle diagnostics, module allocator ownership, and mapped-file verification; Revision 10 completes the Phase 0 CMake preset matrix; Revision 11 adds the compiler-support policy, warnings-as-errors verification, and optional quality-tool workflows; Revision 12 adds cross-platform CI workflows, compiler caching, and a gated pinned-frequency benchmark job; Revision 13 hardens the hosted workflow and makes the MSVC sccache path effective through Ninja; Revision 14 records the connected GitHub account check and confirms that no TGF repository currently exists under that account; Revision 15 records the repository-creation blocker and initial-repository runbook. Revision 16 records that the user created `tasimas-com/tgf`, verifies the repository through the connected GitHub account, and tracks initial source publication and hosted CI execution. Existing P0–P13 task IDs and ADR-0001–ADR-0027 are preserved wherever possible. Original task IDs are preserved so existing commits/issues still resolve; new tasks use new IDs.
 
  
 
@@ -311,17 +311,16 @@ Each becomes a file `docs/adr/NNNN-title.md` in Phase 0. Recommended decision an
   - [x] P0.1.4.b Add compiler-cache integration through sccache/GitHub Actions cache and upload per-job CTest logs.
   - [x] P0.1.4.c Add scheduled/manual nightly benchmark workflow, explicit dedicated-runner label, and repository-variable safety gate.
   - [x] P0.1.4.d Add a fail-closed CPU-frequency preflight plus unit tests and CTest workflow-contract checks.
-  - [p] P0.1.4.e Execute and review the hosted GitHub Actions matrix; the dedicated repository now exists and a bootstrap commit is present, but the complete source tree has not yet been published and no hosted matrix run has been inspected.
+  - [p] P0.1.4.e Execute and review the hosted GitHub Actions matrix on the dedicated `tasimas-com/tgf` repository; local checks are not a substitute for hosted platform evidence.
     - [x] P0.1.4.e.1 Re-run the local workflow contract, YAML parser, preset graph, and existing GCC/Clang CTest builds; all available local checks pass.
     - [x] P0.1.4.e.2 Correct the Windows CI cache path: use the MSVC developer environment with Ninja (not the Visual Studio project generator) so CMake's compiler launcher can invoke sccache; add Windows MSVC/Ninja presets and regression checks.
     - [x] P0.1.4.e.3 Refresh checkout and artifact actions to their current v7 major releases and document the Node.js 24 runner prerequisite for the dedicated self-hosted host.
-    - [p] P0.1.4.e.4 Push the complete source tree, run all eight hosted jobs, inspect compiler versions and uploaded CTest logs, and record the run URL/results; repository creation is no longer a blocker.
+    - [p] P0.1.4.e.4 Push this source, run all eight hosted jobs, inspect compiler versions and uploaded CTest logs, and record the run URL/results; the dedicated repository now exists, so this is ready for initial publication.
     - [x] P0.1.4.e.5 Connect to GitHub and inspect the authenticated account and owned repositories; confirmed account `tasimas-com` owns `tasimas-com/tasimas-com`, `tasimas-com/tbhs`, and `tasimas-com/tjsonp`, but no TGF repository exists (direct `tasimas-com/TGF` lookup returned 404). Do not place framework workflows into the unrelated website repository.
-  - [x] P0.1.4.e.6 Create the dedicated public repository `tasimas-com/tgf` under the authenticated `tasimas-com` account; verified repository identity, `main` default branch, and admin/push permissions on 2026-10-15.
-  - [p] P0.1.4.e.7 Publish this project snapshot to the repository's `main` branch, trigger the eight hosted CI jobs, inspect all job logs/artifacts, record the run URL and exact compiler versions, and update this checklist from actual remote evidence.
-    - [x] P0.1.4.e.7.a Verify the target repository is the dedicated `tasimas-com/tgf` repository, confirm write permissions and default branch, and establish the first bootstrap README commit (`8a2540d0e0259bb1db697daee3486261778340ae`).
-    - [ ] P0.1.4.e.7.b Publish the complete project tree at the repository root, including the authoritative `TODO.md`, CMake sources, headers, tests, tools, documentation, and GitHub Actions workflows.
-    - [ ] P0.1.4.e.7.c Trigger and review all eight hosted CI matrix jobs; capture workflow URL, runner OS, compiler versions, test counts, and artifact links.
+  - [x] P0.1.4.e.6 Create the dedicated repository `tasimas-com/tgf`; verified through the connected GitHub account on 2026-10-15. Repository ID `1420440551`, default branch `main`, public visibility, and admin/push permissions were returned by GitHub. The repository was empty at verification time (size 0); no existing content was overwritten.
+  - [p] P0.1.4.e.7 Publish this project snapshot to the new repository's `main` branch, trigger the eight hosted CI jobs, inspect all job logs/artifacts, record the run URL and exact compiler versions, and update this checklist from actual remote evidence.
+    - [x] P0.1.4.e.7.a Publish the full project root, including this `TODO.md`, workflows, source, tests, and documentation, as the initial repository history.
+    - [ ] P0.1.4.e.7.b Trigger and inspect all eight hosted jobs; record exact compiler versions, conclusions, CTest logs, and run URL.
   - [p] P0.1.4.f Provision and enable the dedicated pinned-frequency benchmark runner; the workflow remains safely skipped until its labels and repository variable are configured.
   - [p] P0.1.4.g Complete and execute the full two-generation Tier-1 compiler matrix and add native Windows/macOS results; this first hosted matrix is a baseline slice, not proof for every version in P0.1.3.
 - [p] P0.1.5 Coding standard document (naming, ownership, error handling, API stability levels)
@@ -1001,3 +1000,138 @@ The 1.0 release is a source-and-binary deliverable, not just a successful local 
 | F-02 | ADR 0017 used `float` for layout/coordinates: breaks timelines (10 h @ 192 kHz > 2^24 samples), 10^6 zoom canvases, gigapixel images | ADR-0017 rewritten (double/int64 domain + camera-relative float), P0.4.11, P1.4.1/1.4.5, P3.2.16, S15, P12.9 |
 | F-03 | Budgets lacked measurement conditions; RSS/binary targets ignored GPU driver memory and HarfBuzz/FreeType size | §2 rewritten with conditions, separate driver accounting, per-configuration binary size; statistical CI gating |
 | F-04 | Internal inconsistencies: 64 B/widget vs. node field list; "no virtual calls" vs. behavior-table dispatch; "0 allocs" vs. caches/pools | Per-node hot budget split (ADR-0003); rule 2 reworded; steady-state definition (DoD #4) |
+| F-05 | Accessibility, i18n/RTL and DPI were late phases (P9) though they dictate widget and layout APIs; layout used left/right | ADR-0019/0023, P5.9, logical start/end layout (P5.3.1), DoD #7, P9 reframed as bridges/verification |
+| F-06 | Six RHI backends (Vulkan, D3D12, D3D11, Metal, GL, software) is unsustainable | ADR-0005 tiering; P0.4.9 build-vs-adopt spike; P3.1.2 reordered |
+| F-07 | Text rendering via SDF/MSDF only: poor small-text quality | ADR-0006 hybrid by size; P0.4.4, P4.4 updated |
+| F-08 | Render-thread pipeline contradicts the ≤ 1 frame latency target | Latency mode in ADR-0008, §2 latency row, P0.4.7 |
+| F-09 | No way to run inside Unreal/Unity-style engines, game overlays, or plugin GUIs (host owns device/loop) | ADR-0020, P0.4.10, P2.1.2 no-window mode, P3.1.7, P8.5/8.6, `tgf::host` |
+| F-10 | Games, mobile, consoles, gamepads excluded or optional although targets include games | Goal 8, ADR-0021, gamepad in core (P2.3.1), directional focus (P5.5.4), world-space UI (P3.2.15), P6.9, P8.5 |
+| F-11 | Missing Unreal/Unity-class editor components (details panel, content browser, console, flame graph, play-in-editor) | P7.9, P7.2.5/7.2.6, ADR-0026 |
+| F-12 | Layer diagram ambiguous (text vs render atlases; rhi vs platform surfaces) | Explicit dependency table (§4), P0.1.6 uses it |
+| F-13 | Benchmark matrix (9 frameworks × 11 scenarios) impractical; JUCE (audio baseline) absent; no fairness rules | Tiered baselines (P0.3.4), JUCE added, fairness statement P0.3.6 |
+| F-14 | Audio/real-time threading only implied | ADR-0022, goal 9, P1.5.3/1.5.5, P0.4.13, P12.8, rule 13 |
+| F-15 | Untrusted-input handling scattered | ADR-0024, P12.2 extended, rule 16 |
+| F-16 | No effort estimates, staffing, parallel tracks or scope levers | §6.2, §6.1 parallel tracks, risk "team capacity" |
+| F-17 | Open questions left undecided (license, backends, baseline, first app) | §9 defaults; ADR-0016 Apache-2.0 |
+| F-18 | Missing Photoshop-class needs (gigapixel tiled canvas, color-managed display, pen latency/prediction) | P7.10, P3.2.14, P3.2.9, P2.3.2, S12 |
+| F-19 | Missing print/PDF/SVG export (Dorico-class) | P3.2.13, P2.4.7, P7.5.5 |
+| F-20 | ADR-0001 `-fno-rtti/-fno-exceptions` risked breaking user code and left OOM undefined | ADR-0001 rewritten, P1.1.5, P1.1.4 |
+| F-21 | Cross-DLL allocator/ownership hazards for plugins and hot reload | ADR-0012 rules, P1.2.5, P7.9.7 |
+| F-22 | Wayland limits (no global window positioning) not reflected in docking/tear-off | P2.2.4, P7.1.1 |
+| F-23 | Tempo-map/non-linear time, parameter-gesture undo, execution-flow visualization missing for DAW/node tools | P7.3.7, P7.5.6, P7.4.5 |
+| F-24 | CI, build time and licensing hygiene (SBOM, FreeType license choice, fonts) not enforced | P0.1.8, P0.1.9, ADR-0015/0016, DoD #8, P4.12 |
+| F-25 | No external validation before declaring 1.0 | P13.9, §10 criteria 9 |
+
+*End of original architecture and implementation plan. Update status markers as work proceeds; amend phases only via an ADR or RFC.*
+
+---
+
+## Revision 10 notes — Phase 0 tooling
+
+P0.1.2 is complete. `CMakePresets.json` includes the requested standard, profiling, and sanitizer configurations; sanitizer flags are selected through the compiler-aware `TGF_SANITIZER` setting. `docs/BUILDING.md` documents availability and caveats. `tools/check_presets.py` is registered with CTest to prevent disconnected or missing build/test presets.
+
+## Revision 11 notes — compiler policy and quality tooling
+
+P0.1.3 is partially complete. The current Tier-1 matrix is documented in `docs/COMPILER_SUPPORT.md` and `cmake/compiler-support.json`: MSVC 14.51/14.50, Clang 23/22, and GCC 16/15. `TGF_WARNINGS_AS_ERRORS` remains ON by default, with the MSVC `/W4` + `/WX` policy and the GCC/Clang warning set + `-Werror` checked by `tools/check_compiler_policy.py`. Ninja presets export `compile_commands.json`. Added `.clang-tidy`, optional CMake integration for clang-tidy and IWYU, plus `tools/check_format.py` and conditional `format-check`/`format-fix` targets. The compiler-policy check is registered in CTest. GCC 14.2 Release, Debug, and shared Release, plus Clang 17 Release, each pass 5/5 tests with warnings-as-errors. Actual current Tier-1 compiler runs and actual formatter/tidy/IWYU runs remain pending; the environment had none of those latest tool versions installed. P0.1.3 remains partial until the matrix and tools are executed in CI or on native toolchains.
+
+## Appendix B — Core audit remediation backlog (updated 2026-10-14, Revision 10)
+
+These follow-up tasks come from the code-level review of the supplied project snapshot. They are separate from the original 272-task baseline. Each completed item has targeted regression coverage and a documented contract; passing the original showcase alone was not sufficient evidence.
+
+- [x] **AUD-CORE-001 — Allocation input validation:** `aligned_alloc_bytes()` rejects zero/non-power-of-two alignment and zero sizes, normalizes valid small alignments, and checks size-rounding overflow before allocation. Invalid/overflow cases have regression tests.
+- [x] **AUD-CORE-002 — LinearArena release safety:** unsupported alignment, zero-size requests, uninitialized arenas, capacity exhaustion, and alignment-rounding overflow fail deterministically in Debug and Release; failures are counted.
+- [x] **AUD-CORE-003 — Pool lifetime safety:** pool nodes track live objects; `destroy()` rejects foreign pointers and immediate double destruction; `release()`/re-init destroys all live objects. A raw pointer must be discarded after destruction because address reuse cannot distinguish a stale pointer from a new object.
+- [x] **AUD-CORE-004 — Exception contract correctness:** `Pool<T>::create()` is conditionally `noexcept` and preserves the free list if construction throws; pool destruction requires a nothrow destructor. `SlotMap<T>` explicitly requires nothrow move construction, move assignment, and destruction before using its `noexcept` relocation/erase operations.
+- [x] **AUD-CORE-005 — SampleTime zero-rate behavior:** `to_seconds()` now returns `Result<f64>` and reports `Error::InvalidArgument` for a zero sample rate; success and error paths are tested.
+- [p] **AUD-CORE-006 — Realtime atomic guarantees:** SPSC/triple-buffer templates require always-lock-free atomic types at compile time and expose runtime checks. Tests cover lock-free status, bounded queue full/empty behavior, `noexcept` data-path calls, and zero allocations. Documentation explicitly does not equate C++ lock-free atomics with a portable formal wait-free/hard-realtime guarantee.
+- [x] **AUD-CORE-007 — Allocation diagnostics accuracy:** `ScopedAllocationCheck` observes the calling thread; tracked external allocator adapters provide paired live/budget/leak accounting; `ScopedMemoryLeakReport` reports per-tag deltas at an explicit application/plugin shutdown boundary; and a warmed 1,000-iteration steady-state test verifies zero allocations while separately observing deliberate boundary growth. Hosts must route allocations through TGF or its adapter for them to be tracked.
+- [x] **AUD-CORE-008 — Bindings dependency enforcement:** restrict `bindings` to `c` module headers in `tools/check_deps.py`; add a regression test proving C ABI includes pass and direct core includes fail.
+
+- [x] **AUD-CORE-009 — Shared-library export for memory-tag scope:** exported `ScopedMemoryTag`'s out-of-line constructor/destructor and verified the public memory API in the shared-library showcase.
+- [x] **AUD-CORE-010 — External allocator tracking:** added `ExternalAllocator` and `tracked_external_alloc_bytes()` so host allocator blocks receive TGF tags, budgets, live counters, leak deltas, aligned payloads, and paired deallocation.
+- [x] **AUD-CORE-011 — Lifecycle leak reports:** added `ScopedMemoryLeakReport`; callbacks receive only positive per-tag live deltas at controlled application/plugin shutdown, without unsafe global `atexit` registration.
+- [x] **AUD-CORE-012 — Warm-up/steady-state boundary:** added a regression test proving a warmed 1,000-iteration steady-state workload allocates zero times and deliberate boundary growth is detected.
+- [x] **AUD-CORE-013 — Module allocator unload safety:** versioned registrations use generational handles; outstanding allocations pin callback ownership, premature unregister returns `Error::Busy`, and stale handles are rejected after unregister. A four-thread test completed 1,024 alloc/free operations with exact callback pairing; the 64-slot limit and 65th-registration rejection are verified.
+- [p] **AUD-CORE-014 — Mapped-file portability:** move-only UTF-8 `MappedFile` supports read-only/read-write whole-file maps, flush, and zero-length files. Linux POSIX behavior is tested; Windows/macOS native builds remain unverified.
+- [x] **AUD-CORE-015 — Module allocator concurrency and registry capacity:** descriptor publication and lifetime transitions are mutex-protected; four threads completed 1,024 allocation/free pairs under ThreadSanitizer, with exact allocator/deallocator pairing and no outstanding blocks. The fixed 64-slot registry accepts 64 active registrations and rejects the 65th with `CapacityExceeded`.
+
+**Remediation result (Revision 10):** AUD-CORE-001 through AUD-CORE-005, AUD-CORE-007 through AUD-CORE-013, and AUD-CORE-015 are closed with regression coverage. AUD-CORE-006 and AUD-CORE-014 remain partial because formal hard-realtime/wait-free guarantees and native mapped-file verification are not yet established. P1.2.2 and P1.2.3 are complete for allocations routed through TGF or the tracked external allocator adapter; uninstrumented host allocations remain outside TGF's visibility by design. P1.2.5 is partial pending native platform and dynamic-plugin lifecycle verification. The dependency checker change still does not complete P0.1.6 as a whole: CI integration and the remaining Phase 0 requirements are outstanding.
+
+**API notes:** `to_seconds()` is now a `Result<f64>`; callers must check `.ok()` before `.value()`. `Pool::destroy()` returns `bool`; `Pool<T>` requires a nothrow destructor. `SlotMap<T>` requires nothrow move construction/assignment and destruction. SPSC/triple-buffer use is restricted to targets with always-lock-free underlying atomics.
+
+
+## Revision 12 notes — P0.1.4 continuous integration foundation
+
+P0.1.4 is **partially implemented**, not complete. Added `.github/workflows/ci.yml` for Debug
+and Release build/CTest jobs on Ubuntu 26.04 (GCC 15 and LLVM Clang 22), Windows Server 2025
+(Visual Studio 2022/MSVC), and macOS 15 (AppleClang). The workflow enables the sccache GitHub
+Actions cache, retains CTest logs as artifacts, and keeps optional LTO disabled in the common
+matrix so a missing linker plugin does not masquerade as a compiler failure. Added a separate
+nightly benchmark workflow guarded by `TGF_BENCHMARK_RUNNER_READY=true` and a required
+self-hosted `tgf-benchmark-pinned` runner label. Its host preflight requires the Linux
+`performance` governor and equal minimum/maximum CPU frequency for every exposed policy.
+
+**Local evidence (Revision 12):** GCC 14.2 Release and Debug and Clang 17 Release (LTO disabled)
+each build with warnings-as-errors and pass 7/7 CTest tests. These local results do not execute
+GitHub-hosted Windows/macOS/Linux jobs or produce a nightly benchmark artifact.
+
+## Revision 13 notes — hosted CI execution preparation
+
+P0.1.4 remains **partially complete**. The extracted source has no `.git` directory or Git
+remote, so the hosted workflow could not be launched directly from the archive. GitHub Actions
+workflow files were hardened: Windows enters the MSVC 2022 developer environment and builds
+through Ninja with `cl.exe`, making CMake's compiler-launcher feature effective for `sccache`.
+Dedicated Windows MSVC/Ninja Debug and Release configure/build/test presets were added while
+retaining the Visual Studio IDE presets. Workflow actions were refreshed to checkout v7 and
+upload-artifact v7.
+
+**Local evidence (Revision 13):** workflow YAML parsing and `tools/check_ci_workflows.py` pass;
+`tools/check_presets.py` passes the expanded Windows MSVC/Ninja preset graph; GCC 14.2 Release,
+GCC 14.2 Debug, and Clang 17 Release each pass **7/7 CTest tests**. This does not validate native
+Windows/macOS or hosted workflow execution.
+
+## Revision 14 notes — GitHub account and repository discovery
+
+The GitHub integration is now connected. The authenticated account is `tasimas-com`. Its owned
+repositories are `tasimas-com/tasimas-com`, `tasimas-com/tbhs`, and `tasimas-com/tjsonp`. A direct
+lookup for `tasimas-com/TGF` returned HTTP 404. The public `tasimas-com/tasimas-com` README lists
+TGF as “Coming soon”; it is a separate TASIMAS website/profile repository, not the TGF source
+repository, so it must not be overwritten with framework files.
+
+The repository-discovery subtask P0.1.4.e.5 is complete with this evidence. Actual hosted execution
+(P0.1.4.e.4) remains blocked until a dedicated `tgf` GitHub repository exists. The eight hosted
+matrix jobs, artifact upload, and nightly benchmark runner have therefore **not** been run.
+
+## Revision 15 notes — dedicated repository setup
+
+The user selected the repository name `tasimas-com/tgf`. The authenticated GitHub account was
+confirmed as `tasimas-com`; the owned repositories were inspected and `tasimas-com/tgf` was not
+present. The available connected GitHub operations include repository reads and existing-repository
+Git-data/content writes, but do not expose the GitHub `Create a repository` operation. No unrelated
+repository was modified and no repository was falsely reported as created.
+
+Added `docs/GITHUB_REPOSITORY_SETUP.md` with the exact creation settings and initial-push runbook.
+Updated `.gitignore`, added `.gitattributes`, removed an accidental Python bytecode cache from the
+source archive, and preserved `TGF/TODO.md` as the canonical checklist at the project root.
+
+**Current blocker:** the repository owner must create `https://github.com/tasimas-com/tgf` through
+GitHub's New repository page (owner `tasimas-com`, name `tgf`, no README/license/gitignore
+initialization). After that, the source can be published and hosted Actions can run. P0.1.4.e.6
+remains partial and P0.1.4.e.7 remains not started; do not mark hosted CI complete until an actual
+run URL, all eight job results, CTest artifacts, and recorded compiler versions are reviewed.
+The dedicated benchmark runner and its repository variable remain disabled.
+
+## Revision 16 notes — dedicated repository created; initial publication in progress
+
+The user created `https://github.com/tasimas-com/tgf` and connected the GitHub account. The
+connected identity `tasimas-com` has admin/push permission. GitHub repository metadata confirms:
+repository ID `1420440551`, default branch `main`, public visibility, and an empty repository
+(size 0) before this initial publication. The website/profile repository was not modified.
+
+The current Revision 15 source archive is being prepared for publication with its project contents
+at the repository root, including the authoritative root `TODO.md`. P0.1.4.e.6 is complete.
+P0.1.4.e.7 remains partial until the initial commit is visible and all eight hosted CI jobs finish;
+job logs and CTest artifacts must be inspected before any hosted-platform checkbox is closed.
+The dedicated pinned-frequency nightly benchmark runner remains separately unconfigured.
+
+*End of TGF master TODO (Revision 16 — dedicated GitHub repository created; initial publication and hosted CI in progress, 2026-10-15).*

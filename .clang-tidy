@@ -1,0 +1,16 @@
+---
+# Keep this list focused on correctness, portability, and avoidable hot-path cost.
+# A broader readability policy belongs in the separate coding-standard task.
+Checks: >
+  -*,
+  bugprone-*,
+  clang-analyzer-*,
+  performance-*,
+  portability-*,
+  -bugprone-easily-swappable-parameters,
+  -bugprone-implicit-widening-of-multiplication-result
+WarningsAsErrors: ''
+HeaderFilterRegex: '(^|/)(core/include|core/src|samples|tests)/'
+FormatStyle: file
+SystemHeaders: false
+...

@@ -1,31 +1,37 @@
 # TGF — TASIMAS GUI Framework
 
-**Repository:** https://github.com/tasimas-com/tgf  
-**Organization:** TASIMAS  
-**Language:** C++20  
-**Build system:** CMake 3.25+  
+Repository: <https://github.com/tasimas-com/tgf> · Master checklist: [`TODO.md`](TODO.md)
 
-TGF is intended to become a modular, retained-mode, data-oriented, cross-platform GUI framework for large professional applications and games.
+Retained-mode, data-oriented, damage-driven C++20 GUI framework for large professional
+applications and games. Free and open source (Apache-2.0 intended).
 
-## Project status
+* Build matrix and commands: [`docs/BUILDING.md`](docs/BUILDING.md) · Master plan: [`TODO.md`](TODO.md) · Design baseline: [`docs/DESIGN.md`](docs/DESIGN.md) ·
+  Status ledger: [`docs/STATUS.md`](docs/STATUS.md) · CI policy: [`docs/CI.md`](docs/CI.md) · Compiler policy: [`docs/COMPILER_SUPPORT.md`](docs/COMPILER_SUPPORT.md) · ADRs: [`docs/adr/`](docs/adr/)
+* Snapshot audit (2026-10-14): [`docs/audit/`](docs/audit/) · The current implementation is an early `tgf::core` foundation, not yet a GUI framework 1.0.0.
 
-The current project is an early implementation of the `tgf::core` foundation. It is **not yet a complete graphical UI framework**: native platform windows, rendering backends, typography, retained UI, widgets, and professional components remain future implementation phases.
+## Current implementation slice
 
-The authoritative development sequence and completion criteria are in [TODO.md](TODO.md). Phase 0 must be completed before Phase 1 receives new feature-development priority.
+The current executable verifies the `tgf::core` foundation; it is not yet a graphical UI
+framework. Core memory diagnostics now include subsystem tags, per-tag budgets, live/peak
+accounting and snapshot leak deltas for allocations routed through TGF. Revision 9 strengthened P1.2.5 with allocator concurrency/capacity tests and mapped-file ownership tests; Revision 10 completed the Phase 0 CMake preset matrix; Revision 11 adds the compiler-support policy and optional formatting/static-analysis workflows; Revision 12 adds cross-platform GitHub Actions build/test workflows and a guarded nightly benchmark job. See
+[`docs/memory-diagnostics.md`](docs/memory-diagnostics.md) and
+[`docs/module-memory.md`](docs/module-memory.md) for their ownership contracts.
 
-## Start here
+## Quick start
+See [`docs/BUILDING.md`](docs/BUILDING.md) for the full Debug/Release/profiling/sanitizer matrix.
 
-- [Master TODO and roadmap](TODO.md)
-- [Build instructions](docs/BUILDING.md)
-- [Architecture and design](docs/DESIGN.md)
-- [Current status](docs/STATUS.md)
-- [Compiler support policy](docs/COMPILER_SUPPORT.md)
-- [CI guide](docs/CI.md)
+```sh
+cmake --preset release
+cmake --build --preset release --parallel
+ctest --preset release
+./build/release/bin/tgf_showcase          # add --json report.json for machine-readable output
+```
+Windows (Visual Studio 2022): `cmake --preset vs2022` then `cmake --build --preset vs2022-release`.
+Shared library variant: `-DTGF_BUILD_SHARED=ON` (preset `release-shared`).
 
-## Local build
+Consume from CMake: `find_package(TGF REQUIRED)` → `target_link_libraries(app PRIVATE TGF::Core)`.
 
-Use the documented CMake presets and run the registered CTest suite. A passing local build does not count as hosted Windows/Linux/macOS verification; those results are recorded separately in the TODO and CI reports.
 
-## Development rule
+## Memory diagnostics
 
-A task is marked complete only when its required implementation, tests, documentation, and evidence exist. Incomplete or unverified platform work remains explicitly partial.
+See [`docs/memory-diagnostics.md`](docs/memory-diagnostics.md) for tracked host allocators, budgets, scoped shutdown leak reports, and the warm-up/steady-state allocation policy.
