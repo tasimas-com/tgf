@@ -72,9 +72,9 @@ Choose a target frequency that is supported by all exposed policies. It must be 
 Set the performance governor and equal minimum/maximum limits for every policy. cpupower is the preferred interface when its output confirms that it applied the settings to all policies. The target is supplied in kHz after inspection; this example intentionally has no guessed frequency:
 
 ~~~sh
-TARGET_KHZ=<one-supported-frequency-in-kHz>
+read -r -p "Enter a frequency accepted by cpupower and supported by every policy: " TARGET_FREQ
 sudo cpupower frequency-set --governor performance \
-    --min "$TARGET_KHZ" --max "$TARGET_KHZ"
+    --min "$TARGET_FREQ" --max "$TARGET_FREQ"
 ~~~
 
 If the driver does not expose the required controls through cpupower, use the driver's documented interface. Do not blindly write a value copied from another CPU. When using the generic CPUFreq sysfs interface, respect the current min/max bounds and the driver's required update order; changing an upper limit before raising a lower bound (or vice versa) can be rejected. Verify every write by reading the policy files again.
