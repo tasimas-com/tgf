@@ -1,46 +1,39 @@
-# TGF GitHub repository — initial publication and CI verification
+# TGF GitHub repository — publication and hosted CI verification
 
-**Repository:** <https://github.com/tasimas-com/tgf>  
+**Repository:** https://github.com/tasimas-com/tgf  
 **Owner:** `tasimas-com`  
-**Repository name:** `tgf`  
-**Default branch:** `main`
+**Default branch:** `main`  
+**Visibility:** Public  
+**Repository ID:** `1420440551`
 
-## Repository state
+## Publication state
 
-The user created this dedicated repository on 2026-10-15 and connected the GitHub account.
-The connected account `tasimas-com` has administrator and push permission. The repository is
-public, has default branch `main`, and was empty (size 0) when inspected before initial publication.
-The separate `tasimas-com/tasimas-com` website/profile repository is not used for TGF source.
+The dedicated repository is created and populated. The complete TGF project is published at the
+repository root. The authoritative master checklist is
+[`TODO.md`](https://github.com/tasimas-com/tgf/blob/main/TODO.md).
 
-## Initial publication contract
+The separate `tasimas-com/tasimas-com` website/profile repository was not modified.
 
-Publish the *contents* of this project directory at the repository root. In particular, `TODO.md`
-must be at `https://github.com/tasimas-com/tgf/blob/main/TODO.md`; it is the authoritative
-master checklist. Include `.github/workflows/ci.yml`, `.github/workflows/nightly-benchmarks.yml`,
-all CMake files, source, tests, tools, samples, docs, ADRs, and audit evidence. Do not add local
-build directories, CMake caches, Python bytecode, or IDE state.
+## First hosted CI baseline — verified
 
-The repository must not receive a synthetic README, license, or gitignore that conflicts with the
-project copy. Keep `.gitignore` and `.gitattributes` from this project snapshot.
+GitHub Actions run [#13](https://github.com/tasimas-com/tgf/actions/runs/38730051352) completed
+successfully on 2026-10-15:
 
-## Verify the first hosted CI run
+- 8/8 matrix jobs passed (four toolchain environments × Debug/Release).
+- GCC 15.2.0, Clang 22.1.2, MSVC 19.51.36260.0/toolset 14.51.36231, AppleClang 17.0.0.
+- Every job passed 7/7 CTest tests (56 successful individual test executions).
+- All eight uploaded CTest artifact ZIPs were downloaded and checked; each contains a valid
+  `LastTest.log` reporting 100% tests passed.
 
-A push to `main` triggers `.github/workflows/ci.yml`. Review all eight jobs:
+The full run and artifact evidence is in
+[`docs/audit/2026-10-15/TGF_HOSTED_CI_RESULTS.md`](audit/2026-10-15/TGF_HOSTED_CI_RESULTS.md).
 
-- Ubuntu 26.04 / GCC 15 / Debug and Release
-- Ubuntu 26.04 / Clang 22 / Debug and Release
-- Windows Server 2025 / MSVC 2022 via Ninja / Debug and Release
-- macOS 15 / AppleClang / Debug and Release
+## Still required
 
-For every job, record the exact compiler version and conclusion, and inspect its uploaded CTest log
-artifact. Update P0.1.4.e.7 in the root `TODO.md` only after all eight jobs finish successfully
-and the logs/artifacts have been inspected. A green local CTest run is not a substitute for hosted
-Windows/macOS results.
+The dedicated pinned-frequency benchmark workflow remains gated. Do not set
+`TGF_BENCHMARK_RUNNER_READY=true` until a dedicated Linux x86-64 runner with labels
+`self-hosted`, `linux`, `x64`, `tgf-benchmark-pinned` is provisioned and
+`python3 tools/check_benchmark_host.py` passes.
 
-## Nightly benchmark runner is a separate setup
-
-Do not set repository variable `TGF_BENCHMARK_RUNNER_READY=true` yet. First provision the dedicated
-pinned-frequency Linux runner with labels `self-hosted`, `linux`, `x64`, and
-`tgf-benchmark-pinned`; run `python3 tools/check_benchmark_host.py`; inspect its CPU-frequency
-policies; and only then enable the repository variable. A skipped nightly workflow is not a
-benchmark pass.
+The hosted matrix is only a first compiler baseline. Complete the second supported generations
+(GCC 16, Clang 23, and MSVC 14.50) before marking the full Tier-1 compiler matrix complete.

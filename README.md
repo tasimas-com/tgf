@@ -13,7 +13,7 @@ applications and games. Free and open source (Apache-2.0 intended).
 
 The current executable verifies the `tgf::core` foundation; it is not yet a graphical UI
 framework. Core memory diagnostics now include subsystem tags, per-tag budgets, live/peak
-accounting and snapshot leak deltas for allocations routed through TGF. Revision 9 strengthened P1.2.5 with allocator concurrency/capacity tests and mapped-file ownership tests; Revision 10 completed the Phase 0 CMake preset matrix; Revision 11 adds the compiler-support policy and optional formatting/static-analysis workflows; Revision 12 adds cross-platform GitHub Actions build/test workflows and a guarded nightly benchmark job. See
+accounting and snapshot leak deltas for allocations routed through TGF. Revision 9 strengthened P1.2.5 with allocator concurrency/capacity tests and mapped-file ownership tests; Revision 10 completed the Phase 0 CMake preset matrix; Revision 11 adds the compiler-support policy and optional formatting/static-analysis workflows; Revision 12 adds cross-platform GitHub Actions build/test workflows; Revision 17 verifies the first hosted eight-job Windows/Linux/macOS baseline. See
 [`docs/memory-diagnostics.md`](docs/memory-diagnostics.md) and
 [`docs/module-memory.md`](docs/module-memory.md) for their ownership contracts.
 

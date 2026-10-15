@@ -38,8 +38,8 @@ jobs:
             cxx: clang++-22
             preset-prefix: ""
           - os: windows-2025
-            compiler: MSVC (Visual Studio 2022)
-            compiler-key: msvc-vs2022
+            compiler: MSVC 14.51 (Windows hosted image)
+            compiler-key: msvc-14.51
             preset-prefix: msvc-ninja-
           - os: macos-15
             compiler: AppleClang (Xcode)

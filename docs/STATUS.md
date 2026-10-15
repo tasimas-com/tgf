@@ -1,6 +1,6 @@
 # TGF implementation status
 
-**Status date:** 15 October 2026 — Revision 15  
+**Status date:** 15 October 2026 — Revision 17  
 **Audited input:** supplied `tgf-project.tar.gz`, subsequently updated through TODO Revision 10 on 14 October 2026  
 **Canonical task checklist:** [`../TODO.md`](../TODO.md)  
 **Full source-audit evidence:** [`audit/2026-10-14/`](audit/2026-10-14/)
@@ -250,3 +250,20 @@ snapshot is being published with `TODO.md` at the repository root. P0.1.4.e.6 is
 P0.1.4.e.7 remains open until the first commit is verified, all eight hosted jobs complete, and
 the compiler versions and CTest artifacts are inspected. The nightly benchmark runner remains
 separate and unconfigured. See [`GITHUB_REPOSITORY_SETUP.md`](GITHUB_REPOSITORY_SETUP.md).
+
+
+## Revision 17 — hosted cross-platform CI baseline
+
+The dedicated public repository is `tasimas-com/tgf`, default branch `main`. GitHub Actions
+run [#13](https://github.com/tasimas-com/tgf/actions/runs/38730051352) passed 8/8 jobs on
+2026-10-15. Each job ran seven CTest tests and uploaded a log artifact; all eight ZIP artifacts
+were downloaded and inspected. Exact compiler versions and artifact IDs are recorded in
+[`audit/2026-10-15/TGF_HOSTED_CI_RESULTS.md`](audit/2026-10-15/TGF_HOSTED_CI_RESULTS.md).
+
+The Windows job is identified by its actual MSVC 14.51 toolset and compiler version, not by the
+earlier inaccurate Visual Studio 2022 job label. The CI cache is GitHub Actions build-directory
+caching (`actions/cache@v4`), not sccache.
+
+P0.1.4.e (hosted matrix publication and review) is complete. P0.1.4.f (dedicated pinned-frequency
+benchmark runner) and P0.1.4.g (full two-generation compiler matrix) remain partial. Phase 0 is
+not complete.
