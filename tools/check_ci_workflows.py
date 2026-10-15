@@ -111,7 +111,7 @@ def main() -> int:
             expected_os = {"ubuntu-26.04", "windows-2025", "macos-15"}
             actual_os = {entry.get("os") for entry in targets if isinstance(entry, dict)}
             actual_compilers = {entry.get("compiler") for entry in targets if isinstance(entry, dict)}
-            expected_compilers = {"GCC 15", "LLVM Clang 22", "MSVC (Visual Studio 2022)", "AppleClang"}
+            expected_compilers = {"GCC 15", "LLVM Clang 22", "MSVC (Visual Studio 2022)", "AppleClang (Xcode)"}
             if configurations != ["debug", "release"]:
                 errors.append("ci.yml: build matrix must cover Debug and Release")
             if len(targets) != 4 or actual_os != expected_os or actual_compilers != expected_compilers:
