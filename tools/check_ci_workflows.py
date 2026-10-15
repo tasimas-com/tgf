@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-"""Static contract checks for the repository's GitHub Actions workflows.
+"""Static and structural contract checks for TGF GitHub Actions workflows.
 
-This script uses only the Python standard library. If PyYAML is available, it
-also parses each workflow to catch YAML syntax errors in local development.
+This is intentionally stdlib-only: a missing YAML parser must not weaken the
+required compiler-matrix checks. If PyYAML is available, the expanded matrix
+and its version-pinning inputs are also inspected structurally.
 """
 
 from __future__ import annotations
@@ -44,14 +45,30 @@ def main() -> int:
                 "ubuntu-26.04",
                 "windows-2025",
                 "macos-15",
+                "GCC 16",
                 "GCC 15",
+                "LLVM Clang 23",
                 "LLVM Clang 22",
                 "MSVC 14.51 (Windows hosted image)",
+                "MSVC 14.50",
                 "AppleClang",
                 "configuration: [debug, release]",
                 "actions/checkout@v7",
                 "actions/cache@v4",
                 "ilammy/msvc-dev-cmd@v1.13.0",
+                "Install GCC 16 on Ubuntu 26.04",
+                "sudo apt-get install --yes gcc-16 g++-16",
+                "Install LLVM Clang 23 on Ubuntu 26.04",
+                "https://apt.llvm.org/llvm.sh",
+                "sudo ./llvm.sh 23",
+                "Install MSVC 14.50 if missing",
+                "Microsoft.VisualStudio.Component.VC.14.50.18.0.x86.x64",
+                "toolset: ${{ matrix.target.toolset }}",
+                "EXPECTED_COMPILER_MAJOR",
+                "actual_major",
+                "compiler-minor",
+                "VCToolsVersion",
+                "cl.exe:\\s+Version",
                 "Restore incremental CMake build cache",
                 "msvc-ninja-",
                 "cl /nologo /Bv",
@@ -111,30 +128,92 @@ def main() -> int:
             expected_os = {"ubuntu-26.04", "windows-2025", "macos-15"}
             actual_os = {entry.get("os") for entry in targets if isinstance(entry, dict)}
             actual_compilers = {entry.get("compiler") for entry in targets if isinstance(entry, dict)}
-            expected_compilers = {"GCC 15", "LLVM Clang 22", "MSVC 14.51 (Windows hosted image)", "AppleClang (Xcode)"}
+            expected_compilers = {
+                "GCC 16",
+                "GCC 15",
+                "LLVM Clang 23",
+                "LLVM Clang 22",
+                "MSVC 14.51 (Windows hosted image)",
+                "MSVC 14.50",
+                "AppleClang (Xcode)",
+            }
             if configurations != ["debug", "release"]:
                 errors.append("ci.yml: build matrix must cover Debug and Release")
-            if len(targets) != 4 or actual_os != expected_os or actual_compilers != expected_compilers:
-                errors.append("ci.yml: target matrix must contain GCC, Clang, MSVC, and AppleClang entries")
+            if (
+                len(targets) != 7
+                or actual_os != expected_os
+                or actual_compilers != expected_compilers
+            ):
+                errors.append(
+                    "ci.yml: target matrix must contain both GCC and Clang generations, "
+                    "both MSVC toolsets, and the AppleClang compatibility lane"
+                )
 
-            windows_entry = next(
-                (entry for entry in targets if isinstance(entry, dict) and entry.get("os") == "windows-2025"),
-                None,
-            )
-            if windows_entry is None or windows_entry.get("preset-prefix") != "msvc-ninja-":
-                errors.append("ci.yml: Windows MSVC entry must select the msvc-ninja preset family")
+            target_by_compiler = {
+                entry.get("compiler"): entry for entry in targets if isinstance(entry, dict)
+            }
+            expected_targets = {
+                "GCC 16": ("gcc-16", "g++-16", "16", "ubuntu-26.04"),
+                "GCC 15": ("gcc-15", "g++-15", "15", "ubuntu-26.04"),
+                "LLVM Clang 23": ("clang-23", "clang++-23", "23", "ubuntu-26.04"),
+                "LLVM Clang 22": ("clang-22", "clang++-22", "22", "ubuntu-26.04"),
+            }
+            for compiler, expected in expected_targets.items():
+                target = target_by_compiler.get(compiler, {})
+                actual = (
+                    target.get("cc"),
+                    target.get("cxx"),
+                    target.get("compiler-major"),
+                    target.get("os"),
+                )
+                if actual != expected:
+                    errors.append(f"ci.yml: {compiler} must select the exact compiler binaries and major version")
+
+            for compiler, toolset, minor in (
+                ("MSVC 14.51 (Windows hosted image)", "14.51", "51"),
+                ("MSVC 14.50", "14.50", "50"),
+            ):
+                target = target_by_compiler.get(compiler, {})
+                if (
+                    target.get("os") != "windows-2025"
+                    or target.get("toolset") != toolset
+                    or target.get("compiler-minor") != minor
+                    or target.get("preset-prefix") != "msvc-ninja-"
+                ):
+                    errors.append(f"ci.yml: {compiler} must pin its matching toolset and MSVC/Ninja presets")
+
+            apple = target_by_compiler.get("AppleClang (Xcode)", {})
+            if apple.get("os") != "macos-15" or apple.get("compiler-major") != "":
+                errors.append("ci.yml: AppleClang must remain a separate macOS compatibility lane")
 
             steps = job.get("steps", [])
             steps_by_name = {step.get("name"): step for step in steps if isinstance(step, dict)}
+            gcc_install = steps_by_name.get("Install GCC 16 on Ubuntu 26.04", {})
+            if gcc_install.get("if") != "matrix.target.compiler-key == 'gcc-16'":
+                errors.append("ci.yml: GCC 16 installation must be scoped to the GCC 16 target")
+            clang_install = steps_by_name.get("Install LLVM Clang 23 on Ubuntu 26.04", {})
+            if clang_install.get("if") != "matrix.target.compiler-key == 'clang-23'":
+                errors.append("ci.yml: Clang 23 installation must be scoped to the Clang 23 target")
+            msvc_install = steps_by_name.get("Install MSVC 14.50 if missing", {})
+            if msvc_install.get("if") != "matrix.target.compiler-key == 'msvc-14.50'":
+                errors.append("ci.yml: MSVC 14.50 installation must be scoped to the MSVC 14.50 target")
+
             msvc_setup = steps_by_name.get("Set up MSVC developer environment", {})
             if msvc_setup.get("uses") != "ilammy/msvc-dev-cmd@v1.13.0":
                 errors.append("ci.yml: Windows job must initialize the MSVC developer environment")
+            if msvc_setup.get("with", {}).get("toolset") != "${{ matrix.target.toolset }}":
+                errors.append("ci.yml: Windows jobs must pass their pinned MSVC toolset to vcvarsall")
             for step_name in ("Build (MSVC)", "Run CTest (MSVC)"):
                 step = steps_by_name.get(step_name, {})
                 if step.get("shell") != "pwsh" or step.get("if") != "runner.os == 'Windows'":
                     errors.append(f"ci.yml: {step_name} must run in PowerShell on Windows")
-            if not any(step.get("name") == "Show compiler version (MSVC)" and "cl /nologo /Bv" in step.get("run", "") for step in steps if isinstance(step, dict)):
-                errors.append("ci.yml: Windows job must record the exact MSVC compiler version")
+            msvc_probe = steps_by_name.get("Show compiler version (MSVC)", {})
+            if "compiler-minor" not in msvc_probe.get("run", "") or "VCToolsVersion" not in msvc_probe.get("run", ""):
+                errors.append("ci.yml: Windows job must verify the selected MSVC compiler and toolset versions")
+
+            unix_probe = steps_by_name.get("Show compiler version (GCC / Clang)", {})
+            if "EXPECTED_COMPILER_MAJOR" not in unix_probe.get("env", {}) or "-dumpversion" not in unix_probe.get("run", ""):
+                errors.append("ci.yml: GCC/Clang jobs must assert the selected compiler major version")
 
         nightly_doc = parsed.get(nightly_path)
         if nightly_doc is not None:
@@ -150,13 +229,14 @@ def main() -> int:
             print(f"FAIL: {error}")
         return 1
 
-    print("PASS: CI workflow defines Windows, Linux and macOS build/test jobs, two configurations, incremental build caching, and test artifacts")
-    print("PASS: MSVC uses Ninja with native PDB handling; Linux/macOS share incremental build caches")
-    print("PASS: Actions use current checkout/upload-artifact major releases")
+    print("PASS: CI matrix defines the complete two-generation MSVC, Clang, and GCC Tier-1 matrix plus AppleClang compatibility")
+    print("PASS: older MSVC is explicitly installed when absent; GCC/Clang/MSVC compiler versions are asserted")
+    print("PASS: all compiler targets run Debug and Release with warnings-as-errors, incremental caching, and CTest artifacts")
     if yaml is not None:
-        print("PASS: parsed matrix expands to four toolchains x two configurations; Windows MSVC uses Ninja + PowerShell")
+        print("PASS: YAML structure, seven compiler targets, pinned toolsets, and installation conditions verified")
+    else:
+        print("INFO: PyYAML unavailable; structural checks skipped, required matrix/install/version contracts verified textually")
     print("PASS: nightly workflow requires a dedicated pinned-frequency runner and publishes benchmark artifacts")
-    print("PASS: workflow YAML syntax verified" if yaml is not None else "INFO: PyYAML unavailable; YAML syntax parse skipped")
     return 0
 
 
