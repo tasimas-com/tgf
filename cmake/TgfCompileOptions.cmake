@@ -79,7 +79,12 @@ function(tgf_apply_policy target)
     # -ffp-contract=off + no fast-math: bit-identical float results across compilers (ADR-0029).
     target_compile_options(${target} PRIVATE -Wall -Wextra -Wpedantic -Wshadow -Wconversion -Wsign-conversion
       -Wnon-virtual-dtor -Wold-style-cast -Wcast-align -Wformat=2 -ffp-contract=off)
-    target_compile_options(${target} PRIVATE $<$<NOT:$<CONFIG:Debug>>:-O2 -fno-semantic-interposition -fdata-sections -ffunction-sections>)
+    target_compile_options(${target} PRIVATE $<$<NOT:$<CONFIG:Debug>>:-O2 -fdata-sections -ffunction-sections>)
+    # GCC supports -fno-semantic-interposition; Clang/AppleClang diagnose it as
+    # an unused command-line argument under -Werror.
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+      target_compile_options(${target} PRIVATE $<$<NOT:$<CONFIG:Debug>>:-fno-semantic-interposition>)
+    endif()
     if(NOT APPLE)
       target_link_options(${target} PRIVATE $<$<NOT:$<CONFIG:Debug>>:-Wl,--gc-sections>)
     endif()
