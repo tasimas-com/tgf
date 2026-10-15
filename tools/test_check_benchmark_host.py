@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Unit tests for the pinned-frequency runner preflight."""
+"""Unit tests for the pinned-frequency and bare-metal runner preflight."""
 
 from __future__ import annotations
 
@@ -7,7 +7,7 @@ from pathlib import Path
 import tempfile
 import unittest
 
-from check_benchmark_host import verify_pinned_frequency
+from check_benchmark_host import verify_bare_metal, verify_pinned_frequency
 
 
 class BenchmarkHostPolicyTests(unittest.TestCase):
@@ -55,6 +55,65 @@ class BenchmarkHostPolicyTests(unittest.TestCase):
         ok, messages = verify_pinned_frequency(empty_root)
         self.assertFalse(ok)
         self.assertTrue(any("No CPU frequency policy" in message for message in messages))
+
+    def test_accepts_x86_64_when_systemd_reports_no_vm(self) -> None:
+        cpuinfo = self.root / "cpuinfo"
+        cpuinfo.write_text("flags : fpu sse sse2 avx2\n", encoding="utf-8")
+        ok, messages = verify_bare_metal(
+            machine="x86_64",
+            cpuinfo_path=cpuinfo,
+            detector=lambda: (1, ""),
+        )
+        self.assertTrue(ok, messages)
+        self.assertTrue(any("no VM" in message for message in messages))
+
+    def test_rejects_virtual_machine_reported_by_systemd(self) -> None:
+        cpuinfo = self.root / "cpuinfo"
+        cpuinfo.write_text("flags : fpu sse sse2\n", encoding="utf-8")
+        ok, messages = verify_bare_metal(
+            machine="x86_64",
+            cpuinfo_path=cpuinfo,
+            detector=lambda: (0, "kvm"),
+        )
+        self.assertFalse(ok)
+        self.assertTrue(any("virtual machine: kvm" in message for message in messages))
+
+    def test_rejects_hypervisor_cpu_flag_even_if_detector_says_none(self) -> None:
+        cpuinfo = self.root / "cpuinfo"
+        cpuinfo.write_text("flags : fpu sse hypervisor\n", encoding="utf-8")
+        ok, messages = verify_bare_metal(
+            machine="x86_64",
+            cpuinfo_path=cpuinfo,
+            detector=lambda: (1, ""),
+        )
+        self.assertFalse(ok)
+        self.assertTrue(any("hypervisor flag" in message for message in messages))
+
+    def test_rejects_non_x86_64_architecture(self) -> None:
+        cpuinfo = self.root / "cpuinfo"
+        cpuinfo.write_text("flags : fpu sse sse2\n", encoding="utf-8")
+        ok, messages = verify_bare_metal(
+            machine="aarch64",
+            cpuinfo_path=cpuinfo,
+            detector=lambda: (1, ""),
+        )
+        self.assertFalse(ok)
+        self.assertTrue(any("must be x86_64" in message for message in messages))
+
+    def test_fails_closed_when_virtualization_detection_is_unavailable(self) -> None:
+        cpuinfo = self.root / "cpuinfo"
+        cpuinfo.write_text("flags : fpu sse sse2\n", encoding="utf-8")
+
+        def unavailable() -> tuple[int, str]:
+            raise FileNotFoundError("systemd-detect-virt missing")
+
+        ok, messages = verify_bare_metal(
+            machine="x86_64",
+            cpuinfo_path=cpuinfo,
+            detector=unavailable,
+        )
+        self.assertFalse(ok)
+        self.assertTrue(any("cannot prove bare-metal" in message for message in messages))
 
 
 if __name__ == "__main__":
