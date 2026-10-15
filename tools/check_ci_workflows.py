@@ -50,9 +50,9 @@ def main() -> int:
                 "AppleClang",
                 "configuration: [debug, release]",
                 "actions/checkout@v7",
-                "mozilla-actions/sccache-action@v0.0.11",
+                "actions/cache@v4",
                 "ilammy/msvc-dev-cmd@v1.13.0",
-                "CMAKE_CXX_COMPILER_LAUNCHER=sccache",
+                "Restore incremental CMake build cache",
                 "msvc-ninja-",
                 "cl /nologo /Bv",
                 "shell: pwsh",
@@ -150,8 +150,8 @@ def main() -> int:
             print(f"FAIL: {error}")
         return 1
 
-    print("PASS: CI workflow defines Windows, Linux and macOS build/test jobs, two configurations, compiler caching, and test artifacts")
-    print("PASS: MSVC uses the Ninja generator so CMAKE_CXX_COMPILER_LAUNCHER=sccache is effective")
+    print("PASS: CI workflow defines Windows, Linux and macOS build/test jobs, two configurations, incremental build caching, and test artifacts")
+    print("PASS: MSVC uses Ninja with native PDB handling; Linux/macOS share incremental build caches")
     print("PASS: Actions use current checkout/upload-artifact major releases")
     if yaml is not None:
         print("PASS: parsed matrix expands to four toolchains x two configurations; Windows MSVC uses Ninja + PowerShell")
