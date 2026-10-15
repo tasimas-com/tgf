@@ -125,9 +125,11 @@ jobs:
             if (-not (Test-Path -LiteralPath $setup)) {
               throw "Visual Studio Installer was not found at $setup"
             }
-            & $setup modify --installPath "$vsPath" --add Microsoft.VisualStudio.Component.VC.14.50.18.0.x86.x64 --quiet --wait --norestart
-            if ($LASTEXITCODE -ne 0) {
-              throw "Visual Studio Installer failed to add the MSVC 14.50 x64/x86 toolset (exit $LASTEXITCODE)."
+            $installOutput = & $setup modify --installPath "$vsPath" --channelId VisualStudio.18.Stable --add Microsoft.VisualStudio.Component.VC.14.50.18.0.x86.x64 --passive --norestart 2>&1
+            $installExitCode = $LASTEXITCODE
+            $installOutput | ForEach-Object { Write-Host "$_" }
+            if ($installExitCode -ne 0) {
+              throw "Visual Studio Installer failed to add the MSVC 14.50 x64/x86 toolset (exit $installExitCode)."
             }
             $toolset = Get-ChildItem -LiteralPath $toolsetRoot -Directory -ErrorAction SilentlyContinue |
               Where-Object { $_.Name -like "14.50.*" } |
