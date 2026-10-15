@@ -13,7 +13,6 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  SCCACHE_GHA_ENABLED: "true"
   TGF_WARNINGS_AS_ERRORS: "ON"
 
 jobs:
@@ -53,9 +52,13 @@ jobs:
       - name: Check out source
         uses: actions/checkout@v7
 
-      - name: Enable compiler cache
-        if: runner.os != 'Windows'
-        uses: mozilla-actions/sccache-action@v0.0.11
+      - name: Restore incremental CMake build cache
+        uses: actions/cache@v4
+        with:
+          path: build/${{ matrix.target.preset-prefix }}${{ matrix.configuration }}
+          key: tgf-cmake-${{ runner.os }}-${{ matrix.target.compiler-key }}-${{ matrix.configuration }}-${{ hashFiles('CMakeLists.txt', 'CMakePresets.json', 'cmake/**', 'core/**', 'samples/**', 'tests/**', 'tools/**') }}
+          restore-keys: |
+            tgf-cmake-${{ runner.os }}-${{ matrix.target.compiler-key }}-${{ matrix.configuration }}-
 
       - name: Set up MSVC developer environment
         if: runner.os == 'Windows'
@@ -96,7 +99,6 @@ jobs:
           CXX: ${{ matrix.target.cxx }}
         run: >-
           cmake --preset ${{ matrix.configuration }}
-          -DCMAKE_CXX_COMPILER_LAUNCHER=sccache
           -DTGF_ENABLE_LTO=OFF
           -DTGF_WARNINGS_AS_ERRORS=ON
 
@@ -127,11 +129,6 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: ctest --preset "${{ matrix.target.preset-prefix }}${{ matrix.configuration }}"
-
-      - name: Show compiler-cache statistics
-        if: always()
-        shell: bash
-        run: sccache --show-stats || true
 
       - name: Upload CTest log
         if: always()
