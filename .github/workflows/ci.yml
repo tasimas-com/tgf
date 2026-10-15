@@ -19,33 +19,56 @@ jobs:
   build-and-test:
     name: ${{ matrix.target.compiler }} / ${{ matrix.configuration }} / ${{ matrix.target.os }}
     runs-on: ${{ matrix.target.os }}
-    timeout-minutes: 35
+    timeout-minutes: 60
     strategy:
       fail-fast: false
       matrix:
         configuration: [debug, release]
         target:
           - os: ubuntu-26.04
+            compiler: GCC 16
+            compiler-key: gcc-16
+            cc: gcc-16
+            cxx: g++-16
+            compiler-major: "16"
+          - os: ubuntu-26.04
             compiler: GCC 15
             compiler-key: gcc-15
             cc: gcc-15
             cxx: g++-15
+            compiler-major: "15"
             preset-prefix: ""
+          - os: ubuntu-26.04
+            compiler: LLVM Clang 23
+            compiler-key: clang-23
+            cc: clang-23
+            cxx: clang++-23
+            compiler-major: "23"
           - os: ubuntu-26.04
             compiler: LLVM Clang 22
             compiler-key: clang-22
             cc: clang-22
             cxx: clang++-22
+            compiler-major: "22"
             preset-prefix: ""
           - os: windows-2025
             compiler: MSVC 14.51 (Windows hosted image)
             compiler-key: msvc-14.51
             preset-prefix: msvc-ninja-
+            toolset: "14.51"
+            compiler-minor: "51"
+          - os: windows-2025
+            compiler: MSVC 14.50
+            compiler-key: msvc-14.50
+            preset-prefix: msvc-ninja-
+            toolset: "14.50"
+            compiler-minor: "50"
           - os: macos-15
             compiler: AppleClang (Xcode)
             compiler-key: appleclang
             cc: clang
             cxx: clang++
+            compiler-major: ""
             preset-prefix: ""
 
     steps:
@@ -60,11 +83,69 @@ jobs:
           restore-keys: |
             tgf-cmake-${{ runner.os }}-${{ matrix.target.compiler-key }}-${{ matrix.configuration }}-
 
+      - name: Install GCC 16 on Ubuntu 26.04
+        if: matrix.target.compiler-key == 'gcc-16'
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install --yes gcc-16 g++-16
+
+      - name: Install LLVM Clang 23 on Ubuntu 26.04
+        if: matrix.target.compiler-key == 'clang-23'
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install --yes wget lsb-release software-properties-common
+          wget -qO llvm.sh https://apt.llvm.org/llvm.sh
+          chmod +x llvm.sh
+          sudo ./llvm.sh 23
+
+      - name: Install MSVC 14.50 if missing
+        if: matrix.target.compiler-key == 'msvc-14.50'
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          $installerRoot = Join-Path $env:ProgramFiles(x86) "Microsoft Visual Studio\\Installer"
+          $vswhere = Join-Path $installerRoot "vswhere.exe"
+          $vsPath = & $vswhere -latest -products '*' -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
+          if (-not $vsPath) {
+            throw "No Visual Studio installation with the x64 C++ tools was found."
+          }
+
+          $toolsetRoot = Join-Path $vsPath "VC\\Tools\\MSVC"
+          $toolset = Get-ChildItem -LiteralPath $toolsetRoot -Directory -ErrorAction SilentlyContinue |
+            Where-Object { $_.Name -like "14.50.*" } |
+            Sort-Object Name -Descending |
+            Select-Object -First 1
+
+          if (-not $toolset) {
+            $setup = Join-Path $installerRoot "setup.exe"
+            if (-not (Test-Path -LiteralPath $setup)) {
+              throw "Visual Studio Installer was not found at $setup"
+            }
+            & $setup modify --installPath "$vsPath" --add Microsoft.VisualStudio.Component.VC.14.50.18.0.x86.x64 --quiet --wait --norestart
+            if ($LASTEXITCODE -ne 0) {
+              throw "Visual Studio Installer failed to add the MSVC 14.50 x64/x86 toolset (exit $LASTEXITCODE)."
+            }
+            $toolset = Get-ChildItem -LiteralPath $toolsetRoot -Directory -ErrorAction SilentlyContinue |
+              Where-Object { $_.Name -like "14.50.*" } |
+              Sort-Object Name -Descending |
+              Select-Object -First 1
+          }
+
+          if (-not $toolset) {
+            throw "MSVC 14.50 was not installed; refusing to fall back to the newer default toolset."
+          }
+          Write-Host "Selected MSVC toolset directory: $($toolset.FullName)"
+
       - name: Set up MSVC developer environment
         if: runner.os == 'Windows'
         uses: ilammy/msvc-dev-cmd@v1.13.0
         with:
           arch: x64
+          toolset: ${{ matrix.target.toolset }}
 
       - name: Show compiler version (GCC / Clang)
         if: runner.os != 'Windows'
@@ -72,10 +153,20 @@ jobs:
         env:
           CC: ${{ matrix.target.cc }}
           CXX: ${{ matrix.target.cxx }}
+          EXPECTED_COMPILER_MAJOR: ${{ matrix.target.compiler-major }}
         run: |
           set -euo pipefail
           "$CC" --version
           "$CXX" --version
+          if [[ -n "$EXPECTED_COMPILER_MAJOR" ]]; then
+            actual_major="$("$CXX" -dumpversion)"
+            actual_major="${actual_major%%.*}"
+            if [[ "$actual_major" != "$EXPECTED_COMPILER_MAJOR" ]]; then
+              echo "Expected compiler major $EXPECTED_COMPILER_MAJOR, found $actual_major" >&2
+              exit 1
+            fi
+            echo "Verified compiler major: $actual_major"
+          fi
           cmake --version
           ninja --version
 
@@ -86,8 +177,20 @@ jobs:
           $probe = Join-Path $env:RUNNER_TEMP 'tgf-msvc-version.cpp'
           $object = Join-Path $env:RUNNER_TEMP 'tgf-msvc-version.obj'
           Set-Content -Path $probe -Value 'int tgf_msvc_probe() { return 0; }'
-          cl /nologo /Bv /c $probe "/Fo$object"
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $compilerOutput = & cl /nologo /Bv /c $probe "/Fo$object" 2>&1
+          $compilerExitCode = $LASTEXITCODE
+          $compilerText = ($compilerOutput | ForEach-Object { "$_" }) -join [Environment]::NewLine
+          Write-Output $compilerText
+          if ($compilerExitCode -ne 0) { exit $compilerExitCode }
+
+          $expectedMinor = '${{ matrix.target.compiler-minor }}'
+          if ($compilerText -notmatch "cl\\.exe:\\s+Version\\s+19\\.$expectedMinor\\.") {
+            throw "Expected MSVC compiler 19.$expectedMinor.x, but the selected cl.exe reported a different version."
+          }
+          if ($env:VCToolsVersion -notmatch "^14\\.$expectedMinor\\.") {
+            throw "Expected VCTools 14.$expectedMinor.x, found '$env:VCToolsVersion'."
+          }
+          Write-Host "Verified compiler: MSVC 19.$expectedMinor.x using VCTools $env:VCToolsVersion"
           cmake --version
           ninja --version
 
