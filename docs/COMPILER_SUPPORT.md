@@ -18,13 +18,41 @@ MSVC 14.52 is preview as of this policy date and is not a release-gate toolset.
 The compiler version policy must be reviewed when vendors publish new stable
 releases or change support lifetimes.
 
-## What is verified in the current development environment
+## Hosted Tier-1 verification (2026-10-15)
 
-The available Linux environment has GCC 14.2 and Clang 17. Both are older than
-the two target generations listed above. They are useful additional backward-
-compatibility checks, but they do not satisfy the current Tier-1 compiler matrix.
-No native MSVC environment is available here. Consequently, this document
-records the intended policy, not a claim that the complete matrix has passed.
+The complete matrix passed in GitHub Actions [run #30](https://github.com/tasimas-com/tgf/actions/runs/38745686719)
+on commit `a4169289e8ea031b005aefba7a89d9e13a4075c2`: **14/14 jobs** across Debug and Release.
+
+| Compiler | Exact version reported | Toolset | Debug | Release |
+|---|---|---|---:|---:|
+| MSVC | 19.51.36260.0 | 14.51.36231 | Pass | Pass |
+| MSVC | 19.50.35739.0 | 14.50.35717 | Pass | Pass |
+| LLVM Clang | 23.1.4 | — | Pass | Pass |
+| LLVM Clang | 22.1.2 | — | Pass | Pass |
+| GNU GCC | 16.0.1 | — | Pass | Pass |
+| GNU GCC | 15.2.0 | — | Pass | Pass |
+
+The native macOS compatibility lane also passed Debug and Release with AppleClang
+17.0.0. Every matrix build used `TGF_WARNINGS_AS_ERRORS=ON`. The workflow verifies
+the GCC/Clang major version before CMake configuration; on Windows it checks both
+the `cl /Bv` compiler version and the actual `VCToolsVersion`, then configures the
+matching MSVC/Ninja preset.
+
+All 14 CTest artifacts were downloaded and inspected. Every ZIP is valid, every
+`LastTest.log` contains seven passing test entries, and every showcase reports
+26 checks with zero failures (**98/98 CTest test executions passed**).
+
+## Local developer environment
+
+The available local Linux environment has GCC 14.2 and Clang 17. Those are useful
+additional backward-compatibility checks, but they are older than the supported
+Tier-1 targets. No native MSVC environment is available locally; the MSVC evidence
+above comes from the native Windows GitHub-hosted runner, not from a local
+cross-compiler.
+
+The hosted compiler matrix does not claim that clang-format, clang-tidy, or
+Include-What-You-Use analysis has been executed. Their integration is documented
+below; actual-tool execution remains a separate source-quality validation task.
 
 ## Warnings are errors
 
