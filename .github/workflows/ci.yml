@@ -1,0 +1,143 @@
+name: TGF CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: tgf-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  SCCACHE_GHA_ENABLED: "true"
+  TGF_WARNINGS_AS_ERRORS: "ON"
+
+jobs:
+  build-and-test:
+    name: ${{ matrix.compiler }} / ${{ matrix.configuration }} / ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 35
+    strategy:
+      fail-fast: false
+      matrix:
+        configuration: [debug, release]
+        include:
+          - os: ubuntu-26.04
+            compiler: GCC 15
+            compiler-key: gcc-15
+            cc: gcc-15
+            cxx: g++-15
+            preset-prefix: ""
+          - os: ubuntu-26.04
+            compiler: LLVM Clang 22
+            compiler-key: clang-22
+            cc: clang-22
+            cxx: clang++-22
+            preset-prefix: ""
+          - os: windows-2025
+            compiler: MSVC (Visual Studio 2022)
+            compiler-key: msvc-vs2022
+            preset-prefix: msvc-ninja-
+          - os: macos-15
+            compiler: AppleClang (Xcode)
+            compiler-key: appleclang
+            cc: clang
+            cxx: clang++
+            preset-prefix: ""
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v7
+
+      - name: Enable compiler cache
+        uses: mozilla-actions/sccache-action@v0.0.11
+
+      - name: Set up MSVC developer environment
+        if: runner.os == 'Windows'
+        uses: ilammy/msvc-dev-cmd@v1.13.0
+        with:
+          arch: x64
+
+      - name: Show compiler version (GCC / Clang)
+        if: runner.os != 'Windows'
+        shell: bash
+        env:
+          CC: ${{ matrix.cc }}
+          CXX: ${{ matrix.cxx }}
+        run: |
+          set -euo pipefail
+          "$CC" --version
+          "$CXX" --version
+          cmake --version
+          ninja --version
+
+      - name: Show compiler version (MSVC)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $probe = Join-Path $env:RUNNER_TEMP 'tgf-msvc-version.cpp'
+          $object = Join-Path $env:RUNNER_TEMP 'tgf-msvc-version.obj'
+          Set-Content -Path $probe -Value 'int tgf_msvc_probe() { return 0; }'
+          cl /nologo /Bv /c $probe "/Fo$object"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          cmake --version
+          ninja --version
+
+      - name: Configure Ninja build (GCC / Clang / AppleClang)
+        if: runner.os != 'Windows'
+        shell: bash
+        env:
+          CC: ${{ matrix.cc }}
+          CXX: ${{ matrix.cxx }}
+        run: >-
+          cmake --preset ${{ matrix.configuration }}
+          -DCMAKE_CXX_COMPILER_LAUNCHER=sccache
+          -DTGF_ENABLE_LTO=OFF
+          -DTGF_WARNINGS_AS_ERRORS=ON
+
+      - name: Configure MSVC Ninja build
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: >-
+          cmake --preset ${{ matrix.preset-prefix }}${{ matrix.configuration }}
+          -DCMAKE_CXX_COMPILER_LAUNCHER=sccache
+          -DTGF_ENABLE_LTO=OFF
+          -DTGF_WARNINGS_AS_ERRORS=ON
+
+      - name: Build (GCC / Clang / AppleClang)
+        if: runner.os != 'Windows'
+        shell: bash
+        run: cmake --build --preset "${{ matrix.preset-prefix }}${{ matrix.configuration }}" --parallel
+
+      - name: Build (MSVC)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: cmake --build --preset "${{ matrix.preset-prefix }}${{ matrix.configuration }}" --parallel
+
+      - name: Run CTest (GCC / Clang / AppleClang)
+        if: runner.os != 'Windows'
+        shell: bash
+        run: ctest --preset "${{ matrix.preset-prefix }}${{ matrix.configuration }}"
+
+      - name: Run CTest (MSVC)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: ctest --preset "${{ matrix.preset-prefix }}${{ matrix.configuration }}"
+
+      - name: Show compiler-cache statistics
+        if: always()
+        shell: bash
+        run: sccache --show-stats || true
+
+      - name: Upload CTest log
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: ctest-${{ matrix.compiler-key }}-${{ matrix.configuration }}-${{ runner.os }}
+          path: build/${{ matrix.preset-prefix }}${{ matrix.configuration }}/Testing/Temporary/LastTest.log
+          if-no-files-found: ignore
+          retention-days: 14

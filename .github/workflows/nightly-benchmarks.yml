@@ -1,0 +1,67 @@
+name: TGF Nightly Benchmarks
+
+on:
+  schedule:
+    - cron: "37 3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  benchmark:
+    # Set repository variable TGF_BENCHMARK_RUNNER_READY=true only after the
+    # dedicated pinned-frequency runner has been provisioned and verified.
+    if: ${{ vars.TGF_BENCHMARK_RUNNER_READY == 'true' }}
+    runs-on: [self-hosted, linux, x64, tgf-benchmark-pinned]
+    timeout-minutes: 45
+    env:
+      SCCACHE_GHA_ENABLED: "true"
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v7
+
+      - name: Enable compiler cache
+        uses: mozilla-actions/sccache-action@v0.0.11
+
+      - name: Verify pinned CPU frequency
+        run: python3 tools/check_benchmark_host.py
+
+      - name: Record runner identity
+        run: |
+          mkdir -p benchmark-artifacts
+          {
+            uname -a
+            lscpu
+            cmake --version
+            c++ --version
+          } > benchmark-artifacts/host.txt
+
+      - name: Configure benchmark build
+        run: >-
+          cmake --preset release
+          -DCMAKE_CXX_COMPILER_LAUNCHER=sccache
+          -DTGF_ENABLE_LTO=OFF
+          -DTGF_WARNINGS_AS_ERRORS=ON
+
+      - name: Build benchmark executable
+        run: cmake --build --preset release --parallel
+
+      - name: Run core benchmark suite
+        run: >-
+          ./build/release/bin/tgf_showcase
+          --json benchmark-artifacts/benchmark-results.json
+
+      - name: Show compiler-cache statistics
+        if: always()
+        run: sccache --show-stats || true
+
+      - name: Upload benchmark report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: tgf-nightly-benchmarks-${{ github.run_id }}
+          path: benchmark-artifacts/
+          if-no-files-found: error
+          retention-days: 30
