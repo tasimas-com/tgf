@@ -107,7 +107,7 @@ jobs:
         shell: pwsh
         run: |
           $ErrorActionPreference = "Stop"
-          $installerRoot = Join-Path [Environment]::GetFolderPath('ProgramFilesX86') "Microsoft Visual Studio\Installer"
+          $installerRoot = Join-Path ${env:ProgramFiles(x86)} "Microsoft Visual Studio\Installer"
           $vswhere = Join-Path $installerRoot "vswhere.exe"
           $vsPath = & $vswhere -latest -products '*' -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
           if (-not $vsPath) {
