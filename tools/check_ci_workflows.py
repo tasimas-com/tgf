@@ -64,6 +64,8 @@ def main() -> int:
                 "Install MSVC 14.50 if missing",
                 "Microsoft.VisualStudio.Component.VC.14.50.18.0.x86.x64",
                 "--channelId VisualStudio.18.Stable",
+                "Start-Process -FilePath $setup -ArgumentList $installerArguments -Wait -PassThru",
+                "Start-Sleep -Seconds 5",
                 "toolset: ${{ matrix.target.toolset }}",
                 "EXPECTED_COMPILER_MAJOR",
                 "actual_major",
