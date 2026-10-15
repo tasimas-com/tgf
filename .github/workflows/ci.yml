@@ -125,16 +125,24 @@ jobs:
             if (-not (Test-Path -LiteralPath $setup)) {
               throw "Visual Studio Installer was not found at $setup"
             }
-            $installOutput = & $setup modify --installPath "$vsPath" --channelId VisualStudio.18.Stable --add Microsoft.VisualStudio.Component.VC.14.50.18.0.x86.x64 --passive --norestart 2>&1
-            $installExitCode = $LASTEXITCODE
-            $installOutput | ForEach-Object { Write-Host "$_" }
-            if ($installExitCode -ne 0) {
+            $installerArguments = 'modify --installPath "{0}" --channelId VisualStudio.18.Stable --add Microsoft.VisualStudio.Component.VC.14.50.18.0.x86.x64 --passive --norestart' -f $vsPath
+            $installerProcess = Start-Process -FilePath $setup -ArgumentList $installerArguments -Wait -PassThru
+            $installExitCode = $installerProcess.ExitCode
+            Write-Host "Visual Studio Installer exit code: $installExitCode"
+            if ($installExitCode -notin @(0, 3010)) {
               throw "Visual Studio Installer failed to add the MSVC 14.50 x64/x86 toolset (exit $installExitCode)."
             }
-            $toolset = Get-ChildItem -LiteralPath $toolsetRoot -Directory -ErrorAction SilentlyContinue |
-              Where-Object { $_.Name -like "14.50.*" } |
-              Sort-Object Name -Descending |
-              Select-Object -First 1
+
+            # The bootstrapper can finish before the component directory is visible.
+            # Wait for the exact toolset instead of accepting a silent fallback to 14.51.
+            for ($attempt = 0; $attempt -lt 60; $attempt++) {
+              $toolset = Get-ChildItem -LiteralPath $toolsetRoot -Directory -ErrorAction SilentlyContinue |
+                Where-Object { $_.Name -like "14.50.*" } |
+                Sort-Object Name -Descending |
+                Select-Object -First 1
+              if ($toolset) { break }
+              Start-Sleep -Seconds 5
+            }
           }
 
           if (-not $toolset) {
