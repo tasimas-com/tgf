@@ -18,14 +18,14 @@ env:
 
 jobs:
   build-and-test:
-    name: ${{ matrix.compiler }} / ${{ matrix.configuration }} / ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
+    name: ${{ matrix.target.compiler }} / ${{ matrix.configuration }} / ${{ matrix.target.os }}
+    runs-on: ${{ matrix.target.os }}
     timeout-minutes: 35
     strategy:
       fail-fast: false
       matrix:
         configuration: [debug, release]
-        include:
+        target:
           - os: ubuntu-26.04
             compiler: GCC 15
             compiler-key: gcc-15
@@ -66,8 +66,8 @@ jobs:
         if: runner.os != 'Windows'
         shell: bash
         env:
-          CC: ${{ matrix.cc }}
-          CXX: ${{ matrix.cxx }}
+          CC: ${{ matrix.target.cc }}
+          CXX: ${{ matrix.target.cxx }}
         run: |
           set -euo pipefail
           "$CC" --version
@@ -91,8 +91,8 @@ jobs:
         if: runner.os != 'Windows'
         shell: bash
         env:
-          CC: ${{ matrix.cc }}
-          CXX: ${{ matrix.cxx }}
+          CC: ${{ matrix.target.cc }}
+          CXX: ${{ matrix.target.cxx }}
         run: >-
           cmake --preset ${{ matrix.configuration }}
           -DCMAKE_CXX_COMPILER_LAUNCHER=sccache
@@ -103,7 +103,7 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: >-
-          cmake --preset ${{ matrix.preset-prefix }}${{ matrix.configuration }}
+          cmake --preset ${{ matrix.target.preset-prefix }}${{ matrix.configuration }}
           -DCMAKE_CXX_COMPILER_LAUNCHER=sccache
           -DTGF_ENABLE_LTO=OFF
           -DTGF_WARNINGS_AS_ERRORS=ON
@@ -111,22 +111,22 @@ jobs:
       - name: Build (GCC / Clang / AppleClang)
         if: runner.os != 'Windows'
         shell: bash
-        run: cmake --build --preset "${{ matrix.preset-prefix }}${{ matrix.configuration }}" --parallel
+        run: cmake --build --preset "${{ matrix.target.preset-prefix }}${{ matrix.configuration }}" --parallel
 
       - name: Build (MSVC)
         if: runner.os == 'Windows'
         shell: pwsh
-        run: cmake --build --preset "${{ matrix.preset-prefix }}${{ matrix.configuration }}" --parallel
+        run: cmake --build --preset "${{ matrix.target.preset-prefix }}${{ matrix.configuration }}" --parallel
 
       - name: Run CTest (GCC / Clang / AppleClang)
         if: runner.os != 'Windows'
         shell: bash
-        run: ctest --preset "${{ matrix.preset-prefix }}${{ matrix.configuration }}"
+        run: ctest --preset "${{ matrix.target.preset-prefix }}${{ matrix.configuration }}"
 
       - name: Run CTest (MSVC)
         if: runner.os == 'Windows'
         shell: pwsh
-        run: ctest --preset "${{ matrix.preset-prefix }}${{ matrix.configuration }}"
+        run: ctest --preset "${{ matrix.target.preset-prefix }}${{ matrix.configuration }}"
 
       - name: Show compiler-cache statistics
         if: always()
@@ -137,7 +137,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v7
         with:
-          name: ctest-${{ matrix.compiler-key }}-${{ matrix.configuration }}-${{ runner.os }}
-          path: build/${{ matrix.preset-prefix }}${{ matrix.configuration }}/Testing/Temporary/LastTest.log
+          name: ctest-${{ matrix.target.compiler-key }}-${{ matrix.configuration }}-${{ runner.os }}
+          path: build/${{ matrix.target.preset-prefix }}${{ matrix.configuration }}/Testing/Temporary/LastTest.log
           if-no-files-found: ignore
           retention-days: 14
