@@ -305,7 +305,9 @@ Each becomes a file `docs/adr/NNNN-title.md` in Phase 0. Recommended decision an
   - [x] P0.1.3.d Add `.clang-tidy` policy and opt-in CMake integration (`TGF_ENABLE_CLANG_TIDY`); execution on the supported LLVM toolchains remains pending because clang-tidy is not installed here.
   - [x] P0.1.3.e Add opt-in Include-What-You-Use integration (`TGF_ENABLE_IWYU`) with explicit missing-tool and MSVC configuration errors; actual IWYU analysis remains pending because IWYU is not installed here.
   - [x] P0.1.3.f Export `compile_commands.json` for Ninja presets and add compiler-policy regression coverage to CTest.
-  - [p] P0.1.3.g Execute the Tier-1 compiler matrix (MSVC 14.51/14.50, Clang 23/22, GCC 16/15) with warnings-as-errors; this environment only verified GCC 14.2 and Clang 17, and has no native MSVC toolchain.
+  - [x] P0.1.3.g Execute the Tier-1 compiler matrix (MSVC 14.51/14.50, Clang 23/22, GCC 16/15) with warnings-as-errors.
+    - Evidence: GitHub Actions [PR run #30](https://github.com/tasimas-com/tgf/actions/runs/38745686719), commit `a4169289e8ea031b005aefba7a89d9e13a4075c2`, passed **14/14 jobs** (seven compiler targets × Debug/Release). Verified compiler versions: GCC 16.0.1 and 15.2.0; LLVM Clang 23.1.4 and 22.1.2; MSVC 19.50.35739.0/toolset 14.50.35717 and 19.51.36260.0/toolset 14.51.36231. Every configuration explicitly enabled `TGF_WARNINGS_AS_ERRORS=ON`.
+    - Evidence: all 14 uploaded CTest ZIP artifacts were downloaded, ZIP-integrity checked, and inspected. Each contains seven passing CTest entries and a showcase result of 26 checks with zero failures: **98/98 CTest executions passed**. AppleClang 17.0.0 Debug/Release remains the additional native macOS compatibility lane.
 - [p] P0.1.4 CI matrix: Windows / Linux / macOS × compilers × configs; artifact caching; nightly benchmark job ★ on dedicated pinned-frequency runners
   - [x] P0.1.4.a Add push/PR/manual cross-platform build-and-test workflow for Windows, Linux, and macOS in Debug and Release.
   - [x] P0.1.4.b Add GitHub Actions build-directory caching with `actions/cache@v4` and upload one CTest log artifact per matrix job; the hosted baseline confirmed all eight artifacts.
@@ -328,7 +330,7 @@ Each becomes a file `docs/adr/NNNN-title.md` in Phase 0. Recommended decision an
     - [x] P0.1.4.f.2 Validate the fail-closed host preflight and its five unit-test scenarios; this environment correctly fails the real-host check because it exposes no CPU frequency policy.
     - [p] P0.1.4.f.3 Provision a dedicated bare-metal Linux x86-64 host, pin all exposed CPU frequency policies, and record the hardware/thermal/software inventory.
     - [p] P0.1.4.f.4 Register the repository-scoped runner with the four required labels, verify it online, then enable `TGF_BENCHMARK_RUNNER_READY=true` only after the preflight passes; run and inspect the first nightly artifact.
-  - [p] P0.1.4.g Complete and execute the full two-generation Tier-1 compiler matrix and add native Windows/macOS results; this first hosted matrix is a baseline slice, not proof for every version in P0.1.3.
+  - [x] P0.1.4.g Complete and execute the full two-generation Tier-1 compiler matrix and add native Windows/macOS results. Satisfied by the 14/14-job hosted matrix recorded under P0.1.3.g: [run #30](https://github.com/tasimas-com/tgf/actions/runs/38745686719), including native Windows MSVC 14.50/14.51 and macOS AppleClang 17 Debug/Release.
 - [p] P0.1.5 Coding standard document (naming, ownership, error handling, API stability levels)
 - [p] P0.1.6 Dependency-DAG checker script (fails CI on illegal includes, using the §4 table)
 - [ ] P0.1.7 Contribution guide, code of conduct, issue/PR templates, ADR template
