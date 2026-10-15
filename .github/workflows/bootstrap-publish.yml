@@ -63,11 +63,13 @@ jobs:
           test -f "$RUNNER_TEMP/tgf-source/TGF/TODO.md"
           cp -a "$RUNNER_TEMP/tgf-source/TGF/." .
           chmod -R u+w .
-          rm -rf .bootstrap
-          rm -f .github/workflows/bootstrap-publish.yml
           test -f CMakeLists.txt
           test -f TODO.md
           test -f .github/workflows/ci.yml
+          test -f .github/workflows/nightly-benchmarks.yml
+          mkdir -p "$RUNNER_TEMP/tgf-workflows"
+          cp -a .github/workflows/ci.yml .github/workflows/nightly-benchmarks.yml "$RUNNER_TEMP/tgf-workflows/"
+          rm -rf .bootstrap .github/workflows
 
       - name: Record source publication in the master TODO
         shell: bash
@@ -93,28 +95,3 @@ jobs:
           git diff --cached --check -- '*.c' '*.cc' '*.cpp' '*.cxx' '*.h' '*.hpp' '*.hxx' '*.cmake' 'CMakeLists.txt' '*.py' '*.yml' '*.yaml'
           git commit -m "Publish complete TGF source, CI, documentation, and master TODO"
           git push origin HEAD:main
-
-      - name: Dispatch the eight-job cross-platform CI matrix
-        env:
-          GH_TOKEN: ${{ github.token }}
-          REPOSITORY: ${{ github.repository }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          for attempt in {1..15}; do
-            if curl -fsS "https://raw.githubusercontent.com/${REPOSITORY}/main/.github/workflows/ci.yml" >/dev/null; then
-              break
-            fi
-            if [ "$attempt" -eq 15 ]; then
-              echo "ci.yml did not become visible after publication" >&2
-              exit 1
-            fi
-            sleep 2
-          done
-          curl --fail-with-body --silent --show-error \
-            -X POST \
-            -H "Accept: application/vnd.github+json" \
-            -H "Authorization: Bearer ${GH_TOKEN}" \
-            -H "X-GitHub-Api-Version: 2022-11-28" \
-            "https://api.github.com/repos/${REPOSITORY}/actions/workflows/ci.yml/dispatches" \
-            -d '{"ref":"main"}'
