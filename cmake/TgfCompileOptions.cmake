@@ -63,7 +63,7 @@ function(tgf_apply_policy target)
 
   if(MSVC)
     # C4324 (padding due to alignas) is intentional in cache-line-separated lock-free types.
-    target_compile_options(${target} PRIVATE /W4 /wd4324 /permissive- /utf-8 /Zc:__cplusplus /fp:precise
+    target_compile_options(${target} PRIVATE /W4 /wd4324 /permissive- /utf-8 /Zc:__cplusplus /fp:precise /FS
       $<$<NOT:$<CONFIG:Debug>>:/O2 /Gy /Gw /GL>)
     target_link_options(${target} PRIVATE $<$<NOT:$<CONFIG:Debug>>:/LTCG /OPT:REF /OPT:ICF>)
     if(TGF_WARNINGS_AS_ERRORS)
