@@ -58,10 +58,8 @@ jobs:
           clang++-"$LLVM_VERSION" --version
           clang-format-"$LLVM_VERSION" --version
           clang-tidy-"$LLVM_VERSION" --version
-          clang_format_major="$(clang-format-"$LLVM_VERSION" --version | sed -E 's/.*version ([0-9]+).*/\1/')"
-          clang_tidy_major="$(clang-tidy-"$LLVM_VERSION" --version | sed -E 's/.*version ([0-9]+).*/\1/')"
-          test "$clang_format_major" = "$LLVM_VERSION"
-          test "$clang_tidy_major" = "$LLVM_VERSION"
+          clang-format-"$LLVM_VERSION" --version | head -n 1 | grep -Eq "version ${LLVM_VERSION}([.[:space:]]|$)"
+          clang-tidy-"$LLVM_VERSION" --version | head -n 1 | grep -Eq "version ${LLVM_VERSION}([.[:space:]]|$)"
           echo "Required IWYU release: $IWYU_VERSION (paired with LLVM/Clang $LLVM_VERSION)"
 
       - name: Enforce clang-format
