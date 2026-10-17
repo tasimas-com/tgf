@@ -2,6 +2,10 @@
 #include <mutex>
 #include <tgf/core/module_allocator.hpp>
 
+#include "tgf/core/memory.hpp"
+#include "tgf/core/result.hpp"
+#include "tgf/core/types.hpp"
+
 namespace tgf::core {
 namespace {
 constexpr u32 kModuleAllocatorSlots = 64;
