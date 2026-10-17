@@ -6,14 +6,56 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: tgf-source-quality-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
+  normalize-format:
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-26.04
+    timeout-minutes: 15
+    steps:
+      - name: Check out target branch
+        uses: actions/checkout@v7
+        with:
+          repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
+          ref: ${{ github.event.pull_request.head.ref || github.ref_name }}
+
+      - name: Install pinned formatter
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install --yes wget lsb-release software-properties-common python3
+          wget -qO llvm.sh https://apt.llvm.org/llvm.sh
+          chmod +x llvm.sh
+          sudo ./llvm.sh 23
+          sudo apt-get install --yes clang-format-23
+
+      - name: Format and commit canonical source layout
+        env:
+          TARGET_BRANCH: ${{ github.event.pull_request.head.ref || github.ref_name }}
+        run: |
+          set -euo pipefail
+          python3 tools/check_format.py --clang-format clang-format-23 --fix
+          python3 tools/check_format.py --clang-format clang-format-23
+          git diff --check
+          if git diff --quiet; then
+            echo "No formatting changes needed."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -u
+          git commit -m "style: apply canonical clang-format"
+          git fetch origin "$TARGET_BRANCH"
+          git rebase "origin/$TARGET_BRANCH"
+          git push origin "HEAD:$TARGET_BRANCH"
+
   source-quality:
+    needs: normalize-format
     name: LLVM ${{ matrix.llvm-version }} / format + tidy + IWYU
     runs-on: ubuntu-26.04
     timeout-minutes: 90
