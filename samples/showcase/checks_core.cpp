@@ -26,6 +26,8 @@
 #include <tgf/core/time.hpp>
 #include <tgf/core/types.hpp>
 #include <thread>
+#include <utility>
+#include <vector>
 
 #include "harness.hpp"
 #if defined(TGF_SHOWCASE_MEMORY_SANITIZER) && !defined(_WIN32)
