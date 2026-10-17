@@ -8,7 +8,7 @@
 #include <cstring>
 #include <filesystem>
 #include <fstream>
-#include <initializer_list>
+#include <initializer_list>  // IWYU pragma: keep (needed by IWYU 0.26 / LLVM 22)
 #include <limits>
 #include <stdexcept>
 #include <string>
