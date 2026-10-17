@@ -6,14 +6,52 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: tgf-source-quality-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
+  normalize-format:
+    name: Normalize existing source formatting
+    runs-on: ubuntu-26.04
+    timeout-minutes: 15
+    steps:
+      - name: Check out the pull request branch
+        uses: actions/checkout@v7
+        with:
+          repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
+          ref: ${{ github.event.pull_request.head.ref || github.ref_name }}
+
+      - name: Install clang-format
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes clang-format-23 python3
+
+      - name: Apply and verify canonical formatting
+        run: |
+          set -euo pipefail
+          python3 tools/check_format.py --clang-format clang-format-23 --fix
+          python3 tools/check_format.py --clang-format clang-format-23
+          git diff --check
+
+      - name: Commit formatting changes to the same-repository branch
+        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+        run: |
+          set -euo pipefail
+          if git diff --quiet; then
+            echo "All repository-owned C/C++ files already follow .clang-format."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -u
+          git commit -m "style: apply canonical clang-format"
+          git push origin "HEAD:${GITHUB_HEAD_REF:-${GITHUB_REF_NAME}}"
+
   source-quality:
+    needs: normalize-format
     name: LLVM ${{ matrix.llvm-version }} / format + tidy + IWYU
     runs-on: ubuntu-26.04
     timeout-minutes: 90
@@ -27,8 +65,11 @@ jobs:
             iwyu-version: "0.27"
 
     steps:
-      - name: Check out TGF
+      - name: Check out formatted pull request branch
         uses: actions/checkout@v7
+        with:
+          repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
+          ref: ${{ github.event.pull_request.head.ref || github.ref_name }}
 
       - name: Install matching LLVM and Clang tools
         shell: bash
