@@ -1,7 +1,7 @@
 # TGF implementation status
 
-**Status date:** 15 October 2026 — Revision 19  
-**Audited input:** supplied `tgf-project.tar.gz`, subsequently updated through TODO Revision 10 on 14 October 2026  
+**Status date:** 17 October 2026 — Revision 20  
+**Audited input:** `tasimas-com/tgf` on GitHub; task completion and current CI evidence are maintained in the root `TODO.md`  
 **Canonical task checklist:** [`../TODO.md`](../TODO.md)  
 **Full source-audit evidence:** [`audit/2026-10-14/`](audit/2026-10-14/)
 
@@ -71,24 +71,31 @@ passed. Visual Studio presets are defined but were not
 executed because this verification host is Linux; native MSVC validation belongs to the compiler
 and CI matrix tasks P0.1.3/P0.1.4.
 
-## Phase 0 progress — P0.1.3 compiler policy and quality tooling (Revision 11)
+## Phase 0 progress — P0.1.3 compiler policy and quality tooling (completed 17 October 2026)
 
-P0.1.3 is **partially complete**. `docs/COMPILER_SUPPORT.md` and
-`cmake/compiler-support.json` define the current Tier-1 target generations: MSVC 14.51/14.50,
-Clang 23/22, and GCC 16/15. `TGF_WARNINGS_AS_ERRORS` remains ON by default; MSVC uses `/W4`
-and `/WX`, while GCC/Clang use the documented warning set and `-Werror`. Ninja presets now
-export `compile_commands.json`.
+P0.1.3 is **complete**. The Tier-1 policy in `docs/COMPILER_SUPPORT.md` and
+`cmake/compiler-support.json` targets MSVC 14.51/14.50, Clang 23/22, and GCC 16/15.
+`TGF_WARNINGS_AS_ERRORS` is ON by default; MSVC uses `/W4` + `/WX`, while GCC/Clang use
+the documented warning set + `-Werror`. Ninja presets export `compile_commands.json`, and
+the compiler-policy regression check is registered in CTest.
 
-Added `.clang-tidy`, optional `TGF_ENABLE_CLANG_TIDY` and `TGF_ENABLE_IWYU` CMake integration,
-and the `tools/check_format.py` workflow with `format-check`/`format-fix` targets when a supported
-clang-format executable is present. Missing optional tools cause explicit configure/command errors,
-not silent success. `tools/check_compiler_policy.py` is registered as the CTest `compiler_policy`.
+The required source-quality workflow [run #119](https://github.com/tasimas-com/tgf/actions/runs/39056856378)
+passed both LLVM jobs: clang-format checked all 29 repository-owned C/C++ files; complete TGF
+Debug builds passed clang-tidy with warnings-as-errors; strict IWYU passed using the matched
+pairs LLVM 22.1.8/IWYU 0.26 and LLVM 23.1.4/IWYU 0.27. The generated duplicate-include
+self-containment harness is narrowly excluded from IWYU because its deliberately unused includes
+are the test itself; all implementation and showcase translation units remain checked.
 
-Revision 11 GCC 14.2 Release, Debug, and shared Release each built with warnings-as-errors and passed **5/5** CTest tests. Clang 17 Release also built with warnings-as-errors and passed **5/5** CTest tests. The actual Tier-1 compiler generations (GCC 15/16, Clang 22/23, MSVC 14.50/14.51) have not
-been executed in this Linux environment. clang-format, clang-tidy, and IWYU are not installed
-here, so source formatting and the analyzers have not yet been run. GCC 14.2 and Clang 17 are
-legacy compatibility checks, not proof of the advertised Tier-1 matrix. Native MSVC remains
-unverified. P0.1.3 therefore remains partial.
+The full Tier-1 hosted matrix [run #193](https://github.com/tasimas-com/tgf/actions/runs/39056856383)
+passed 14/14 jobs across MSVC 14.50/14.51, Clang 22/23, GCC 15/16, and AppleClang 17 in Debug
+and Release, with warnings-as-errors enabled. All 14 CTest artifacts were downloaded, ZIP
+integrity checked, and inspected; each contained 11/11 passing CTest cases and the showcase
+reported 26 checks with zero failures (154/154 CTest executions).
+
+PR [#4](https://github.com/tasimas-com/tgf/pull/4) merged the enforcement implementation into
+`main`. P0.1.3.a–g are closed with implementation, regression coverage, and hosted evidence.
+This does **not** satisfy the overall Phase 0 exit criteria: the separate benchmark/Tier-A,
+research-spike, and ADR work remains. Phase 1 remains gated.
 
 ## What is implemented
 
@@ -171,13 +178,12 @@ Details and exact verification are in `docs/audit/2026-10-14/TGF_CORE_REMEDIATIO
 
 ## Recommended next sequence
 
-1. Finish **P0.1.3**: run the complete supported MSVC/Clang/GCC generation matrix and execute clang-format, clang-tidy, and IWYU on supported toolchains.
-2. Finish **P0.1.4**: execute/review the hosted Windows/Linux/macOS workflows, complete both Tier-1 compiler generations, and provision the dedicated pinned-frequency benchmark runner.
-3. Continue P0.1.5–P0.1.9: coding standard, dependency-DAG CI enforcement, contribution policy, license/SBOM tooling, and build/header-hygiene tracking.
+1. Continue **P0.1.6** next: finish dependency-DAG enforcement and verify its negative/positive CI cases.
+2. Complete remaining P0.1.7–P0.1.9 governance, licensing/SBOM, and build/header-hygiene requirements.
 3. Complete P0.2: inventory existing assets, decide keep/rewrite/delete, and record the result in ADR-0018.
 4. Complete P0.3: implement the benchmark harness and publish fair Tier-A baselines and measurable targets.
 5. Complete P0.4 and P0.5: document research spikes, accept ADRs, and finalize estimates/reference application.
-6. Only after Phase 0 exit criteria are met, resume remaining Phase 1 work (including native mapped-file/plugin lifecycle validation and formal realtime evidence) before implementing later phases.
+6. Keep Phase 1 blocked until the complete Phase 0 exit criteria are met.
 
 ## Revision 12 — CI workflow foundation
 
@@ -292,3 +298,12 @@ frequency policy is exposed; this is not a qualifying benchmark runner. No self-
 `TGF_BENCHMARK_RUNNER_READY` variable is claimed as configured. P0.1.4.f remains partial until
 the dedicated machine is physically provisioned, registered, and produces an inspected benchmark
 artifact.
+
+
+## Revision 20 — P0.1.3 compiler and source-quality gates completed (2026-10-17)
+
+The former Revision 11 assessment above has been superseded by the completed evidence recorded
+in this section and in the root `TODO.md`. P0.1.3 is no longer partial: PR #4 is merged,
+the two-version source-quality workflow passed, and the full 14-job Tier-1 compiler matrix and
+all 154 CTest executions passed. P0.1.3 closure does not change the separate benchmark-host
+waiver or satisfy the overall Phase 0 exit criteria.
