@@ -727,12 +727,14 @@ bool check_memory_mapped_file(Context& c) {
     SC_REQUIRE(c, read_write.flush(), "mapped modifications flush to the file");
     MappedFile moved(std::move(read_write));
     // MappedFile's documented move contract leaves its source closed and reusable.
-    SC_REQUIRE(c, moved.is_open() && !read_write.is_open(), // NOLINT(bugprone-use-after-move,clang-analyzer-cplusplus.Move)
+    // NOLINTNEXTLINE(bugprone-use-after-move,clang-analyzer-cplusplus.Move)
+    SC_REQUIRE(c, moved.is_open() && !read_write.is_open(),
                "move construction transfers mapping ownership exactly once");
     MappedFile assigned;
     assigned = std::move(moved);
     // The prior move's documented postcondition is that its source is closed.
-    SC_REQUIRE(c, assigned.is_open() && !moved.is_open(), // NOLINT(bugprone-use-after-move,clang-analyzer-cplusplus.Move)
+    // NOLINTNEXTLINE(bugprone-use-after-move,clang-analyzer-cplusplus.Move)
+    SC_REQUIRE(c, assigned.is_open() && !moved.is_open(),
                "move assignment transfers mapping ownership exactly once");
   }
   {
@@ -792,12 +794,14 @@ bool check_memory_mapped_file(Context& c) {
     SC_REQUIRE(c, read_write.flush(), "mapped modifications flush to the file");
     MappedFile moved(std::move(read_write));
     // MappedFile's documented move contract leaves its source closed and reusable.
-    SC_REQUIRE(c, moved.is_open() && !read_write.is_open(), // NOLINT(bugprone-use-after-move,clang-analyzer-cplusplus.Move)
+    // NOLINTNEXTLINE(bugprone-use-after-move,clang-analyzer-cplusplus.Move)
+    SC_REQUIRE(c, moved.is_open() && !read_write.is_open(),
                "move construction transfers mapping ownership exactly once");
     MappedFile assigned;
     assigned = std::move(moved);
     // The prior move's documented postcondition is that its source is closed.
-    SC_REQUIRE(c, assigned.is_open() && !moved.is_open(), // NOLINT(bugprone-use-after-move,clang-analyzer-cplusplus.Move)
+    // NOLINTNEXTLINE(bugprone-use-after-move,clang-analyzer-cplusplus.Move)
+    SC_REQUIRE(c, assigned.is_open() && !moved.is_open(),
                "move assignment transfers mapping ownership exactly once");
   }
   {
