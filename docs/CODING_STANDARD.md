@@ -2,9 +2,9 @@
 
 **Status:** normative engineering policy for the TGF repository  
 **Applies to:** C++20 implementation, public headers, C ABI work, CMake, tests, tools, and project documentation  
-**Related policy:** ` [TODO.md](../TODO.md), [DESIGN.md](DESIGN.md), [COMPILER_SUPPORT.md](COMPILER_SUPPORT.md), [ADR index](adr/README.md)
+**Related policy:** [TODO.md](../TODO.md), [DESIGN.md](DESIGN.md), [COMPILER_SUPPORT.md](COMPILER_SUPPORT.md), [ADR index](adr/README.md)
 
-This document turns the TGF architecture and implementation contract into repeatable coding rules. It is not permission to change an architecture decision. Where a rule here appears to conflict with an accepted ADR or an explicit requirement in ` of TODO.md, the ADR/TODO decision wins; update this document when the discrepancy is resolved.
+This document turns the TGF architecture and implementation contract into repeatable coding rules. It is not permission to change an architecture decision. Where a rule here appears to conflict with an accepted ADR or an explicit requirement in TODO.md, the accepted ADR/TODO decision wins; update this document when the discrepancy is resolved.
 
 ## 1. Non-negotiable project profile
 
