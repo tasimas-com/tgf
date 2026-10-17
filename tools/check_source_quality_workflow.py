@@ -43,7 +43,7 @@ def main() -> int:
     # is not accepted as a successful CI analysis.
     integration = (root / "cmake" / "TgfQualityTools.cmake").read_text(encoding="utf-8")
     errors = [item for item in required if item not in workflow]
-    if "CMAKE_CXX_INCLUDE_WHAT_YOU_USE" not in integration or '"--error"' not in integration:
+    if "CMAKE_CXX_INCLUDE_WHAT_YOU_USE" not in integration or "-Xiwyu;--error" not in integration:
         errors.append("CMake IWYU integration must fail the build on include diagnostics")
     if "continue-on-error:" in workflow:
         errors.append("source-quality checks may not be allowed to fail")
