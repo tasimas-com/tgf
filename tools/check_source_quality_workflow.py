@@ -25,6 +25,7 @@ def main() -> int:
         'iwyu-version: "0.27"',
         "clang-format-$LLVM_VERSION",
         "clang-tidy-$LLVM_VERSION",
+        'grep -Eq "version ${LLVM_VERSION}([.[:space:]]|$)"',
         "llvm-$LLVM_VERSION-dev",
         "libclang-$LLVM_VERSION-dev",
         "tools/check_format.py",
