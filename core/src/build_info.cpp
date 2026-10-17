@@ -1,6 +1,5 @@
-#include <tgf/core/build_info.hpp>
-
 #include <tgf/core/config.hpp>
+#include <tgf/core/build_info.hpp>
 
 // These describe how *the library* was compiled; CMake supplies the TGF_LIB_* values.
 #ifndef TGF_LIB_CONFIG
