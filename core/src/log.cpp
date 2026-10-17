@@ -3,6 +3,8 @@
 #include <cstdio>
 #include <tgf/core/log.hpp>
 
+#include "tgf/core/types.hpp"
+
 namespace tgf::core {
 
 namespace {
