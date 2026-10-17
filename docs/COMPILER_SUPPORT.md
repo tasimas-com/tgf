@@ -1,6 +1,6 @@
 # TGF compiler and source-quality policy
 
-**Policy reviewed: 2026-10-15**
+**Policy reviewed: 2026-10-17**
 
 TGF uses C++20 (`CMAKE_CXX_STANDARD=20`) with language extensions disabled. The
 following are the two current stable/in-support compiler generations targeted
@@ -18,10 +18,10 @@ MSVC 14.52 is preview as of this policy date and is not a release-gate toolset.
 The compiler version policy must be reviewed when vendors publish new stable
 releases or change support lifetimes.
 
-## Hosted Tier-1 verification (2026-10-15)
+## Hosted Tier-1 verification (2026-10-17)
 
-The complete matrix passed in GitHub Actions [run #30](https://github.com/tasimas-com/tgf/actions/runs/38745686719)
-on commit `a4169289e8ea031b005aefba7a89d9e13a4075c2`: **14/14 jobs** across Debug and Release.
+The latest complete matrix passed in GitHub Actions [run #193](https://github.com/tasimas-com/tgf/actions/runs/39056856383)
+on commit `f9674c393c8ff09ed46625b4b4334350b413b6c2`: **14/14 jobs** across Debug and Release. An earlier baseline is retained in the project history.
 
 | Compiler | Exact version reported | Toolset | Debug | Release |
 |---|---|---|---:|---:|
@@ -38,9 +38,9 @@ the GCC/Clang major version before CMake configuration; on Windows it checks bot
 the `cl /Bv` compiler version and the actual `VCToolsVersion`, then configures the
 matching MSVC/Ninja preset.
 
-All 14 CTest artifacts were downloaded and inspected. Every ZIP is valid, every
-`LastTest.log` contains seven passing test entries, and every showcase reports
-26 checks with zero failures (**98/98 CTest test executions passed**).
+All 14 CTest artifacts from run #193 were downloaded and inspected. Every ZIP is valid, every
+`LastTest.log` contains **11/11 passing CTest entries**, and every showcase reports
+26 checks with zero failures (**154/154 CTest test executions passed**).
 
 ## Local developer environment
 
