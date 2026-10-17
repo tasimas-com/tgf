@@ -48,12 +48,11 @@ def main() -> int:
         errors.append("CMake IWYU integration must fail the build on include diagnostics")
     if "continue-on-error:" in workflow:
         errors.append("source-quality checks may not be allowed to fail")
-    if "permissions:\\n  contents: read" not in workflow:
+    if "permissions:\n  contents: read" not in workflow:
         errors.append("source-quality workflow must grant contents: read only")
     if 'grep -F "include-what-you-use $IWYU_VERSION "' not in workflow:
         errors.append("source-quality workflow must verify the exact IWYU release")
     if "contents: write" in workflow or "normalize-format:" in workflow or "git push" in workflow:
-
         errors.append("source-quality workflow must be read-only and must never rewrite contributor branches")
     if errors:
         for item in errors:
