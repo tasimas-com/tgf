@@ -1,6 +1,6 @@
 # Continuous integration and benchmark infrastructure
 
-**Full Tier-1 matrix verified:** 15 October 2026 — GitHub Actions [PR run #30](https://github.com/tasimas-com/tgf/actions/runs/38745686719), commit `a4169289e8ea031b005aefba7a89d9e13a4075c2`, passed all 14 compiler/configuration jobs.
+**P0.1.3 verified complete:** 17 October 2026 — the latest Tier-1 compiler matrix [run #193](https://github.com/tasimas-com/tgf/actions/runs/39056856383) passed 14/14 jobs and the required source-quality [run #119](https://github.com/tasimas-com/tgf/actions/runs/39056856378) passed both LLVM 22/23 analysis jobs. See the evidence below.
 
 TGF uses three GitHub Actions workflows:
 
@@ -11,7 +11,7 @@ TGF uses three GitHub Actions workflows:
   runs the core showcase benchmarks only on a dedicated Linux host after its CPU-frequency
   preflight passes.
 
-## Full hosted Tier-1 matrix (P0.1.3.g and P0.1.4.g)
+## Earlier hosted Tier-1 matrix baseline (run #30)
 
 Run #30 completed successfully with **14/14 jobs**: seven compiler targets, each built and tested in Debug and Release. The compiler-version probes assert GCC/Clang major versions and both the MSVC compiler version and selected `VCToolsVersion`; no job may silently substitute another toolset. All configure steps explicitly set `TGF_WARNINGS_AS_ERRORS=ON`.
 
@@ -117,9 +117,13 @@ The dedicated source-quality workflow runs on pushes, pull requests, and manual 
 
 `source_quality_workflow` CTest protects the presence of this CI lane, its LLVM/IWYU compatibility pairs, and strict analyzer configuration. `format_checker_discovery` verifies that the formatter discovers source files in future module directories while excluding generated and vendored trees.
 
-## What the compiler-matrix run does not prove
+## Latest completion evidence (P0.1.3)
 
-The full two-generation Tier-1 compiler matrix and the native Windows/macOS compatibility builds are verified by run #30. That run does not itself execute clang-format, clang-tidy, or IWYU; those checks are performed by the separate source-quality workflow above. Run #30 also does not provision or enable the dedicated pinned-frequency benchmark runner, prove Tier-A competitor benchmarks, close the remaining ADR/research-spike work, or satisfy the Phase 0 exit criteria.
+The full Tier-1 matrix [run #193](https://github.com/tasimas-com/tgf/actions/runs/39056856383) passed all 14 compiler/configuration jobs across MSVC 14.50/14.51, Clang 22/23, GCC 15/16, and AppleClang 17 in Debug and Release. All 14 CTest artifacts were downloaded, ZIP-integrity checked, and inspected: each contained 11/11 passing CTest cases and the showcase reported 26 checks with zero failures (154/154 CTest executions).
+
+The dedicated source-quality workflow [run #119](https://github.com/tasimas-com/tgf/actions/runs/39056856378) passed both LLVM jobs. clang-format checked all 29 repository-owned C/C++ source files; complete TGF Debug builds passed clang-tidy with warnings-as-errors; strict IWYU passed on LLVM 22.1.8/IWYU 0.26 and LLVM 23.1.4/IWYU 0.27. The generated duplicate-include header self-containment harness is intentionally excluded from IWYU only; implementation and showcase translation units remain checked.
+
+Together these runs satisfy P0.1.3. They do not provision or enable the dedicated pinned-frequency benchmark runner, prove Tier-A competitor benchmarks, close the remaining ADR/research-spike work, or satisfy the overall Phase 0 exit criteria. The earlier run #30 evidence and artifact inventory above are retained as historical baseline records.
 
 ## Second-run artifact evidence
 
