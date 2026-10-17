@@ -161,3 +161,17 @@ These repository checks are registered in CTest whenever Python 3 is found:
 - [Upload artifact action](https://github.com/actions/upload-artifact)
 - [GitHub Actions cache](https://github.com/actions/cache)
 - [GitHub Actions self-hosted runners](https://docs.github.com/en/actions/concepts/runners/self-hosted-runners)
+
+
+## Coding standard policy (P0.1.5)
+
+The normative coding rules are in [CODING_STANDARD.md](CODING_STANDARD.md). They define
+naming, includes, ownership/lifetime, error handling, thread-safety, real-time and memory
+discipline, public API documentation, and the pre-1.0 / 1.x / planned C ABI stability levels.
+The style values are sourced from `.clang-format`, while `.clang-tidy` points back to the
+same normative document.
+
+The `coding_standard_policy` CTest entry runs
+`tools/check_coding_standard.py`. It protects the required policy sections and key
+architectural commitments from accidental deletion or drift. It is a documentation-contract
+check, not a substitute for code review, clang-format, clang-tidy, or ABI analysis.
