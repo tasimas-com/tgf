@@ -1,6 +1,8 @@
 #include <chrono>
 #include <tgf/core/profiler.hpp>
 
+#include "tgf/core/types.hpp"
+
 namespace tgf::core {
 
 namespace {
