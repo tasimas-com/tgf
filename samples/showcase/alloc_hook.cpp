@@ -3,6 +3,7 @@
 // This gives the verification executable process-wide live-byte/leak accounting,
 // rather than merely counting calls to operator new. Production hosts may install
 // an equivalent hook or explicitly use aligned_alloc_bytes at subsystem boundaries.
+#include <cstddef>
 #include <new>
 #include <tgf/core/memory.hpp>
 
