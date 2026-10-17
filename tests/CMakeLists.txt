@@ -30,6 +30,8 @@ if(Python3_FOUND)
            COMMAND ${Python3_EXECUTABLE} ${PROJECT_SOURCE_DIR}/tools/check_ci_workflows.py ${PROJECT_SOURCE_DIR})
   add_test(NAME benchmark_host_policy
            COMMAND ${Python3_EXECUTABLE} ${PROJECT_SOURCE_DIR}/tools/test_check_benchmark_host.py)
+  add_test(NAME benchmark_host_inventory
+           COMMAND ${Python3_EXECUTABLE} ${PROJECT_SOURCE_DIR}/tools/test_collect_benchmark_host_inventory.py)
 endif()
 
   add_test(NAME compiler_policy

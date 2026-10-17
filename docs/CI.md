@@ -123,6 +123,14 @@ Run #14 artifact IDs: `11975135189`, `11975130127`, `11974769084`, `11974489507`
 See the step-by-step [dedicated benchmark runner setup guide](BENCHMARK_RUNNER_SETUP.md) before provisioning or enabling a host.
 
 
+The nightly workflow now also runs tools/check_benchmark_host.py --require-bare-metal
+to require x86-64 and positive no-VM evidence, then captures
+benchmark-artifacts/host-inventory.json with tools/collect_benchmark_host_inventory.py.
+The inventory contains CPU topology/microcode, memory, non-serial DMI/firmware fields, every
+CPUFreq policy, thermal-zone/hwmon readings, OS/kernel and selected build-tool versions, and
+allowlisted runner metadata. It is uploaded with the benchmark report. The collector is
+read-only; host frequency changes remain an administrator-controlled provisioning step.
+
 The nightly workflow remains intentionally gated. It requires a self-hosted Linux x64 runner with
 all labels:
 
@@ -141,7 +149,8 @@ These repository checks are registered in CTest whenever Python 3 is found:
 
 - `ci_workflow_contract`: verifies the workflow matrix, toolchain labels, Windows MSVC/Ninja
   steps, build cache, artifact upload, and benchmark safety gate.
-- `benchmark_host_policy`: tests the CPU-frequency policy checker using controlled fixtures.
+- `benchmark_host_policy`: ten controlled scenarios cover CPU-frequency policy validation and fail-closed x86-64/bare-metal detection.
+- `benchmark_host_inventory`: five controlled scenarios validate CPU/memory/OS/frequency/thermal/DMI collection, virtualization metadata, and runner-metadata allowlisting.
 
 ## Official references
 

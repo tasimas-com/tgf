@@ -1,5 +1,5 @@
 # TGF — TASIMAS GUI Framework
-## Master Plan & Complete TODO  (Revision 19 — benchmark runner setup documented; physical host and full compiler matrix remain open)
+## Master Plan & Complete TODO  (Revision 20 — benchmark-host acceptance tooling added; physical host still outstanding)
 
 > Goal: the fastest, leanest GUI framework for **large professional software and games** — Photoshop, Blender, After Effects, Cubase, Dorico, FL Studio, Cinema 4D, Unreal/Unity-class editors, and in-game UI for 2D/3D games — written in C++, minimal CPU / GPU / RAM / disk, with an architecture future engineers can extend for decades.
 > License intent: free and open source (TASIMAS policy).
@@ -327,8 +327,13 @@ Each becomes a file `docs/adr/NNNN-title.md` in Phase 0. Recommended decision an
     - [x] P0.1.4.e.7.c Download and inspect all eight uploaded artifact ZIPs; each archive is valid and contains `LastTest.log` reporting 100% (7/7) passing tests.
   - [p] P0.1.4.f Provision and enable the dedicated pinned-frequency benchmark runner; the workflow remains safely skipped until an actual dedicated host is registered and its preflight passes.
     - [x] P0.1.4.f.1 Write `docs/BENCHMARK_RUNNER_SETUP.md` covering hardware, CPU-frequency policy, runner registration, security isolation, repository-variable gating, and artifact review.
-    - [x] P0.1.4.f.2 Validate the fail-closed host preflight and its five unit-test scenarios; this environment correctly fails the real-host check because it exposes no CPU frequency policy.
+    - [x] P0.1.4.f.2 Validate the fail-closed host preflight; its expanded ten-case unit suite covers pinned-frequency and bare-metal/VM checks. This environment correctly fails the real-host check because it exposes no CPU frequency policy and is virtualized. The separate inventory collector has five unit tests.
     - [p] P0.1.4.f.3 Provision a dedicated bare-metal Linux x86-64 host, pin all exposed CPU frequency policies, and record the hardware/thermal/software inventory.
+      - [x] Add a read-only JSON inventory collector for CPU topology/model/microcode, memory, DMI firmware, every exposed CPU-frequency policy, thermal zones/hwmon sensors, OS/kernel, compiler/build-tool versions, and allowlisted GitHub runner metadata.
+      - [x] Extend the nightly preflight with a fail-closed x86-64/bare-metal check; VM detection must positively report no VM, in addition to the existing requirement that every frequency policy uses the performance governor and identical positive min/max limits.
+      - [x] Register inventory regression tests in CTest, enforce the nightly inventory step in the CI contract checker, and upload the host-inventory.json report with the benchmark artifact.
+      - [x] Replace the circular setup stub with an operator runbook covering physical acceptance, CPU-frequency pinning, thermal validation, inventory review, runner isolation/registration, and the readiness gate.
+      - [p] Physical host provisioning, frequency pinning, and sustained thermal validation remain outstanding. The available execution container exposes a hypervisor flag and no CPU-frequency policy or thermal sensors; it is not a qualifying dedicated machine.
     - [p] P0.1.4.f.4 Register the repository-scoped runner with the four required labels, verify it online, then enable `TGF_BENCHMARK_RUNNER_READY=true` only after the preflight passes; run and inspect the first nightly artifact.
   - [x] P0.1.4.g Complete and execute the full two-generation Tier-1 compiler matrix and add native Windows/macOS results. Satisfied by the 14/14-job hosted matrix recorded under P0.1.3.g: [run #30](https://github.com/tasimas-com/tgf/actions/runs/38745686719), including native Windows MSVC 14.50/14.51 and macOS AppleClang 17 Debug/Release.
 - [p] P0.1.5 Coding standard document (naming, ownership, error handling, API stability levels)
@@ -1206,3 +1211,10 @@ claimed. P0.1.4.f.1 and .f.2 are done; .f.3 and .f.4 remain partial. Keep the ni
 gated until a dedicated physical host passes the preflight. Phase 0 remains incomplete.
 
 *End of TGF master TODO (Revision 19 — benchmark runner runbook and preflight verification complete; physical runner provisioning remains open, 2026-10-15).*
+
+
+## Revision 20 — benchmark-host acceptance tooling
+
+The dedicated runner path now has a read-only JSON inventory collector, registered inventory tests, and a stricter nightly preflight that requires x86-64 plus positive systemd evidence that no VM is detected. The CI contract checks that the workflow captures benchmark-artifacts/host-inventory.json. The circular runner-guide stub was replaced by an operator runbook covering bare-metal acceptance, CPU-frequency pinning, thermal validation, inventory review, runner isolation/registration, and the repository readiness gate.
+
+This revision does **not** claim that a qualifying physical host has been provisioned. The available execution container exposes a hypervisor flag and no CPU-frequency policy or thermal sysfs sensors, so the real-host check correctly rejects it. P0.1.4.f.3 remains partial until a dedicated bare-metal Linux x86-64 host is supplied, configured, measured, and its inventory is reviewed; P0.1.4.f.4 remains blocked on that host.
