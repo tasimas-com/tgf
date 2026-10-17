@@ -72,6 +72,8 @@ def main() -> int:
 
     if "docs/CODING_STANDARD.md" not in tidy:
         return fail(".clang-tidy must point contributors to the normative coding standard")
+    if "-portability-avoid-pragma-once" not in tidy or "Use `#pragma once` consistently with the current public headers." not in standard:
+        return fail("clang-tidy must preserve the documented #pragma once convention without disabling portability checks")
 
     print("coding standard OK: naming, formatting, ownership, errors, API stability, and review contracts")
     return 0
