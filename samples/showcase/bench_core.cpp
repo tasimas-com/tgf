@@ -1,5 +1,6 @@
 // Micro-benchmarks for tgf::core. These are smoke-level numbers for the showcase;
 // the statistically gated suite (P0.3) will replace them.
+#include <cstdint>
 #include <cstdlib>
 #include <tgf/core/hash.hpp>
 #include <tgf/core/memory.hpp>
