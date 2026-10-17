@@ -1,5 +1,9 @@
 // Verification of tgf::core (Phase 1 slice). Each check states the rule it proves.
+#include <atomic>
 #include <cmath>
+#include <compare>
+#include <cstdint>
+#include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <filesystem>
