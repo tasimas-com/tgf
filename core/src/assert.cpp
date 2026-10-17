@@ -1,8 +1,7 @@
-#include <tgf/core/assert.hpp>
-#include <tgf/core/log.hpp>
-
 #include <cstdio>
 #include <cstdlib>
+#include <tgf/core/assert.hpp>
+#include <tgf/core/log.hpp>
 
 namespace tgf::core::detail {
 

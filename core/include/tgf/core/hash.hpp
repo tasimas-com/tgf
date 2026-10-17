@@ -3,9 +3,8 @@
 // (xxhash-class) arrives with the asset/resource system.
 #pragma once
 
-#include <tgf/core/types.hpp>
-
 #include <string_view>
+#include <tgf/core/types.hpp>
 
 namespace tgf::core {
 
@@ -21,7 +20,9 @@ constexpr u64 fnv1a64(const char* data, usize size, u64 seed = kFnvOffset) noexc
   return h;
 }
 
-constexpr u64 fnv1a64(std::string_view s, u64 seed = kFnvOffset) noexcept { return fnv1a64(s.data(), s.size(), seed); }
+constexpr u64 fnv1a64(std::string_view s, u64 seed = kFnvOffset) noexcept {
+  return fnv1a64(s.data(), s.size(), seed);
+}
 
 constexpr u64 hash_combine(u64 a, u64 b) noexcept {
   a ^= b + 0x9e3779b97f4a7c15ull + (a << 6) + (a >> 2);

@@ -1,10 +1,9 @@
 // tgf/core/mapped_file.hpp — portable read-only/read-write file mappings (P1.2.5).
 #pragma once
 
+#include <cstdint>
 #include <tgf/core/config.hpp>
 #include <tgf/core/types.hpp>
-
-#include <cstdint>
 
 namespace tgf::core {
 
@@ -23,15 +22,12 @@ class TGF_API MappedFile {
   MappedFile(MappedFile&& other) noexcept;
   MappedFile& operator=(MappedFile&& other) noexcept;
 
-  bool open(const char* utf8_path,
-            MappedFileAccess access = MappedFileAccess::ReadOnly) noexcept;
+  bool open(const char* utf8_path, MappedFileAccess access = MappedFileAccess::ReadOnly) noexcept;
   void close() noexcept;
   bool flush() noexcept;
 
   const void* data() const noexcept { return view_; }
-  void* writable_data() noexcept {
-    return access_ == MappedFileAccess::ReadWrite ? view_ : nullptr;
-  }
+  void* writable_data() noexcept { return access_ == MappedFileAccess::ReadWrite ? view_ : nullptr; }
   usize size() const noexcept { return size_; }
   bool is_open() const noexcept { return file_handle_ != -1; }
   MappedFileAccess access() const noexcept { return access_; }

@@ -1,6 +1,5 @@
-#include <tgf/core/profiler.hpp>
-
 #include <chrono>
+#include <tgf/core/profiler.hpp>
 
 namespace tgf::core {
 
@@ -17,7 +16,8 @@ thread_local ThreadState t_state;
 
 u64 now_ns() noexcept {
   return static_cast<u64>(
-      std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now().time_since_epoch()).count());
+      std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now().time_since_epoch())
+          .count());
 }
 
 ScopedZone::ScopedZone(const char* name) noexcept : name_(name), begin_(now_ns()), depth_(t_state.depth++) {}

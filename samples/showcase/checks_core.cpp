@@ -1,29 +1,28 @@
 // Verification of tgf::core (Phase 1 slice). Each check states the rule it proves.
-#include "harness.hpp"
-
+#include <cmath>
+#include <cstdlib>
+#include <cstring>
+#include <filesystem>
+#include <fstream>
+#include <limits>
+#include <stdexcept>
+#include <string>
 #include <tgf/core/build_info.hpp>
 #include <tgf/core/hash.hpp>
 #include <tgf/core/log.hpp>
+#include <tgf/core/mapped_file.hpp>
 #include <tgf/core/math.hpp>
 #include <tgf/core/memory.hpp>
 #include <tgf/core/module_allocator.hpp>
-#include <tgf/core/mapped_file.hpp>
 #include <tgf/core/profiler.hpp>
 #include <tgf/core/result.hpp>
 #include <tgf/core/slot_map.hpp>
 #include <tgf/core/spsc.hpp>
 #include <tgf/core/time.hpp>
 #include <tgf/core/types.hpp>
-
-#include <cmath>
-#include <cstdlib>
-#include <cstring>
-#include <filesystem>
-#include <fstream>
-#include <string>
 #include <thread>
-#include <stdexcept>
-#include <limits>
+
+#include "harness.hpp"
 #if defined(TGF_SHOWCASE_MEMORY_SANITIZER) && !defined(_WIN32)
 #include <fcntl.h>
 #include <unistd.h>
@@ -57,7 +56,8 @@ bool check_build_policy(Context& c) {
     caught = true;
   }
   SC_REQUIRE(c, caught, "user code keeps exceptions");
-  c.note = std::string(bi.linkage) + " / " + bi.configuration + (bi.lto ? " / LTO" : "") + " / lib exceptions=off rtti=off";
+  c.note =
+      std::string(bi.linkage) + " / " + bi.configuration + (bi.lto ? " / LTO" : "") + " / lib exceptions=off rtti=off";
   return true;
 }
 
@@ -140,8 +140,9 @@ bool check_memory_tags_budgets_and_leaks(Context& c) {
              "live allocation count tracks successful tagged allocations exactly");
   SC_REQUIRE(c, stats.live_bytes == baseline.tags[static_cast<usize>(MemoryTag::Core)].live_bytes + 120,
              "live bytes track requested bytes exactly");
-  SC_REQUIRE(c, stats.budget_bytes == 128 && stats.budget_exceeded >
-                 baseline.tags[static_cast<usize>(MemoryTag::Core)].budget_exceeded,
+  SC_REQUIRE(c,
+             stats.budget_bytes == 128 &&
+                 stats.budget_exceeded > baseline.tags[static_cast<usize>(MemoryTag::Core)].budget_exceeded,
              "budget and exceeded-allocation counter are reported");
   MemoryLeakReport leaks = memory_leaks_since(baseline, MemoryTag::Core);
   SC_REQUIRE(c, leaks.live_allocations == 2 && leaks.live_bytes == 120,
@@ -149,8 +150,7 @@ bool check_memory_tags_budgets_and_leaks(Context& c) {
 
   aligned_free_bytes(first);
   leaks = memory_leaks_since(baseline, MemoryTag::Core);
-  SC_REQUIRE(c, leaks.live_allocations == 1 && leaks.live_bytes == 40,
-             "free updates live counters and leak delta");
+  SC_REQUIRE(c, leaks.live_allocations == 1 && leaks.live_bytes == 40, "free updates live counters and leak delta");
   aligned_free_bytes(second);
   leaks = memory_leaks_since(baseline, MemoryTag::Core);
   SC_REQUIRE(c, leaks.live_allocations == 0 && leaks.live_bytes == 0,
@@ -324,10 +324,15 @@ bool check_pool(Context& c) {
   SC_REQUIRE(c, throwing.init(1), "throwing pool init");
   MayThrow::should_throw = true;
   bool caught = false;
-  try { (void)throwing.create(1); } catch (const std::runtime_error&) { caught = true; }
+  try {
+    (void)throwing.create(1);
+  } catch (const std::runtime_error&) {
+    caught = true;
+  }
   MayThrow::should_throw = false;
   SC_REQUIRE(c, caught && throwing.live() == 0, "throwing constructor leaves pool unchanged");
-  SC_REQUIRE(c, throwing.create(2) != nullptr && throwing.live() == 1, "pool remains reusable after constructor throws");
+  SC_REQUIRE(c, throwing.create(2) != nullptr && throwing.live() == 1,
+             "pool remains reusable after constructor throws");
   throwing.release();
   c.note = "6,400 create/destroy; foreign/double destroy rejected; release cleans live objects; ctor exception is safe";
   return true;
@@ -454,7 +459,8 @@ bool check_numeric_model(Context& c) {
   SC_REQUIRE(c, naive_err > 1.0, "naive float pipeline visibly jitters (>1 px)");
   SC_REQUIRE(c, rel_err < 1e-3, "camera-relative error is far below a pixel");
   char buf[160];
-  std::snprintf(buf, sizeof(buf), "at 100h@192kHz: naive f32 error %.1f px, camera-relative error %.2g px", naive_err, rel_err);
+  std::snprintf(buf, sizeof(buf), "at 100h@192kHz: naive f32 error %.1f px, camera-relative error %.2g px", naive_err,
+                rel_err);
   c.note = buf;
   return true;
 }
@@ -463,7 +469,8 @@ bool check_sample_time(Context& c) {
   constexpr i64 kMax = std::numeric_limits<i64>::max();
   SC_REQUIRE(c, !checked_add(SampleTime{kMax}, SampleTime{1}).ok(), "overflow detected on add");
   SC_REQUIRE(c, checked_add(SampleTime{kMax}, SampleTime{1}).error() == Error::Overflow, "Overflow error code");
-  SC_REQUIRE(c, !checked_sub(SampleTime{std::numeric_limits<i64>::min()}, SampleTime{1}).ok(), "underflow detected on sub");
+  SC_REQUIRE(c, !checked_sub(SampleTime{std::numeric_limits<i64>::min()}, SampleTime{1}).ok(),
+             "underflow detected on sub");
   SC_REQUIRE(c, checked_add(SampleTime{5}, SampleTime{-7}).value().samples == -2, "negative arithmetic");
   const auto seconds = to_seconds(SampleTime{192000LL * 3600}, 192000);
   SC_REQUIRE(c, seconds.ok() && seconds.value() == 3600.0, "samples -> seconds");
@@ -510,7 +517,6 @@ bool check_strong_types(Context& c) {
   return true;
 }
 
-
 struct ExternalAllocatorState {
   u32 allocate_calls = 0;
   u32 deallocate_calls = 0;
@@ -526,11 +532,9 @@ void* test_external_allocate(void* context, usize bytes, usize alignment) noexce
   return std::malloc(bytes);
 }
 
-void test_external_deallocate(void* context, void* block, usize bytes,
-                              usize alignment) noexcept {
+void test_external_deallocate(void* context, void* block, usize bytes, usize alignment) noexcept {
   auto* state = static_cast<ExternalAllocatorState*>(context);
-  if (bytes == state->last_bytes && alignment == state->last_alignment)
-    ++state->deallocate_calls;
+  if (bytes == state->last_bytes && alignment == state->last_alignment) ++state->deallocate_calls;
   std::free(block);
 }
 
@@ -541,8 +545,7 @@ struct LeakCapture {
   MemoryTag last_tag = MemoryTag::Unspecified;
 };
 
-void capture_memory_leak(MemoryTag tag, MemoryLeakReport report,
-                          void* context) noexcept {
+void capture_memory_leak(MemoryTag tag, MemoryLeakReport report, void* context) noexcept {
   auto* capture = static_cast<LeakCapture*>(context);
   ++capture->calls;
   capture->allocations += report.live_allocations;
@@ -552,44 +555,38 @@ void capture_memory_leak(MemoryTag tag, MemoryLeakReport report,
 
 bool check_external_allocator_and_shutdown_report(Context& c) {
   ExternalAllocatorState backend{};
-  const ExternalAllocator external{&backend, &test_external_allocate,
-                                   &test_external_deallocate};
+  const ExternalAllocator external{&backend, &test_external_allocate, &test_external_deallocate};
   set_memory_budget(MemoryTag::Host, 96);
   const MemoryStats before = memory_stats(MemoryTag::Host);
   LeakCapture capture{};
   void* outstanding = nullptr;
   {
     ScopedMemoryLeakReport reporter(&capture_memory_leak, &capture);
-    outstanding = tracked_external_alloc_bytes(external, 80, 256,
-                                                MemoryTag::Host);
-    void* over_budget = tracked_external_alloc_bytes(external, 32, 64,
-                                                       MemoryTag::Host);
+    outstanding = tracked_external_alloc_bytes(external, 80, 256, MemoryTag::Host);
+    void* over_budget = tracked_external_alloc_bytes(external, 32, 64, MemoryTag::Host);
     SC_REQUIRE(c, outstanding != nullptr, "tracked external allocation succeeds inside budget");
     SC_REQUIRE(c, over_budget == nullptr, "tracked external allocator obeys TGF byte budgets");
     SC_REQUIRE(c, reinterpret_cast<std::uintptr_t>(outstanding) % 256 == 0,
                "adapter provides requested payload alignment");
     const MemoryStats during = memory_stats(MemoryTag::Host);
-    SC_REQUIRE(c, during.live_bytes == before.live_bytes + 80 &&
-                     during.live_allocations == before.live_allocations + 1,
+    SC_REQUIRE(c, during.live_bytes == before.live_bytes + 80 && during.live_allocations == before.live_allocations + 1,
                "external allocations participate in live accounting");
   }
-  SC_REQUIRE(c, capture.calls == 1 && capture.last_tag == MemoryTag::Host &&
-                   capture.allocations == 1 && capture.bytes == 80,
-             "scoped shutdown reporter emits positive outstanding per-tag deltas");
+  SC_REQUIRE(
+      c, capture.calls == 1 && capture.last_tag == MemoryTag::Host && capture.allocations == 1 && capture.bytes == 80,
+      "scoped shutdown reporter emits positive outstanding per-tag deltas");
   SC_REQUIRE(c, backend.allocate_calls == 1 && backend.deallocate_calls == 0,
              "budget rejection does not call the external backend");
   aligned_free_bytes(outstanding);
   const MemoryStats after = memory_stats(MemoryTag::Host);
   set_memory_budget(MemoryTag::Host, 0);
-  SC_REQUIRE(c, backend.deallocate_calls == 1,
-             "TGF returns external blocks through the matching backend callback");
-  SC_REQUIRE(c, after.live_bytes == before.live_bytes &&
-                   after.live_allocations == before.live_allocations,
+  SC_REQUIRE(c, backend.deallocate_calls == 1, "TGF returns external blocks through the matching backend callback");
+  SC_REQUIRE(c, after.live_bytes == before.live_bytes && after.live_allocations == before.live_allocations,
              "external free restores the original live counters");
-  c.note = "custom host allocator is wrapped with aligned tracking headers, tags, budgets, leak callback and paired free";
+  c.note =
+      "custom host allocator is wrapped with aligned tracking headers, tags, budgets, leak callback and paired free";
   return true;
 }
-
 
 bool check_module_allocator_lifetime(Context& c) {
   ExternalAllocatorState backend{};
@@ -605,15 +602,14 @@ bool check_module_allocator_lifetime(Context& c) {
   SC_REQUIRE(c, module_allocator_outstanding_allocations(handle) == 1,
              "TGF tracks a live allocation against its owning module");
   const Status premature_unload = unregister_module_allocator(handle);
-  SC_REQUIRE(c, !premature_unload.ok() && premature_unload.error() == Error::Busy &&
-                   std::string(error_name(premature_unload.error())) == "Busy",
+  SC_REQUIRE(c,
+             !premature_unload.ok() && premature_unload.error() == Error::Busy &&
+                 std::string(error_name(premature_unload.error())) == "Busy",
              "module cannot unregister while one of its allocations is outstanding");
   aligned_free_bytes(block);
-  SC_REQUIRE(c, backend.deallocate_calls == 1 &&
-                   module_allocator_outstanding_allocations(handle) == 0,
+  SC_REQUIRE(c, backend.deallocate_calls == 1 && module_allocator_outstanding_allocations(handle) == 0,
              "free uses the original module callback and releases its unload pin");
-  SC_REQUIRE(c, unregister_module_allocator(handle).ok(),
-             "module can unregister after every allocation is returned");
+  SC_REQUIRE(c, unregister_module_allocator(handle).ok(), "module can unregister after every allocation is returned");
   SC_REQUIRE(c, module_alloc_bytes(handle, 16, 16, MemoryTag::Host) == nullptr,
              "stale module allocator handles cannot allocate after unregister");
   const auto re_registered = register_module_allocator(desc);
@@ -637,22 +633,19 @@ bool check_module_allocator_lifetime(Context& c) {
   return true;
 }
 
-
 struct ConcurrentExternalState {
   std::atomic<u64> allocate_calls{0};
   std::atomic<u64> deallocate_calls{0};
 };
 
-void* concurrent_external_allocate(void* context, usize bytes,
-                                   usize) noexcept {
+void* concurrent_external_allocate(void* context, usize bytes, usize) noexcept {
   auto* state = static_cast<ConcurrentExternalState*>(context);
   void* block = std::malloc(bytes);
   if (block) state->allocate_calls.fetch_add(1, std::memory_order_relaxed);
   return block;
 }
 
-void concurrent_external_deallocate(void* context, void* block, usize,
-                                    usize) noexcept {
+void concurrent_external_deallocate(void* context, void* block, usize, usize) noexcept {
   auto* state = static_cast<ConcurrentExternalState*>(context);
   state->deallocate_calls.fetch_add(1, std::memory_order_relaxed);
   std::free(block);
@@ -688,11 +681,13 @@ bool check_module_allocator_concurrency(Context& c) {
   const MemoryStats platform_stats = memory_stats(MemoryTag::Platform);
   SC_REQUIRE(c, failures.load(std::memory_order_relaxed) == 0,
              "all concurrent cross-module allocations preserve alignment");
-  SC_REQUIRE(c, backend.allocate_calls.load(std::memory_order_relaxed) == expected &&
-                   backend.deallocate_calls.load(std::memory_order_relaxed) == expected,
+  SC_REQUIRE(c,
+             backend.allocate_calls.load(std::memory_order_relaxed) == expected &&
+                 backend.deallocate_calls.load(std::memory_order_relaxed) == expected,
              "concurrent backend allocations and frees are paired exactly");
-  SC_REQUIRE(c, module_allocator_outstanding_allocations(handle) == 0 &&
-                   platform_stats.live_bytes == 0 && platform_stats.live_allocations == 0,
+  SC_REQUIRE(c,
+             module_allocator_outstanding_allocations(handle) == 0 && platform_stats.live_bytes == 0 &&
+                 platform_stats.live_allocations == 0,
              "concurrent module allocations leave no outstanding blocks or live bytes");
   SC_REQUIRE(c, unregister_module_allocator(handle).ok(),
              "module can unload after concurrent allocations have drained");
@@ -712,24 +707,19 @@ bool check_memory_mapped_file(Context& c) {
   constexpr std::size_t original_size = sizeof(original) - 1;
   const ssize_t written = ::write(temp_fd, original, original_size);
   const int close_result = ::close(temp_fd);
-  SC_REQUIRE(c, written == static_cast<ssize_t>(original_size) && close_result == 0,
-             "test payload is written");
+  SC_REQUIRE(c, written == static_cast<ssize_t>(original_size) && close_result == 0, "test payload is written");
   {
     MappedFile read_only;
-    SC_REQUIRE(c, read_only.open(path, MappedFileAccess::ReadOnly),
-               "read-only mapping opens an existing UTF-8 path");
+    SC_REQUIRE(c, read_only.open(path, MappedFileAccess::ReadOnly), "read-only mapping opens an existing UTF-8 path");
     SC_REQUIRE(c, read_only.size() == original_size && read_only.data() != nullptr,
                "mapping exposes the exact file size and mapped view");
-    SC_REQUIRE(c, read_only.writable_data() == nullptr,
-               "read-only mappings never expose a writable pointer");
-    SC_REQUIRE(c, std::memcmp(read_only.data(), original, original_size) == 0,
-               "mapped bytes match the file payload");
+    SC_REQUIRE(c, read_only.writable_data() == nullptr, "read-only mappings never expose a writable pointer");
+    SC_REQUIRE(c, std::memcmp(read_only.data(), original, original_size) == 0, "mapped bytes match the file payload");
     SC_REQUIRE(c, read_only.flush(), "flush on read-only mapping is a successful no-op");
   }
   {
     MappedFile read_write;
-    SC_REQUIRE(c, read_write.open(path, MappedFileAccess::ReadWrite),
-               "read-write mapping opens the file");
+    SC_REQUIRE(c, read_write.open(path, MappedFileAccess::ReadWrite), "read-write mapping opens the file");
     auto* bytes = static_cast<char*>(read_write.writable_data());
     SC_REQUIRE(c, bytes != nullptr, "read-write mapping exposes writable bytes");
     bytes[0] = 't';
@@ -739,8 +729,7 @@ bool check_memory_mapped_file(Context& c) {
                "move construction transfers mapping ownership exactly once");
     MappedFile assigned;
     assigned = std::move(moved);
-    SC_REQUIRE(c, assigned.is_open() && !moved.is_open(),
-               "move assignment transfers mapping ownership exactly once");
+    SC_REQUIRE(c, assigned.is_open() && !moved.is_open(), "move assignment transfers mapping ownership exactly once");
   }
   {
     const int input_fd = ::open(path, O_RDONLY);
@@ -769,8 +758,7 @@ bool check_memory_mapped_file(Context& c) {
   c.note = "MSan-safe POSIX file setup; read-only/read-write views, flush, moves and empty files verified";
   return true;
 #else
-  const std::filesystem::path path =
-      std::filesystem::temp_directory_path() / "tgf_memory_map_p1_2_5_test.bin";
+  const std::filesystem::path path = std::filesystem::temp_directory_path() / "tgf_memory_map_p1_2_5_test.bin";
   const std::string original = "TGF mapped-file integration test";
   {
     std::ofstream output(path, std::ios::binary | std::ios::trunc);
@@ -779,24 +767,21 @@ bool check_memory_mapped_file(Context& c) {
     SC_REQUIRE(c, output.good(), "test payload is written");
   }
   const std::u8string path_u8 = path.u8string();
-  const std::string utf8_path(reinterpret_cast<const char*>(path_u8.data()),
-                              path_u8.size());
+  const std::string utf8_path(reinterpret_cast<const char*>(path_u8.data()), path_u8.size());
   {
     MappedFile read_only;
     SC_REQUIRE(c, read_only.open(utf8_path.c_str(), MappedFileAccess::ReadOnly),
                "read-only mapping opens an existing UTF-8 path");
     SC_REQUIRE(c, read_only.size() == original.size() && read_only.data() != nullptr,
                "mapping exposes the exact file size and mapped view");
-    SC_REQUIRE(c, read_only.writable_data() == nullptr,
-               "read-only mappings never expose a writable pointer");
+    SC_REQUIRE(c, read_only.writable_data() == nullptr, "read-only mappings never expose a writable pointer");
     SC_REQUIRE(c, std::memcmp(read_only.data(), original.data(), original.size()) == 0,
                "mapped bytes match the file payload");
     SC_REQUIRE(c, read_only.flush(), "flush on read-only mapping is a successful no-op");
   }
   {
     MappedFile read_write;
-    SC_REQUIRE(c, read_write.open(utf8_path.c_str(), MappedFileAccess::ReadWrite),
-               "read-write mapping opens the file");
+    SC_REQUIRE(c, read_write.open(utf8_path.c_str(), MappedFileAccess::ReadWrite), "read-write mapping opens the file");
     auto* bytes = static_cast<char*>(read_write.writable_data());
     SC_REQUIRE(c, bytes != nullptr, "read-write mapping exposes writable bytes");
     bytes[0] = 't';
@@ -806,8 +791,7 @@ bool check_memory_mapped_file(Context& c) {
                "move construction transfers mapping ownership exactly once");
     MappedFile assigned;
     assigned = std::move(moved);
-    SC_REQUIRE(c, assigned.is_open() && !moved.is_open(),
-               "move assignment transfers mapping ownership exactly once");
+    SC_REQUIRE(c, assigned.is_open() && !moved.is_open(), "move assignment transfers mapping ownership exactly once");
   }
   {
     std::ifstream input(path, std::ios::binary);
@@ -816,10 +800,11 @@ bool check_memory_mapped_file(Context& c) {
     SC_REQUIRE(c, first == 't', "flushed mapped modification is visible through normal file I/O");
   }
   const std::filesystem::path empty_path = path.string() + ".empty";
-  { std::ofstream empty(empty_path, std::ios::binary | std::ios::trunc); }
+  {
+    std::ofstream empty(empty_path, std::ios::binary | std::ios::trunc);
+  }
   const std::u8string empty_u8 = empty_path.u8string();
-  const std::string empty_utf8(reinterpret_cast<const char*>(empty_u8.data()),
-                                empty_u8.size());
+  const std::string empty_utf8(reinterpret_cast<const char*>(empty_u8.data()), empty_u8.size());
   {
     MappedFile empty;
     SC_REQUIRE(c, empty.open(empty_utf8.c_str()), "zero-length files open successfully");
@@ -850,8 +835,7 @@ bool check_warmup_steady_state_boundary(Context& c) {
     }
     steady_allocations = steady_state.allocations();
   }
-  SC_REQUIRE(c, steady_allocations == 0,
-             "warmed-up steady-state frame loop performs zero heap allocations");
+  SC_REQUIRE(c, steady_allocations == 0, "warmed-up steady-state frame loop performs zero heap allocations");
 
   u64 boundary_allocations = 0;
   {
@@ -940,8 +924,10 @@ void register_core_checks(Suite& s) {
   s.checks.push_back({"core", "type layout (handles, strong types)", check_layout});
   s.checks.push_back({"core", "Result / Status error model", check_result});
   s.checks.push_back({"core", "aligned allocation validation and overflow", check_aligned_allocation});
-  s.checks.push_back({"core", "memory tags, budgets, live tracking and leak snapshots", check_memory_tags_budgets_and_leaks});
-  s.checks.push_back({"core", "tracked external allocator and scoped shutdown leak report", check_external_allocator_and_shutdown_report});
+  s.checks.push_back(
+      {"core", "memory tags, budgets, live tracking and leak snapshots", check_memory_tags_budgets_and_leaks});
+  s.checks.push_back({"core", "tracked external allocator and scoped shutdown leak report",
+                      check_external_allocator_and_shutdown_report});
 #if !defined(TGF_SHOWCASE_MEMORY_SANITIZER)
   // MSan runtime owns global new/delete interceptors. The warm-up test depends on
   // the showcase's process-wide operator-new hook, so it is not meaningful there.

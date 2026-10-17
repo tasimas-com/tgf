@@ -1,6 +1,5 @@
-#include <tgf/core/math.hpp>
-
 #include <cmath>
+#include <tgf/core/math.hpp>
 
 namespace tgf::core {
 
@@ -14,7 +13,8 @@ f32 linear_to_srgb(f32 c) noexcept {
 
 Color color_from_srgb8(u8 r, u8 g, u8 b, u8 a) noexcept {
   const f32 alpha = static_cast<f32>(a) / 255.0f;
-  return Color{srgb_to_linear(static_cast<f32>(r) / 255.0f) * alpha, srgb_to_linear(static_cast<f32>(g) / 255.0f) * alpha,
+  return Color{srgb_to_linear(static_cast<f32>(r) / 255.0f) * alpha,
+               srgb_to_linear(static_cast<f32>(g) / 255.0f) * alpha,
                srgb_to_linear(static_cast<f32>(b) / 255.0f) * alpha, alpha};
 }
 

@@ -2,11 +2,10 @@
 // (P1.1.2). Header-only, no allocation.
 #pragma once
 
-#include <tgf/core/config.hpp>
-
 #include <compare>
 #include <cstddef>
 #include <cstdint>
+#include <tgf/core/config.hpp>
 #include <type_traits>
 
 namespace tgf {

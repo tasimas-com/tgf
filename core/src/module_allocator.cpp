@@ -1,7 +1,6 @@
-#include <tgf/core/module_allocator.hpp>
-
 #include <array>
 #include <mutex>
+#include <tgf/core/module_allocator.hpp>
 
 namespace tgf::core {
 namespace {
@@ -19,8 +18,7 @@ std::mutex g_slots_mutex;
 thread_local u64 g_adapter_allocate_calls = 0;
 
 bool matches(const ModuleAllocatorSlot& slot, ModuleAllocatorHandle handle) noexcept {
-  return handle.index < kModuleAllocatorSlots && slot.active &&
-         slot.generation == handle.generation;
+  return handle.index < kModuleAllocatorSlots && slot.active && slot.generation == handle.generation;
 }
 
 void release_pin(ModuleAllocatorSlot* slot) noexcept {
@@ -36,8 +34,7 @@ ModuleAllocatorDesc descriptor_copy(ModuleAllocatorSlot* slot) noexcept {
   return slot->desc;
 }
 
-void* module_backend_allocate(void* context, usize bytes,
-                              usize alignment) noexcept {
+void* module_backend_allocate(void* context, usize bytes, usize alignment) noexcept {
   auto* slot = static_cast<ModuleAllocatorSlot*>(context);
   ++g_adapter_allocate_calls;
   const ModuleAllocatorDesc desc = descriptor_copy(slot);
@@ -49,8 +46,7 @@ void* module_backend_allocate(void* context, usize bytes,
   return block;
 }
 
-void module_backend_deallocate(void* context, void* block, usize bytes,
-                               usize alignment) noexcept {
+void module_backend_deallocate(void* context, void* block, usize bytes, usize alignment) noexcept {
   auto* slot = static_cast<ModuleAllocatorSlot*>(context);
   const ModuleAllocatorDesc desc = descriptor_copy(slot);
   desc.deallocate(desc.context, block, bytes, alignment);
@@ -58,11 +54,10 @@ void module_backend_deallocate(void* context, void* block, usize bytes,
 }
 }  // namespace
 
-Result<ModuleAllocatorHandle> register_module_allocator(
-    const ModuleAllocatorDesc& desc) noexcept {
-  if (desc.struct_size < sizeof(ModuleAllocatorDesc) ||
-      desc.abi_version != kModuleAllocatorAbiVersion ||
-      !desc.allocate || !desc.deallocate) return Error::InvalidArgument;
+Result<ModuleAllocatorHandle> register_module_allocator(const ModuleAllocatorDesc& desc) noexcept {
+  if (desc.struct_size < sizeof(ModuleAllocatorDesc) || desc.abi_version != kModuleAllocatorAbiVersion ||
+      !desc.allocate || !desc.deallocate)
+    return Error::InvalidArgument;
 
   std::lock_guard<std::mutex> lock(g_slots_mutex);
   for (u32 i = 0; i < kModuleAllocatorSlots; ++i) {
@@ -77,8 +72,7 @@ Result<ModuleAllocatorHandle> register_module_allocator(
 }
 
 Status unregister_module_allocator(ModuleAllocatorHandle handle) noexcept {
-  if (!handle.valid() || handle.index >= kModuleAllocatorSlots)
-    return Error::InvalidArgument;
+  if (!handle.valid() || handle.index >= kModuleAllocatorSlots) return Error::InvalidArgument;
   std::lock_guard<std::mutex> lock(g_slots_mutex);
   ModuleAllocatorSlot& slot = g_slots[handle.index];
   if (!matches(slot, handle)) return Error::StaleHandle;
@@ -90,18 +84,17 @@ Status unregister_module_allocator(ModuleAllocatorHandle handle) noexcept {
   return {};
 }
 
-u64 module_allocator_outstanding_allocations(
-    ModuleAllocatorHandle handle) noexcept {
+u64 module_allocator_outstanding_allocations(ModuleAllocatorHandle handle) noexcept {
   if (!handle.valid() || handle.index >= kModuleAllocatorSlots) return 0;
   std::lock_guard<std::mutex> lock(g_slots_mutex);
   const ModuleAllocatorSlot& slot = g_slots[handle.index];
   return matches(slot, handle) ? slot.outstanding : 0;
 }
 
-void* module_alloc_bytes(ModuleAllocatorHandle handle, usize size,
-                         usize alignment, MemoryTag tag) noexcept {
-  if (!handle.valid() || handle.index >= kModuleAllocatorSlots || size == 0 ||
-      alignment == 0 || (alignment & (alignment - 1)) != 0) return nullptr;
+void* module_alloc_bytes(ModuleAllocatorHandle handle, usize size, usize alignment, MemoryTag tag) noexcept {
+  if (!handle.valid() || handle.index >= kModuleAllocatorSlots || size == 0 || alignment == 0 ||
+      (alignment & (alignment - 1)) != 0)
+    return nullptr;
 
   ModuleAllocatorSlot* slot = nullptr;
   {
@@ -113,8 +106,7 @@ void* module_alloc_bytes(ModuleAllocatorHandle handle, usize size,
   }
 
   const u64 calls_before = g_adapter_allocate_calls;
-  const ExternalAllocator backend{slot, &module_backend_allocate,
-                                  &module_backend_deallocate};
+  const ExternalAllocator backend{slot, &module_backend_allocate, &module_backend_deallocate};
   void* result = tracked_external_alloc_bytes(backend, size, alignment, tag);
   // A rejected budget/invalid allocation never calls the backend adapter.
   // In that case no callback released our pin.

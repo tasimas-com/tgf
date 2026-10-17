@@ -39,15 +39,9 @@
 namespace tgf::core {
 
 const BuildInfo& build_info() noexcept {
-  static constexpr BuildInfo info{TGF_VERSION_STRING,
-                                  TGF_COMPILER_NAME,
-                                  TGF_LIB_CONFIG,
-                                  TGF_LINKAGE_NAME,
-                                  TGF_LIB_EXCEPTIONS,
-                                  TGF_LIB_RTTI,
-                                  TGF_ASSERT_ENABLED != 0,
-                                  TGF_PROFILE_ENABLED != 0,
-                                  TGF_LIB_LTO != 0};
+  static constexpr BuildInfo info{TGF_VERSION_STRING,      TGF_COMPILER_NAME,        TGF_LIB_CONFIG,
+                                  TGF_LINKAGE_NAME,        TGF_LIB_EXCEPTIONS,       TGF_LIB_RTTI,
+                                  TGF_ASSERT_ENABLED != 0, TGF_PROFILE_ENABLED != 0, TGF_LIB_LTO != 0};
   return info;
 }
 

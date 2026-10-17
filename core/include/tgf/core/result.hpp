@@ -7,7 +7,6 @@
 #include <tgf/core/assert.hpp>
 #include <tgf/core/config.hpp>
 #include <tgf/core/types.hpp>
-
 #include <type_traits>
 
 namespace tgf::core {

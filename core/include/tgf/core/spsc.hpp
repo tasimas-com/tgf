@@ -8,10 +8,9 @@
 // Callers must construct and pre-touch these objects before entering callbacks.
 #pragma once
 
+#include <atomic>
 #include <tgf/core/config.hpp>
 #include <tgf/core/types.hpp>
-
-#include <atomic>
 #include <type_traits>
 
 // MSVC C4324 ("structure was padded due to alignment specifier") is reported for every

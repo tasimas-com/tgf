@@ -1,15 +1,14 @@
 // Micro-benchmarks for tgf::core. These are smoke-level numbers for the showcase;
 // the statistically gated suite (P0.3) will replace them.
-#include "harness.hpp"
-
+#include <cstdlib>
 #include <tgf/core/hash.hpp>
 #include <tgf/core/memory.hpp>
 #include <tgf/core/profiler.hpp>
 #include <tgf/core/slot_map.hpp>
 #include <tgf/core/spsc.hpp>
-
-#include <cstdlib>
 #include <vector>
+
+#include "harness.hpp"
 
 using namespace tgf;
 using namespace tgf::core;
