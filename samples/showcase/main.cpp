@@ -79,10 +79,12 @@ int main(int argc, char** argv) {
 
   // ---- benchmarks ----
   std::vector<BenchResultRow> bench_rows;
+  bench_rows.reserve(suite.benches.size());
   if (!checks_only) {
     std::printf("\n== BENCHMARKS (median of 9 runs, release builds only are meaningful) ==\n");
     for (const auto& b : suite.benches) {
       std::vector<double> runs;
+      runs.reserve(9);
       (void)b.fn();  // warm-up
       for (int i = 0; i < 9; ++i) runs.push_back(b.fn());
       std::sort(runs.begin(), runs.end());
