@@ -26,8 +26,13 @@ jobs:
 
       - name: Install clang-format
         run: |
+          set -euo pipefail
           sudo apt-get update
-          sudo apt-get install --yes clang-format-23 python3
+          sudo apt-get install --yes wget lsb-release software-properties-common python3
+          wget -qO llvm.sh https://apt.llvm.org/llvm.sh
+          chmod +x llvm.sh
+          sudo ./llvm.sh 23
+          sudo apt-get install --yes clang-format-23
 
       - name: Apply and verify canonical formatting
         run: |
