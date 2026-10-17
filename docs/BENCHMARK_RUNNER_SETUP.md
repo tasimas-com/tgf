@@ -1,6 +1,8 @@
 # TGF dedicated benchmark runner — operator runbook
 
-**Status:** preparation and fail-closed checks are implemented. No physical runner is provisioned or enabled yet.
+**Status:** repository-side preparation and fail-closed checks are implemented. The project owner approved a scope waiver on 2026-10-17; no physical runner is provisioned or enabled, and the nightly workflow remains gated.
+> **Owner-approved scope waiver (2026-10-17):** P0.1.4.f.3 physical-host provisioning/validation and P0.1.4.f.4 runner registration/first-run acceptance are waived for the current project stage. This is an administrative scope decision, not evidence of hardware acceptance. No physical benchmark host, pinned-frequency setup, thermal validation, self-hosted runner, or dedicated-host benchmark result is claimed. Keep `TGF_BENCHMARK_RUNNER_READY` unset. If the waiver is reversed, every acceptance step below becomes mandatory before the nightly workflow may be enabled.
+
 
 This runbook is the acceptance procedure for P0.1.4.f.3 and P0.1.4.f.4. A successful CMake build on a general-purpose hosted runner is not a substitute for a dedicated bare-metal machine with controlled CPU frequency and reviewed thermal behavior.
 
