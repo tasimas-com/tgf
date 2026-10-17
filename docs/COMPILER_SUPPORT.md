@@ -50,9 +50,25 @@ Tier-1 targets. No native MSVC environment is available locally; the MSVC eviden
 above comes from the native Windows GitHub-hosted runner, not from a local
 cross-compiler.
 
-The hosted compiler matrix does not claim that clang-format, clang-tidy, or
-Include-What-You-Use analysis has been executed. Their integration is documented
-below; actual-tool execution remains a separate source-quality validation task.
+## Hosted source-quality verification (2026-10-17)
+
+GitHub Actions [run #119](https://github.com/tasimas-com/tgf/actions/runs/39056856378)
+passed both source-quality jobs on commit `f9674c393c8ff09ed46625b4b4334350b413b6c2`.
+
+| Tool | LLVM 22 lane | LLVM 23 lane |
+|---|---|---|
+| clang-format | 22.1.8 — pass | 23.1.4 — pass |
+| clang-tidy | 22.1.8 — full TGF build passed | 23.1.4 — full TGF build passed |
+| Include-What-You-Use | 0.26 — strict full build passed | 0.27 — strict full build passed |
+
+The formatter checked all 29 repository-owned C/C++ source files. Both static
+analysis builds used `TGF_WARNINGS_AS_ERRORS=ON`. The IWYU lane uses
+`-Xiwyu;--error`, verifies the exact IWYU release, and checks implementation and
+showcase translation units. Only the generated public-header self-containment
+harness is excluded: it intentionally includes each header twice without using
+symbols, so IWYU would otherwise ask to delete the includes being tested. The
+normal compiler/CTest matrix still compiles that harness in every configuration.
+
 
 ## Warnings are errors
 
