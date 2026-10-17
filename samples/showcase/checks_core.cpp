@@ -6,6 +6,7 @@
 #include <fstream>
 #include <limits>
 #include <stdexcept>
+#include <stdexcept>
 #include <string>
 #include <tgf/core/build_info.hpp>
 #include <tgf/core/hash.hpp>
@@ -51,8 +52,8 @@ bool check_build_policy(Context& c) {
   // This TU is an ordinary user TU: exceptions on, proving public headers work with them.
   bool caught = false;
   try {
-    throw 42;
-  } catch (int) {
+    throw std::runtime_error("consumer exception support");
+  } catch (const std::runtime_error&) {
     caught = true;
   }
   SC_REQUIRE(c, caught, "user code keeps exceptions");
@@ -263,7 +264,7 @@ bool check_arena(Context& c) {
   guard.assert_no_allocations();
   a.reset();
   SC_REQUIRE(c, a.allocate(24, 1) == first, "reset reuses memory from the start");
-  SC_REQUIRE(c, a.allocate(1u << 20) == nullptr && a.failed_allocations() == 1, "exhaustion returns null, is counted");
+  SC_REQUIRE(c, a.allocate(1u << 20u) == nullptr && a.failed_allocations() == 1, "exhaustion returns null, is counted");
   SC_REQUIRE(c, a.allocate(8, 3) == nullptr, "non-power-of-two alignment rejected in every build");
   SC_REQUIRE(c, a.allocate(8, 128) == nullptr, "alignment above arena guarantee rejected");
   LinearArena uninitialized;
@@ -727,13 +728,14 @@ bool check_memory_mapped_file(Context& c) {
     MappedFile moved(std::move(read_write));
     // The move contract leaves the source MappedFile closed; keep this regression assertion.
     // NOLINTNEXTLINE(bugprone-use-after-move,clang-analyzer-cplusplus.Move)
-    SC_REQUIRE(c, moved.is_open() && !read_write.is_open(),
+    SC_REQUIRE(c, moved.is_open() && !read_write.is_open(), // NOLINT(bugprone-use-after-move,clang-analyzer-cplusplus.Move)
                "move construction transfers mapping ownership exactly once");
     MappedFile assigned;
     assigned = std::move(moved);
     // MappedFile guarantees its moved-from source is closed and valid for reuse.
     // NOLINTNEXTLINE(bugprone-use-after-move,clang-analyzer-cplusplus.Move)
-    SC_REQUIRE(c, assigned.is_open() && !moved.is_open(), "move assignment transfers mapping ownership exactly once");
+    SC_REQUIRE(c, assigned.is_open() && !moved.is_open(), // NOLINT(bugprone-use-after-move,clang-analyzer-cplusplus.Move)
+               "move assignment transfers mapping ownership exactly once");
   }
   {
     const int input_fd = ::open(path, O_RDONLY);
