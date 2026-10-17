@@ -725,10 +725,14 @@ bool check_memory_mapped_file(Context& c) {
     bytes[0] = 't';
     SC_REQUIRE(c, read_write.flush(), "mapped modifications flush to the file");
     MappedFile moved(std::move(read_write));
+    // The move contract leaves the source MappedFile closed; keep this regression assertion.
+    // NOLINTNEXTLINE(bugprone-use-after-move,clang-analyzer-cplusplus.Move)
     SC_REQUIRE(c, moved.is_open() && !read_write.is_open(),
                "move construction transfers mapping ownership exactly once");
     MappedFile assigned;
     assigned = std::move(moved);
+    // MappedFile guarantees its moved-from source is closed and valid for reuse.
+    // NOLINTNEXTLINE(bugprone-use-after-move,clang-analyzer-cplusplus.Move)
     SC_REQUIRE(c, assigned.is_open() && !moved.is_open(), "move assignment transfers mapping ownership exactly once");
   }
   {
