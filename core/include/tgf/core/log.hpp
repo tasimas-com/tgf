@@ -31,8 +31,8 @@ constexpr int log_compile_level = TGF_LOG_COMPILE_LEVEL;
 
 // The level is compared through a named constant so the always-true comparison at the
 // default compile level does not trip -Wtype-limits in user code.
-#define TGF_LOG(level, ...)                                                                           \
-  do {                                                                                                \
-    if constexpr (static_cast<int>(::tgf::core::LogLevel::level) >= ::tgf::core::log_compile_level)  \
-      ::tgf::core::log_write(::tgf::core::LogLevel::level, __VA_ARGS__);                              \
+#define TGF_LOG(level, ...)                                                                         \
+  do {                                                                                              \
+    if constexpr (static_cast<int>(::tgf::core::LogLevel::level) >= ::tgf::core::log_compile_level) \
+      ::tgf::core::log_write(::tgf::core::LogLevel::level, __VA_ARGS__);                            \
   } while (0)

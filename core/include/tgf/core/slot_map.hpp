@@ -7,13 +7,12 @@
 //    fails with Error::CapacityExceeded and the hot path can never allocate.
 #pragma once
 
+#include <limits>
+#include <new>
 #include <tgf/core/assert.hpp>
 #include <tgf/core/memory.hpp>
 #include <tgf/core/result.hpp>
 #include <tgf/core/types.hpp>
-
-#include <new>
-#include <limits>
 #include <type_traits>
 #include <utility>
 
@@ -43,9 +42,11 @@ class SlotMap {
     const usize max_size = std::numeric_limits<usize>::max();
     if (static_cast<usize>(new_capacity) > max_size / sizeof(Slot) ||
         static_cast<usize>(new_capacity) > max_size / sizeof(T) ||
-        static_cast<usize>(new_capacity) > max_size / sizeof(u32)) return false;
+        static_cast<usize>(new_capacity) > max_size / sizeof(u32))
+      return false;
     Slot* ns = static_cast<Slot*>(aligned_alloc_bytes(sizeof(Slot) * static_cast<usize>(new_capacity), alignof(Slot)));
-    T* nv = static_cast<T*>(aligned_alloc_bytes(sizeof(T) * static_cast<usize>(new_capacity), alignof(T) < 16 ? 16 : alignof(T)));
+    T* nv = static_cast<T*>(
+        aligned_alloc_bytes(sizeof(T) * static_cast<usize>(new_capacity), alignof(T) < 16 ? 16 : alignof(T)));
     u32* no = static_cast<u32*>(aligned_alloc_bytes(sizeof(u32) * static_cast<usize>(new_capacity), alignof(u32)));
     if (!ns || !nv || !no) {
       aligned_free_bytes(ns);
@@ -114,9 +115,7 @@ class SlotMap {
     return h.generation != 0 && h.index < capacity_ && slots_[h.index].generation == h.generation;
   }
 
-  TGF_FORCE_INLINE T* get(handle_type h) noexcept {
-    return contains(h) ? values_ + slots_[h.index].index : nullptr;
-  }
+  TGF_FORCE_INLINE T* get(handle_type h) noexcept { return contains(h) ? values_ + slots_[h.index].index : nullptr; }
   TGF_FORCE_INLINE const T* get(handle_type h) const noexcept {
     return contains(h) ? values_ + slots_[h.index].index : nullptr;
   }

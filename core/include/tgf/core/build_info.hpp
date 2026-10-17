@@ -3,7 +3,6 @@
 #pragma once
 
 #include <tgf/core/config.hpp>
-#include <tgf/core/types.hpp>
 
 namespace tgf::core {
 

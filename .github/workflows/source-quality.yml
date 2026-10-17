@@ -1,0 +1,122 @@
+name: TGF Source Quality
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: tgf-source-quality-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  source-quality:
+    name: LLVM ${{ matrix.llvm-version }} / format + tidy + IWYU
+    runs-on: ubuntu-26.04
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - llvm-version: "22"
+            iwyu-version: "0.26"
+          - llvm-version: "23"
+            iwyu-version: "0.27"
+
+    steps:
+      - name: Check out formatted pull request branch
+        uses: actions/checkout@v7
+        with:
+          repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
+          ref: ${{ github.event.pull_request.head.ref || github.ref_name }}
+
+      - name: Install matching LLVM and Clang tools
+        shell: bash
+        env:
+          LLVM_VERSION: ${{ matrix.llvm-version }}
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install --yes wget lsb-release software-properties-common ninja-build cmake git python3
+          wget -qO llvm.sh https://apt.llvm.org/llvm.sh
+          chmod +x llvm.sh
+          sudo ./llvm.sh "$LLVM_VERSION"
+          sudo apt-get install --yes \
+            "clang-$LLVM_VERSION" \
+            "clang-format-$LLVM_VERSION" \
+            "clang-tidy-$LLVM_VERSION" \
+            "llvm-$LLVM_VERSION-dev" \
+            "libclang-$LLVM_VERSION-dev"
+
+      - name: Verify exact tool versions
+        shell: bash
+        env:
+          LLVM_VERSION: ${{ matrix.llvm-version }}
+          IWYU_VERSION: ${{ matrix.iwyu-version }}
+        run: |
+          set -euo pipefail
+          clang++-"$LLVM_VERSION" --version
+          clang-format-"$LLVM_VERSION" --version
+          clang-tidy-"$LLVM_VERSION" --version
+          clang-format-"$LLVM_VERSION" --version | head -n 1 | grep -Eq "version ${LLVM_VERSION}([.[:space:]]|$)"
+          clang-tidy-"$LLVM_VERSION" --version | head -n 1 | grep -Eq "version ${LLVM_VERSION}([.[:space:]]|$)"
+          echo "Required IWYU release: $IWYU_VERSION (paired with LLVM/Clang $LLVM_VERSION)"
+
+      - name: Enforce clang-format
+        shell: bash
+        run: python3 tools/check_format.py --clang-format "clang-format-${{ matrix.llvm-version }}"
+
+      - name: Build the matching Include-What-You-Use release
+        shell: bash
+        env:
+          LLVM_VERSION: ${{ matrix.llvm-version }}
+          IWYU_VERSION: ${{ matrix.iwyu-version }}
+        run: |
+          set -euo pipefail
+          git clone --depth 1 --branch "$IWYU_VERSION" \
+            https://github.com/include-what-you-use/include-what-you-use.git \
+            "$RUNNER_TEMP/iwyu-source"
+          CC="clang-$LLVM_VERSION" CXX="clang++-$LLVM_VERSION" \
+            cmake -S "$RUNNER_TEMP/iwyu-source" \
+              -B "$RUNNER_TEMP/iwyu-build" \
+              -G Ninja \
+              -DCMAKE_BUILD_TYPE=Release \
+              -DCMAKE_PREFIX_PATH="/usr/lib/llvm-$LLVM_VERSION"
+          cmake --build "$RUNNER_TEMP/iwyu-build" --target include-what-you-use --parallel 2
+          "$RUNNER_TEMP/iwyu-build/bin/include-what-you-use" --version | grep -F "include-what-you-use $IWYU_VERSION "
+
+      - name: Run clang-tidy on the complete TGF build
+        shell: bash
+        env:
+          LLVM_VERSION: ${{ matrix.llvm-version }}
+        run: |
+          set -euo pipefail
+          cmake -S . -B "build/clang-tidy-$LLVM_VERSION" -G Ninja \
+            -DCMAKE_C_COMPILER="clang-$LLVM_VERSION" \
+            -DCMAKE_CXX_COMPILER="clang++-$LLVM_VERSION" \
+            -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
+            -DCMAKE_BUILD_TYPE=Debug \
+            -DTGF_ENABLE_CLANG_TIDY=ON \
+            -DTGF_WARNINGS_AS_ERRORS=ON \
+            -DTGF_ENABLE_LTO=OFF
+          cmake --build "build/clang-tidy-$LLVM_VERSION" --parallel 2
+
+      - name: Run Include-What-You-Use on the complete TGF build
+        shell: bash
+        env:
+          LLVM_VERSION: ${{ matrix.llvm-version }}
+        run: |
+          set -euo pipefail
+          cmake -S . -B "build/iwyu-$LLVM_VERSION" -G Ninja \
+            -DCMAKE_C_COMPILER="clang-$LLVM_VERSION" \
+            -DCMAKE_CXX_COMPILER="clang++-$LLVM_VERSION" \
+            -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
+            -DCMAKE_BUILD_TYPE=Debug \
+            -DTGF_ENABLE_IWYU=ON \
+            -DTGF_IWYU_EXECUTABLE="$RUNNER_TEMP/iwyu-build/bin/include-what-you-use" \
+            -DTGF_WARNINGS_AS_ERRORS=ON \
+            -DTGF_ENABLE_LTO=OFF
+          cmake --build "build/iwyu-$LLVM_VERSION" --parallel 2

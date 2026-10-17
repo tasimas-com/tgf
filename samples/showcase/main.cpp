@@ -2,17 +2,17 @@
 //   tgf_showcase                 run checks + benchmarks
 //   tgf_showcase --checks-only   run checks only (used by CTest; non-zero exit on failure)
 //   tgf_showcase --json out.json write machine-readable results (seed of P0.3.5)
-#include "harness.hpp"
-
-#include <tgf/core/build_info.hpp>
-#include <tgf/core/profiler.hpp>
-
 #include <algorithm>
 #include <cstdio>
 #include <cstring>
 #include <fstream>
 #include <string>
+#include <tgf/core/build_info.hpp>
+#include <tgf/core/profiler.hpp>
 #include <vector>
+
+#include "harness.hpp"
+#include "tgf/core/types.hpp"
 
 namespace {
 
@@ -42,8 +42,10 @@ int main(int argc, char** argv) {
   bool checks_only = false;
   std::string json_path;
   for (int i = 1; i < argc; ++i) {
-    if (!std::strcmp(argv[i], "--checks-only")) checks_only = true;
-    else if (!std::strcmp(argv[i], "--json") && i + 1 < argc) json_path = argv[++i];
+    if (!std::strcmp(argv[i], "--checks-only"))
+      checks_only = true;
+    else if (!std::strcmp(argv[i], "--json") && i + 1 < argc)
+      json_path = argv[++i];
     else {
       std::fprintf(stderr, "usage: %s [--checks-only] [--json <file>]\n", argv[0]);
       return 2;
@@ -78,10 +80,12 @@ int main(int argc, char** argv) {
 
   // ---- benchmarks ----
   std::vector<BenchResultRow> bench_rows;
+  bench_rows.reserve(suite.benches.size());
   if (!checks_only) {
     std::printf("\n== BENCHMARKS (median of 9 runs, release builds only are meaningful) ==\n");
     for (const auto& b : suite.benches) {
       std::vector<double> runs;
+      runs.reserve(9);
       (void)b.fn();  // warm-up
       for (int i = 0; i < 9; ++i) runs.push_back(b.fn());
       std::sort(runs.begin(), runs.end());
@@ -95,17 +99,17 @@ int main(int argc, char** argv) {
 
   if (!json_path.empty()) {
     std::ofstream out(json_path);
-    out << "{\n  \"version\": \"" << bi.version << "\",\n  \"linkage\": \"" << bi.linkage << "\",\n  \"configuration\": \""
-        << bi.configuration << "\",\n  \"checks\": [\n";
+    out << "{\n  \"version\": \"" << bi.version << "\",\n  \"linkage\": \"" << bi.linkage
+        << "\",\n  \"configuration\": \"" << bi.configuration << "\",\n  \"checks\": [\n";
     for (size_t i = 0; i < results.size(); ++i)
       out << "    {\"area\": \"" << results[i].check->area << "\", \"name\": \"" << json_escape(results[i].check->name)
           << "\", \"ok\": " << (results[i].ok ? "true" : "false") << ", \"ms\": " << results[i].ms << "}"
           << (i + 1 < results.size() ? "," : "") << "\n";
     out << "  ],\n  \"benchmarks\": [\n";
     for (size_t i = 0; i < bench_rows.size(); ++i)
-      out << "    {\"area\": \"" << bench_rows[i].bench->area << "\", \"name\": \"" << json_escape(bench_rows[i].bench->name)
-          << "\", \"median_ns\": " << bench_rows[i].median_ns << ", \"min_ns\": " << bench_rows[i].min_ns << "}"
-          << (i + 1 < bench_rows.size() ? "," : "") << "\n";
+      out << "    {\"area\": \"" << bench_rows[i].bench->area << "\", \"name\": \""
+          << json_escape(bench_rows[i].bench->name) << "\", \"median_ns\": " << bench_rows[i].median_ns
+          << ", \"min_ns\": " << bench_rows[i].min_ns << "}" << (i + 1 < bench_rows.size() ? "," : "") << "\n";
     out << "  ]\n}\n";
   }
   return failed == 0 ? 0 : 1;

@@ -3,9 +3,8 @@
 // so one executable always shows the state of EVERYTHING built so far (ADR-0030).
 #pragma once
 
-#include <tgf/core/types.hpp>
-
 #include <string>
+#include <tgf/core/types.hpp>
 #include <vector>
 
 namespace showcase {
@@ -42,10 +41,10 @@ extern volatile tgf::u64 g_sink;
 
 }  // namespace showcase
 
-#define SC_REQUIRE(ctx, cond, text)                                   \
-  do {                                                                \
-    if (!(cond)) {                                                    \
+#define SC_REQUIRE(ctx, cond, text)                                                     \
+  do {                                                                                  \
+    if (!(cond)) {                                                                      \
       (ctx).note = std::string(text) + " [" #cond "] line " + std::to_string(__LINE__); \
-      return false;                                                   \
-    }                                                                 \
+      return false;                                                                     \
+    }                                                                                   \
   } while (0)

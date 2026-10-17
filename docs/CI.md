@@ -2,10 +2,11 @@
 
 **Full Tier-1 matrix verified:** 15 October 2026 — GitHub Actions [PR run #30](https://github.com/tasimas-com/tgf/actions/runs/38745686719), commit `a4169289e8ea031b005aefba7a89d9e13a4075c2`, passed all 14 compiler/configuration jobs.
 
-TGF uses two GitHub Actions workflows:
+TGF uses three GitHub Actions workflows:
 
 - [`.github/workflows/ci.yml`](../.github/workflows/ci.yml) builds and runs CTest on pushes,
   pull requests, and manual dispatches.
+- [`.github/workflows/source-quality.yml`](../.github/workflows/source-quality.yml) runs the required source-quality checks with LLVM/Clang 22 and 23: clang-format, clang-tidy, and Include-What-You-Use.
 - [`.github/workflows/nightly-benchmarks.yml`](../.github/workflows/nightly-benchmarks.yml)
   runs the core showcase benchmarks only on a dedicated Linux host after its CPU-frequency
   preflight passes.
@@ -110,9 +111,15 @@ caching**, not an sccache compiler cache. The CTest log is uploaded per job with
 
 The CI contract test checks the explicit seven-target/two-configuration matrix, exact compiler binaries/toolsets and version probes, Windows MSVC/Ninja configuration, cache path, artifact upload, and nightly runner guard.
 
-## What this run does not prove
+## Source-quality enforcement (P0.1.3.c–e)
 
-The full two-generation Tier-1 compiler matrix and the native Windows/macOS compatibility builds are now verified by run #30. This result does not execute the separate clang-format, clang-tidy, or IWYU analyses; their actual-tool runs remain independent quality checks. It also does not provision or enable the dedicated pinned-frequency benchmark runner, prove Tier-A competitor benchmarks, close the remaining ADR/research-spike work, or satisfy the Phase 0 exit criteria.
+The dedicated source-quality workflow runs on pushes, pull requests, and manual dispatches for both supported LLVM generations. It installs version-matched clang-format and clang-tidy packages, checks every repository-owned C/C++ source file, and builds IWYU from its matching release tag (0.26 for LLVM 22; 0.27 for LLVM 23). It then builds TGF with `TGF_ENABLE_CLANG_TIDY=ON` and `TGF_ENABLE_IWYU=ON`, keeping warnings-as-errors enabled. These jobs are required CI checks: missing tools, unsupported versions, format drift, analyzer diagnostics, or IWYU include violations fail the workflow. The local CMake switches remain opt-in so ordinary developers are not forced to install LLVM analysis tools.
+
+`source_quality_workflow` CTest protects the presence of this CI lane, its LLVM/IWYU compatibility pairs, and strict analyzer configuration. `format_checker_discovery` verifies that the formatter discovers source files in future module directories while excluding generated and vendored trees.
+
+## What the compiler-matrix run does not prove
+
+The full two-generation Tier-1 compiler matrix and the native Windows/macOS compatibility builds are verified by run #30. That run does not itself execute clang-format, clang-tidy, or IWYU; those checks are performed by the separate source-quality workflow above. Run #30 also does not provision or enable the dedicated pinned-frequency benchmark runner, prove Tier-A competitor benchmarks, close the remaining ADR/research-spike work, or satisfy the Phase 0 exit criteria.
 
 ## Second-run artifact evidence
 

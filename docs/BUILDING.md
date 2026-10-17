@@ -95,7 +95,8 @@ sanitizer selection; CMake does not support changing the compiler in an existing
 ## Compiler and code-quality policy
 
 See [`COMPILER_SUPPORT.md`](COMPILER_SUPPORT.md) for the supported compiler generations,
-warnings-as-errors rules, and optional clang-format/clang-tidy/IWYU workflows. Ninja presets
+warnings-as-errors rules, and clang-format/clang-tidy/IWYU integration. Those tools are optional
+for local builds but are enforced by the hosted source-quality workflow on every push and pull request. Ninja presets
 export `compile_commands.json` for clang-tidy and Include-What-You-Use.
 
 When clang-format 22 or 23 is installed, configure the project and run:

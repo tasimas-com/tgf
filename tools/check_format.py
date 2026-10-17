@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Check or apply the repository's clang-format style to tracked source areas."""
+"""Check or apply the repository's clang-format style to TGF-owned C/C++ sources."""
 from __future__ import annotations
 
 import argparse
@@ -8,9 +8,22 @@ import subprocess
 import sys
 from pathlib import Path
 
-SOURCE_ROOTS = ("core", "platform", "rhi", "render", "text", "ui", "widgets", "pro", "host", "c", "bindings", "samples", "tests", "tools")
 SOURCE_SUFFIXES = {".c", ".cc", ".cpp", ".cxx", ".h", ".hh", ".hpp", ".hxx"}
-EXCLUDED_PARTS = {"build", "out", "_build", "generated", "third_party"}
+EXCLUDED_PARTS = {
+    ".git",
+    ".cache",
+    ".venv",
+    "venv",
+    "build",
+    "out",
+    "_build",
+    "generated",
+    "third_party",
+    "vendor",
+    "external",
+    "node_modules",
+    "CMakeFiles",
+}
 
 
 def fail(message: str, code: int = 1) -> int:
@@ -19,16 +32,15 @@ def fail(message: str, code: int = 1) -> int:
 
 
 def discover_files(root: Path) -> list[Path]:
-    found: list[Path] = []
-    for directory in SOURCE_ROOTS:
-        base = root / directory
-        if not base.is_dir():
-            continue
-        for path in base.rglob("*"):
-            if path.is_file() and path.suffix.lower() in SOURCE_SUFFIXES:
-                if not any(part in EXCLUDED_PARTS for part in path.relative_to(root).parts):
-                    found.append(path)
-    return sorted(found)
+    """Find source files across the whole repository, including future modules."""
+    return sorted(
+        path
+        for path in root.rglob("*")
+        if path.is_file()
+        and path.suffix.lower() in SOURCE_SUFFIXES
+        and not any(part in EXCLUDED_PARTS for part in path.relative_to(root).parts)
+        and not any(part.startswith("cmake-build-") for part in path.relative_to(root).parts)
+    )
 
 
 def main() -> int:

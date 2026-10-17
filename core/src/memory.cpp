@@ -1,9 +1,13 @@
-#include <tgf/core/memory.hpp>
-
 #include <atomic>
+#include <cstddef>
 #include <cstdlib>
 #include <limits>
-#include <new>
+#include <memory>
+#include <tgf/core/memory.hpp>
+
+#include "tgf/core/assert.hpp"
+#include "tgf/core/config.hpp"
+#include "tgf/core/types.hpp"
 
 namespace tgf::core {
 namespace {
@@ -64,8 +68,7 @@ bool reserve_budget(AtomicMemoryStats& stats, usize bytes, u64& live_after_reser
       stats.budget_exceeded.fetch_add(1, std::memory_order_relaxed);
       return false;
     }
-    if (stats.live_bytes.compare_exchange_weak(current, current + static_cast<u64>(bytes),
-                                               std::memory_order_acq_rel,
+    if (stats.live_bytes.compare_exchange_weak(current, current + static_cast<u64>(bytes), std::memory_order_acq_rel,
                                                std::memory_order_relaxed)) {
       live_after_reserve = current + static_cast<u64>(bytes);
       return true;
@@ -75,8 +78,9 @@ bool reserve_budget(AtomicMemoryStats& stats, usize bytes, u64& live_after_reser
 
 void update_peak(AtomicMemoryStats& stats, u64 value) noexcept {
   u64 peak = stats.peak_live_bytes.load(std::memory_order_relaxed);
-  while (peak < value && !stats.peak_live_bytes.compare_exchange_weak(
-                             peak, value, std::memory_order_relaxed, std::memory_order_relaxed)) {}
+  while (peak < value && !stats.peak_live_bytes.compare_exchange_weak(peak, value, std::memory_order_relaxed,
+                                                                      std::memory_order_relaxed)) {
+  }
 }
 
 MemoryStats load_stats(MemoryTag tag) noexcept {
@@ -96,33 +100,48 @@ MemoryStats load_stats(MemoryTag tag) noexcept {
 
 const char* memory_tag_name(MemoryTag tag) noexcept {
   switch (tag) {
-    case MemoryTag::Unspecified: return "Unspecified";
-    case MemoryTag::Core: return "Core";
-    case MemoryTag::Platform: return "Platform";
-    case MemoryTag::Renderer: return "Renderer";
-    case MemoryTag::Text: return "Text";
-    case MemoryTag::UI: return "UI";
-    case MemoryTag::Widgets: return "Widgets";
-    case MemoryTag::Host: return "Host";
-    case MemoryTag::Sample: return "Sample";
-    case MemoryTag::Count: break;
+    case MemoryTag::Unspecified:
+      return "Unspecified";
+    case MemoryTag::Core:
+      return "Core";
+    case MemoryTag::Platform:
+      return "Platform";
+    case MemoryTag::Renderer:
+      return "Renderer";
+    case MemoryTag::Text:
+      return "Text";
+    case MemoryTag::UI:
+      return "UI";
+    case MemoryTag::Widgets:
+      return "Widgets";
+    case MemoryTag::Host:
+      return "Host";
+    case MemoryTag::Sample:
+      return "Sample";
+    case MemoryTag::Count:
+      break;
   }
   return "Invalid";
 }
 
-MemoryTag current_memory_tag() noexcept { return g_memory_tag; }
+MemoryTag current_memory_tag() noexcept {
+  return g_memory_tag;
+}
 
 ScopedMemoryTag::ScopedMemoryTag(MemoryTag tag) noexcept : previous_(g_memory_tag) {
   g_memory_tag = valid_tag(tag) ? tag : MemoryTag::Unspecified;
 }
-ScopedMemoryTag::~ScopedMemoryTag() noexcept { g_memory_tag = previous_; }
+ScopedMemoryTag::~ScopedMemoryTag() noexcept {
+  g_memory_tag = previous_;
+}
 
-MemoryStats memory_stats(MemoryTag tag) noexcept { return load_stats(tag); }
+MemoryStats memory_stats(MemoryTag tag) noexcept {
+  return load_stats(tag);
+}
 
 MemorySnapshot memory_snapshot() noexcept {
   MemorySnapshot result{};
-  for (usize i = 0; i < kMemoryTagCount; ++i)
-    result.tags[i] = load_stats(static_cast<MemoryTag>(i));
+  for (usize i = 0; i < kMemoryTagCount; ++i) result.tags[i] = load_stats(static_cast<MemoryTag>(i));
   return result;
 }
 
@@ -134,8 +153,7 @@ MemoryLeakReport memory_leaks_since(const MemorySnapshot& baseline, MemoryTag ta
           now.live_bytes > before.live_bytes ? now.live_bytes - before.live_bytes : 0};
 }
 
-ScopedMemoryLeakReport::ScopedMemoryLeakReport(MemoryLeakCallback callback,
-                                               void* context) noexcept
+ScopedMemoryLeakReport::ScopedMemoryLeakReport(MemoryLeakCallback callback, void* context) noexcept
     : baseline_(memory_snapshot()), callback_(callback), context_(context) {}
 
 ScopedMemoryLeakReport::~ScopedMemoryLeakReport() noexcept {
@@ -143,8 +161,7 @@ ScopedMemoryLeakReport::~ScopedMemoryLeakReport() noexcept {
   for (usize i = 0; i < kMemoryTagCount; ++i) {
     const MemoryTag tag = static_cast<MemoryTag>(i);
     const MemoryLeakReport report = memory_leaks_since(baseline_, tag);
-    if (report.live_allocations != 0 || report.live_bytes != 0)
-      callback_(tag, report, context_);
+    if (report.live_allocations != 0 || report.live_bytes != 0) callback_(tag, report, context_);
   }
 }
 
@@ -153,19 +170,25 @@ void set_memory_budget(MemoryTag tag, usize budget_bytes) noexcept {
   g_stats[static_cast<usize>(tag)].budget_bytes.store(budget_bytes, std::memory_order_relaxed);
 }
 
-void heap_note_allocation(usize bytes) noexcept { note_event(bytes, current_memory_tag()); }
-u64 heap_allocation_count() noexcept { return g_alloc_count.load(std::memory_order_relaxed); }
-u64 heap_allocated_bytes() noexcept { return g_alloc_bytes.load(std::memory_order_relaxed); }
-u64 heap_thread_allocation_count() noexcept { return g_thread_alloc_count; }
+void heap_note_allocation(usize bytes) noexcept {
+  note_event(bytes, current_memory_tag());
+}
+u64 heap_allocation_count() noexcept {
+  return g_alloc_count.load(std::memory_order_relaxed);
+}
+u64 heap_allocated_bytes() noexcept {
+  return g_alloc_bytes.load(std::memory_order_relaxed);
+}
+u64 heap_thread_allocation_count() noexcept {
+  return g_thread_alloc_count;
+}
 
 namespace {
-void* allocate_tracked(usize size, usize alignment, MemoryTag tag,
-                       const ExternalAllocator* external) noexcept {
-  if (size == 0 || alignment == 0 || (alignment & (alignment - 1)) != 0 ||
-      !valid_tag(tag) ||
-      (external && (!external->allocate || !external->deallocate))) return nullptr;
-  const usize effective_alignment = alignment < alignof(AllocationHeader)
-                                        ? alignof(AllocationHeader) : alignment;
+void* allocate_tracked(usize size, usize alignment, MemoryTag tag, const ExternalAllocator* external) noexcept {
+  if (size == 0 || alignment == 0 || (alignment & (alignment - 1)) != 0 || !valid_tag(tag) ||
+      (external && (!external->allocate || !external->deallocate)))
+    return nullptr;
+  const usize effective_alignment = alignment < alignof(AllocationHeader) ? alignof(AllocationHeader) : alignment;
   constexpr usize header_size = sizeof(AllocationHeader);
   if (effective_alignment - 1 > std::numeric_limits<usize>::max() - header_size ||
       size > std::numeric_limits<usize>::max() - header_size - (effective_alignment - 1))
@@ -175,24 +198,22 @@ void* allocate_tracked(usize size, usize alignment, MemoryTag tag,
   u64 live_after_reserve = 0;
   if (!reserve_budget(stats, size, live_after_reserve)) return nullptr;
 
-  void* raw = external ? external->allocate(external->context, total, effective_alignment)
-                       : std::malloc(total);
+  void* raw = external ? external->allocate(external->context, total, effective_alignment) : std::malloc(total);
   if (!raw) {
     stats.live_bytes.fetch_sub(static_cast<u64>(size), std::memory_order_acq_rel);
     return nullptr;
   }
-  const auto raw_address = reinterpret_cast<std::uintptr_t>(raw);
-  const auto address_max = std::numeric_limits<std::uintptr_t>::max();
-  const auto alignment_slack = static_cast<std::uintptr_t>(effective_alignment - 1);
-  if (raw_address > address_max - static_cast<std::uintptr_t>(header_size) - alignment_slack) {
-    if (external) external->deallocate(external->context, raw, total, effective_alignment);
-    else std::free(raw);
+  void* aligned = static_cast<std::byte*>(raw) + header_size;
+  usize available = total - header_size;
+  if (!std::align(effective_alignment, size, aligned, available)) {
+    if (external)
+      external->deallocate(external->context, raw, total, effective_alignment);
+    else
+      std::free(raw);
     stats.live_bytes.fetch_sub(static_cast<u64>(size), std::memory_order_acq_rel);
     return nullptr;
   }
-  const auto start = raw_address + static_cast<std::uintptr_t>(header_size);
-  const auto aligned = (start + alignment_slack) & ~alignment_slack;
-  auto* header = reinterpret_cast<AllocationHeader*>(aligned) - 1;
+  auto* header = reinterpret_cast<AllocationHeader*>(static_cast<std::byte*>(aligned) - header_size);
   header->magic = kAllocationMagic;
   header->raw = raw;
   header->requested_bytes = size;
@@ -205,7 +226,7 @@ void* allocate_tracked(usize size, usize alignment, MemoryTag tag,
   note_event(size, tag);
   stats.live_allocations.fetch_add(1, std::memory_order_relaxed);
   update_peak(stats, live_after_reserve);
-  return reinterpret_cast<void*>(aligned);
+  return aligned;
 }
 }  // namespace
 
@@ -217,8 +238,7 @@ void* aligned_alloc_bytes(usize size, usize alignment, MemoryTag tag) noexcept {
   return allocate_tracked(size, alignment, tag, nullptr);
 }
 
-void* tracked_external_alloc_bytes(const ExternalAllocator& allocator,
-                                   usize size, usize alignment,
+void* tracked_external_alloc_bytes(const ExternalAllocator& allocator, usize size, usize alignment,
                                    MemoryTag tag) noexcept {
   return allocate_tracked(size, alignment, tag, &allocator);
 }

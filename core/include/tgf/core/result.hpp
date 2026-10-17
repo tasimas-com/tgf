@@ -7,12 +7,11 @@
 #include <tgf/core/assert.hpp>
 #include <tgf/core/config.hpp>
 #include <tgf/core/types.hpp>
-
 #include <type_traits>
 
 namespace tgf::core {
 
-enum class Error : u16 {
+enum class Error : u8 {
   None = 0,
   OutOfMemory,
   InvalidArgument,

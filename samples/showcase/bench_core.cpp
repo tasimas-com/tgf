@@ -1,15 +1,17 @@
 // Micro-benchmarks for tgf::core. These are smoke-level numbers for the showcase;
 // the statistically gated suite (P0.3) will replace them.
-#include "harness.hpp"
-
+#include <cstdint>
+#include <cstdlib>
 #include <tgf/core/hash.hpp>
 #include <tgf/core/memory.hpp>
 #include <tgf/core/profiler.hpp>
 #include <tgf/core/slot_map.hpp>
 #include <tgf/core/spsc.hpp>
-
-#include <cstdlib>
 #include <vector>
+
+#include "harness.hpp"
+#include "tgf/core/result.hpp"
+#include "tgf/core/types.hpp"
 
 using namespace tgf;
 using namespace tgf::core;
@@ -27,11 +29,11 @@ double time_ns_per_op(u64 ops, F&& body) {
 
 double bench_arena() {
   LinearArena a;
-  a.init(1 << 20);
+  a.init(1u << 20u);
   constexpr u64 kOps = 8'000'000;
   return time_ns_per_op(kOps, [&] {
     for (u64 i = 0; i < kOps; ++i) {
-      if ((i & 16383) == 0) a.reset();
+      if ((i & u64{16383}) == 0) a.reset();
       g_sink = g_sink + reinterpret_cast<std::uintptr_t>(a.allocate(64, 16));
     }
   });
@@ -81,6 +83,7 @@ double bench_slotmap_get() {
   SlotMap<Item> m(GrowPolicy::Fixed);
   m.reserve(100000);
   std::vector<Handle<Item>> hs;
+  hs.reserve(100000);
   for (u32 i = 0; i < 100000; ++i) hs.push_back(m.insert(Item{i, i}).value());
   constexpr u64 kOps = 20'000'000;
   return time_ns_per_op(kOps, [&] {
@@ -112,7 +115,7 @@ double bench_hash() {
   constexpr u64 kOps = 20'000'000;
   return time_ns_per_op(kOps, [&] {
     u64 acc = 0;
-    for (u64 i = 0; i < kOps; ++i) acc += fnv1a64(s + (i & 1), 19);
+    for (u64 i = 0; i < kOps; ++i) acc += fnv1a64(s + (i & u64{1}), 19);
     g_sink = g_sink + acc;
   });
 }

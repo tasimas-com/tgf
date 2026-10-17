@@ -1,12 +1,14 @@
 ---
 # Keep this list focused on correctness, portability, and avoidable hot-path cost.
 # See docs/CODING_STANDARD.md for the normative naming, ownership, error, and API policy.
+# Exclude avoid-pragma-once: CODING_STANDARD.md explicitly requires consistent #pragma once use.
 Checks: >
   -*,
   bugprone-*,
   clang-analyzer-*,
   performance-*,
   portability-*,
+  -portability-avoid-pragma-once,
   -bugprone-easily-swappable-parameters,
   -bugprone-implicit-widening-of-multiplication-result
 WarningsAsErrors: ''

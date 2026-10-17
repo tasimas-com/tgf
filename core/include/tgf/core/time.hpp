@@ -4,10 +4,9 @@
 // inside i64.
 #pragma once
 
+#include <limits>
 #include <tgf/core/result.hpp>
 #include <tgf/core/types.hpp>
-
-#include <limits>
 
 namespace tgf::core {
 

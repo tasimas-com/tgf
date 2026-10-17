@@ -1,6 +1,6 @@
 # TGF compiler and source-quality policy
 
-**Policy reviewed: 2026-10-15**
+**Policy reviewed: 2026-10-17**
 
 TGF uses C++20 (`CMAKE_CXX_STANDARD=20`) with language extensions disabled. The
 following are the two current stable/in-support compiler generations targeted
@@ -18,10 +18,10 @@ MSVC 14.52 is preview as of this policy date and is not a release-gate toolset.
 The compiler version policy must be reviewed when vendors publish new stable
 releases or change support lifetimes.
 
-## Hosted Tier-1 verification (2026-10-15)
+## Hosted Tier-1 verification (2026-10-17)
 
-The complete matrix passed in GitHub Actions [run #30](https://github.com/tasimas-com/tgf/actions/runs/38745686719)
-on commit `a4169289e8ea031b005aefba7a89d9e13a4075c2`: **14/14 jobs** across Debug and Release.
+The latest complete matrix passed in GitHub Actions [run #193](https://github.com/tasimas-com/tgf/actions/runs/39056856383)
+on commit `f9674c393c8ff09ed46625b4b4334350b413b6c2`: **14/14 jobs** across Debug and Release. An earlier baseline is retained in the project history.
 
 | Compiler | Exact version reported | Toolset | Debug | Release |
 |---|---|---|---:|---:|
@@ -38,9 +38,9 @@ the GCC/Clang major version before CMake configuration; on Windows it checks bot
 the `cl /Bv` compiler version and the actual `VCToolsVersion`, then configures the
 matching MSVC/Ninja preset.
 
-All 14 CTest artifacts were downloaded and inspected. Every ZIP is valid, every
-`LastTest.log` contains seven passing test entries, and every showcase reports
-26 checks with zero failures (**98/98 CTest test executions passed**).
+All 14 CTest artifacts from run #193 were downloaded and inspected. Every ZIP is valid, every
+`LastTest.log` contains **11/11 passing CTest entries**, and every showcase reports
+26 checks with zero failures (**154/154 CTest test executions passed**).
 
 ## Local developer environment
 
@@ -50,9 +50,25 @@ Tier-1 targets. No native MSVC environment is available locally; the MSVC eviden
 above comes from the native Windows GitHub-hosted runner, not from a local
 cross-compiler.
 
-The hosted compiler matrix does not claim that clang-format, clang-tidy, or
-Include-What-You-Use analysis has been executed. Their integration is documented
-below; actual-tool execution remains a separate source-quality validation task.
+## Hosted source-quality verification (2026-10-17)
+
+GitHub Actions [run #119](https://github.com/tasimas-com/tgf/actions/runs/39056856378)
+passed both source-quality jobs on commit `f9674c393c8ff09ed46625b4b4334350b413b6c2`.
+
+| Tool | LLVM 22 lane | LLVM 23 lane |
+|---|---|---|
+| clang-format | 22.1.8 — pass | 23.1.4 — pass |
+| clang-tidy | 22.1.8 — full TGF build passed | 23.1.4 — full TGF build passed |
+| Include-What-You-Use | 0.26 — strict full build passed | 0.27 — strict full build passed |
+
+The formatter checked all 29 repository-owned C/C++ source files. Both static
+analysis builds used `TGF_WARNINGS_AS_ERRORS=ON`. The IWYU lane uses
+`-Xiwyu;--error`, verifies the exact IWYU release, and checks implementation and
+showcase translation units. Only the generated public-header self-containment
+harness is excluded: it intentionally includes each header twice without using
+symbols, so IWYU would otherwise ask to delete the includes being tested. The
+normal compiler/CTest matrix still compiles that harness in every configuration.
+
 
 ## Warnings are errors
 
