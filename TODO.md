@@ -1,5 +1,5 @@
 # TGF — TASIMAS GUI Framework
-## Master Plan & Complete TODO  (Revision 22 — normative coding standard delivered)
+## Master Plan & Complete TODO  (Revision 23 — P0.1.3 compiler and source-quality gates verified)
 
 > Goal: the fastest, leanest GUI framework for **large professional software and games** — Photoshop, Blender, After Effects, Cubase, Dorico, FL Studio, Cinema 4D, Unreal/Unity-class editors, and in-game UI for 2D/3D games — written in C++, minimal CPU / GPU / RAM / disk, with an architecture future engineers can extend for decades.
 > License intent: free and open source (TASIMAS policy).
@@ -1234,3 +1234,27 @@ The project owner explicitly approved waiving the physical-host provisioning and
 ## Revision 22 — normative coding standard (2026-10-17)
 
 P0.1.5 is delivered by `docs/CODING_STANDARD.md`. The standard consolidates the existing project contract, naming and formatting rules, module boundaries, ownership/lifetime and allocator rules, error handling, thread/real-time constraints, public API documentation requirements, and explicit compatibility levels. It distinguishes the pre-1.0 experimental C++ surface from the intended supported 1.x source API and the future stable C ABI; it does not claim that the C ABI has already been implemented. A focused policy regression script is registered as `coding_standard_policy` in CTest, and the standard is linked from the repository README and CI documentation. This task adds policy documentation and a documentation-contract check; it does not implement P12.7 versioning automation or P11.1 C ABI compatibility tooling.
+
+
+## Revision 23 — P0.1.3 compiler and source-quality gates verified (2026-10-17)
+
+P0.1.3 is complete. PR [#4](https://github.com/tasimas-com/tgf/pull/4) was merged into
+`main` (merge commit `0bb7a34db35328569a78e321f8fa266ae8b43f36`). The required source-quality
+workflow [run #119](https://github.com/tasimas-com/tgf/actions/runs/39056856378) passed both
+LLVM jobs: clang-format checked all 29 repository-owned C/C++ files; complete TGF Debug builds
+passed clang-tidy with warnings-as-errors; strict IWYU passed for implementation and showcase
+translation units using the matched pairs LLVM 22.1.8/IWYU 0.26 and LLVM 23.1.4/IWYU 0.27.
+The generated duplicate-include header self-containment harness is narrowly excluded from IWYU
+because its intentionally unused includes are the subject of that test; it remains covered by
+its compile test and all production/showcase translation units remain under strict IWYU.
+
+The full Tier-1 hosted matrix [run #193](https://github.com/tasimas-com/tgf/actions/runs/39056856383)
+passed 14/14 jobs across MSVC 14.50/14.51, Clang 22/23, GCC 15/16, and AppleClang 17 in Debug
+and Release, with warnings-as-errors enabled. All 14 CTest artifacts were downloaded, ZIP
+integrity checked, and inspected: each reported 11/11 passing CTest cases and 26 showcase checks
+with zero failures, for 154/154 successful CTest executions.
+
+P0.1.3.a–g are therefore closed with implementation, automated regression coverage, and hosted
+evidence. This closes only P0.1.3; it does not close P0.1.4 benchmark-host/Tier-A work, the
+remaining Phase 0 research and ADR requirements, or the Phase 0 exit criteria. Phase 1 remains
+blocked until those separate criteria are satisfied.
