@@ -3,8 +3,10 @@
 #include <cstdlib>
 #include <limits>
 #include <memory>
-#include <new>
 #include <tgf/core/memory.hpp>
+#include "tgf/core/assert.hpp"
+#include "tgf/core/config.hpp"
+#include "tgf/core/types.hpp"
 
 namespace tgf::core {
 namespace {
