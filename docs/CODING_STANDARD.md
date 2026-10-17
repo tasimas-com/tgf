@@ -23,7 +23,8 @@ The following table is the canonical naming scheme. Follow existing names only w
 |---|---|---|
 | Namespace | lower snake case | `tgf::core`, `tgf::render` |
 | Namespace segment / module directory | lower snake case | `core/`, `widgets/` |
-| Class, struct, union, enum, concept, type alias | UpperCamelCase | `SlotMap`, `MemoryStats`, `LogLevel` |
+| Class, struct, union, enum, concept, semantic type alias | UpperCamelCase | `SlotMap`, `MemoryStats`, `LogLevel`, `Dip` |
+| Canonical primitive aliases from `tgf/core/types.hpp` | Lower-case short aliases (intentional exception) | `u8`, `u16`, `i32`, `f32`, `usize` |
 | Function and member function | lower snake case | `memory_snapshot()`, `set_log_level()` |
 | Local variable and parameter | lower snake case | `frame_count`, `new_capacity` |
 | Non-static data member | lower snake case with trailing underscore | `capacity_`, `free_head_` |
