@@ -1,6 +1,8 @@
 #include <atomic>
+#include <cstddef>
 #include <cstdlib>
 #include <limits>
+#include <memory>
 #include <new>
 #include <tgf/core/memory.hpp>
 
@@ -198,10 +200,9 @@ void* allocate_tracked(usize size, usize alignment, MemoryTag tag, const Externa
     stats.live_bytes.fetch_sub(static_cast<u64>(size), std::memory_order_acq_rel);
     return nullptr;
   }
-  const auto raw_address = reinterpret_cast<std::uintptr_t>(raw);
-  const auto address_max = std::numeric_limits<std::uintptr_t>::max();
-  const auto alignment_slack = static_cast<std::uintptr_t>(effective_alignment - 1);
-  if (raw_address > address_max - static_cast<std::uintptr_t>(header_size) - alignment_slack) {
+  void* aligned = static_cast<std::byte*>(raw) + header_size;
+  usize available = total - header_size;
+  if (!std::align(effective_alignment, size, aligned, available)) {
     if (external)
       external->deallocate(external->context, raw, total, effective_alignment);
     else
@@ -209,9 +210,7 @@ void* allocate_tracked(usize size, usize alignment, MemoryTag tag, const Externa
     stats.live_bytes.fetch_sub(static_cast<u64>(size), std::memory_order_acq_rel);
     return nullptr;
   }
-  const auto start = raw_address + static_cast<std::uintptr_t>(header_size);
-  const auto aligned = (start + alignment_slack) & ~alignment_slack;
-  auto* header = reinterpret_cast<AllocationHeader*>(aligned) - 1;
+  auto* header = reinterpret_cast<AllocationHeader*>(static_cast<std::byte*>(aligned) - header_size);
   header->magic = kAllocationMagic;
   header->raw = raw;
   header->requested_bytes = size;
@@ -224,7 +223,7 @@ void* allocate_tracked(usize size, usize alignment, MemoryTag tag, const Externa
   note_event(size, tag);
   stats.live_allocations.fetch_add(1, std::memory_order_relaxed);
   update_peak(stats, live_after_reserve);
-  return reinterpret_cast<void*>(aligned);
+  return aligned;
 }
 }  // namespace
 
