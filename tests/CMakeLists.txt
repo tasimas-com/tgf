@@ -36,3 +36,5 @@ endif()
 
   add_test(NAME compiler_policy
            COMMAND ${Python3_EXECUTABLE} ${PROJECT_SOURCE_DIR}/tools/check_compiler_policy.py ${PROJECT_SOURCE_DIR})
+  add_test(NAME coding_standard_policy
+           COMMAND ${Python3_EXECUTABLE} ${PROJECT_SOURCE_DIR}/tools/check_coding_standard.py ${PROJECT_SOURCE_DIR})
