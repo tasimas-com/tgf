@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "harness.hpp"
+#include "tgf/core/types.hpp"
 
 namespace {
 
