@@ -5,7 +5,7 @@ Repository: <https://github.com/tasimas-com/tgf> · Master checklist: [`TODO.md`
 Retained-mode, data-oriented, damage-driven C++20 GUI framework for large professional
 applications and games. Free and open source (Apache-2.0 intended).
 
-* Build matrix and commands: [`docs/BUILDING.md`](docs/BUILDING.md) · Master plan: [`TODO.md`](TODO.md) · Design baseline: [`docs/DESIGN.md`](docs/DESIGN.md) ·
+* Build matrix and commands: [`docs/BUILDING.md`](docs/BUILDING.md) · Coding standard: [`docs/CODING_STANDARD.md`](docs/CODING_STANDARD.md) · Master plan: [`TODO.md`](TODO.md) · Design baseline: [`docs/DESIGN.md`](docs/DESIGN.md) ·
   Status ledger: [`docs/STATUS.md`](docs/STATUS.md) · CI policy: [`docs/CI.md`](docs/CI.md) · Compiler policy: [`docs/COMPILER_SUPPORT.md`](docs/COMPILER_SUPPORT.md) · ADRs: [`docs/adr/`](docs/adr/)
 * Snapshot audit (2026-10-14): [`docs/audit/`](docs/audit/) · The current implementation is an early `tgf::core` foundation, not yet a GUI framework 1.0.0.
 

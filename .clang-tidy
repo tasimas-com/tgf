@@ -1,6 +1,6 @@
 ---
 # Keep this list focused on correctness, portability, and avoidable hot-path cost.
-# A broader readability policy belongs in the separate coding-standard task.
+# See docs/CODING_STANDARD.md for the normative naming, ownership, error, and API policy.
 Checks: >
   -*,
   bugprone-*,
