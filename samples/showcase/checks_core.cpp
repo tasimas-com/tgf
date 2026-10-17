@@ -6,7 +6,6 @@
 #include <fstream>
 #include <limits>
 #include <stdexcept>
-#include <stdexcept>
 #include <string>
 #include <tgf/core/build_info.hpp>
 #include <tgf/core/hash.hpp>
@@ -734,8 +733,7 @@ bool check_memory_mapped_file(Context& c) {
     assigned = std::move(moved);
     // The prior move's documented postcondition is that its source is closed.
     // NOLINTNEXTLINE(bugprone-use-after-move,clang-analyzer-cplusplus.Move)
-    SC_REQUIRE(c, assigned.is_open() && !moved.is_open(),
-               "move assignment transfers mapping ownership exactly once");
+    SC_REQUIRE(c, assigned.is_open() && !moved.is_open(), "move assignment transfers mapping ownership exactly once");
   }
   {
     const int input_fd = ::open(path, O_RDONLY);
@@ -801,8 +799,7 @@ bool check_memory_mapped_file(Context& c) {
     assigned = std::move(moved);
     // The prior move's documented postcondition is that its source is closed.
     // NOLINTNEXTLINE(bugprone-use-after-move,clang-analyzer-cplusplus.Move)
-    SC_REQUIRE(c, assigned.is_open() && !moved.is_open(),
-               "move assignment transfers mapping ownership exactly once");
+    SC_REQUIRE(c, assigned.is_open() && !moved.is_open(), "move assignment transfers mapping ownership exactly once");
   }
   {
     std::ifstream input(path, std::ios::binary);
