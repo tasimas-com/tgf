@@ -43,9 +43,12 @@ def main() -> int:
     # The configured IWYU integration must be strict; a report-only invocation
     # is not accepted as a successful CI analysis.
     integration = (root / "cmake" / "TgfQualityTools.cmake").read_text(encoding="utf-8")
+    header_checks = (root / "tests" / "CMakeLists.txt").read_text(encoding="utf-8")
     errors = [item for item in required if item not in workflow]
     if "CMAKE_CXX_INCLUDE_WHAT_YOU_USE" not in integration or "-Xiwyu;--error" not in integration:
         errors.append("CMake IWYU integration must fail the build on include diagnostics")
+    if 'set_property(TARGET tgf_header_check PROPERTY CXX_INCLUDE_WHAT_YOU_USE "")' not in header_checks:
+        errors.append("the intentional duplicate-include header harness must be excluded from IWYU")
     if "continue-on-error:" in workflow:
         errors.append("source-quality checks may not be allowed to fail")
     if "permissions:\n  contents: read" not in workflow:
