@@ -50,7 +50,7 @@ Additional rules:
 
 ### 3.1 Formatter is authoritative
 
-The repository's `.clang-format` file is the formatting source of truth. Its current policy is Google-derived style, two-space indentation, a 120-column limit, left pointer alignment, and case-sensitive include sorting. Do not hand-edit around clang-format or introduce per-directory style files without an approved decision.
+The repository's `.clang-format` file is the formatting source of truth. Its current settings are `BasedOnStyle: Google`, `IndentWidth: 2`, `ColumnLimit: 120`, `PointerAlignment: Left`, and `SortIncludes: CaseSensitive`. In prose, that means Google style, two-space indentation, a 120-column limit, left pointer alignment, and case-sensitive include sorting. Do not hand-edit around clang-format or introduce per-directory style files without an approved decision.
 
 Run the check before submitting C/C++ changes:
 
