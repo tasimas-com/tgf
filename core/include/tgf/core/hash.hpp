@@ -25,7 +25,7 @@ constexpr u64 fnv1a64(std::string_view s, u64 seed = kFnvOffset) noexcept {
 }
 
 constexpr u64 hash_combine(u64 a, u64 b) noexcept {
-  a ^= b + 0x9e3779b97f4a7c15ull + (a << 6) + (a >> 2);
+  a ^= b + 0x9e3779b97f4a7c15ull + (a << 6u) + (a >> 2u);
   return a;
 }
 
