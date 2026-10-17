@@ -18,6 +18,8 @@ def main() -> int:
         "pull_request:",
         "push:",
         "workflow_dispatch:",
+        "permissions:\\n  contents: read",
+        "grep -F \\"include-what-you-use ${IWYU_VERSION} \\" ",
         "ubuntu-26.04",
         'llvm-version: "22"',
         'iwyu-version: "0.26"',
@@ -48,6 +50,8 @@ def main() -> int:
         errors.append("CMake IWYU integration must fail the build on include diagnostics")
     if "continue-on-error:" in workflow:
         errors.append("source-quality checks may not be allowed to fail")
+    if "contents: write" in workflow or "normalize-format:" in workflow or "git push" in workflow:
+        errors.append("source-quality workflow must be read-only and must never rewrite contributor branches")
     if errors:
         for item in errors:
             print(f"FAIL: {item}", file=sys.stderr)
