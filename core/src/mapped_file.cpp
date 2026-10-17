@@ -1,9 +1,11 @@
-#include <cstdlib>
-#include <cstring>
+#include <cstdint>
 #include <limits>
 #include <tgf/core/mapped_file.hpp>
+#include "tgf/core/types.hpp"
 
 #if defined(_WIN32)
+#include <cstdlib>
+#include <cstring>
 #ifndef NOMINMAX
 #define NOMINMAX
 #endif
