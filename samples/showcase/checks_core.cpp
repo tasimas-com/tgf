@@ -11,6 +11,7 @@
 #include <limits>
 #include <stdexcept>
 #include <string>
+#include <system_error>
 #include <tgf/core/build_info.hpp>
 #include <tgf/core/hash.hpp>
 #include <tgf/core/log.hpp>
