@@ -9,6 +9,8 @@
 #include <vector>
 
 #include "harness.hpp"
+#include "tgf/core/result.hpp"
+#include "tgf/core/types.hpp"
 
 using namespace tgf;
 using namespace tgf::core;
