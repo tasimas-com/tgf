@@ -11,7 +11,7 @@
 
 namespace tgf::core {
 
-enum class Error : u16 {
+enum class Error : u8 {
   None = 0,
   OutOfMemory,
   InvalidArgument,
