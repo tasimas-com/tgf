@@ -11,6 +11,13 @@ foreach(h IN LISTS _tgf_core_headers)
 endforeach()
 add_library(tgf_header_check OBJECT ${_hdr_srcs})
 target_link_libraries(tgf_header_check PRIVATE TGF::Core)
+# This generated harness intentionally includes each public header twice and
+# uses no symbols: IWYU would correctly report both test includes as unused,
+# defeating the self-containment/include-guard compile test. Keep all real
+# implementation and showcase translation units under strict IWYU.
+if(TGF_ENABLE_IWYU)
+  set_property(TARGET tgf_header_check PROPERTY CXX_INCLUDE_WHAT_YOU_USE "")
+endif()
 # Deliberately NOT tgf_apply_policy(CORE): exceptions + RTTI stay on here.
 tgf_apply_policy(tgf_header_check)
 
