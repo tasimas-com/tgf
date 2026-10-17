@@ -101,11 +101,12 @@ bool MappedFile::open(const char* utf8_path, MappedFileAccess access) noexcept {
   view_ = view;
   return true;
 #else
-  const int flags = access == MappedFileAccess::ReadWrite ? O_RDWR : O_RDONLY;
+  const unsigned int flags =
+      static_cast<unsigned int>(access == MappedFileAccess::ReadWrite ? O_RDWR : O_RDONLY);
 #ifdef O_CLOEXEC
-  const int file = ::open(utf8_path, flags | O_CLOEXEC);
+  const int file = ::open(utf8_path, static_cast<int>(flags | static_cast<unsigned int>(O_CLOEXEC)));
 #else
-  const int file = ::open(utf8_path, flags);
+  const int file = ::open(utf8_path, static_cast<int>(flags));
 #endif
   if (file < 0) return false;
   struct stat info{};
