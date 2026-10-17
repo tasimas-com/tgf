@@ -86,7 +86,7 @@ jobs:
               -DCMAKE_BUILD_TYPE=Release \
               -DCMAKE_PREFIX_PATH="/usr/lib/llvm-$LLVM_VERSION"
           cmake --build "$RUNNER_TEMP/iwyu-build" --target include-what-you-use --parallel 2
-          "$RUNNER_TEMP/iwyu-build/bin/include-what-you-use" --version
+          "$RUNNER_TEMP/iwyu-build/bin/include-what-you-use" --version | grep -F "include-what-you-use $IWYU_VERSION "
 
       - name: Run clang-tidy on the complete TGF build
         shell: bash
