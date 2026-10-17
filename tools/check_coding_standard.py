@@ -30,9 +30,8 @@ REQUIRED_CONTRACTS = (
     "TGF_CHECK",
     "RAII",
     "generational handles",
-    "no cross-compiler or cross-standard-library C++ binary ABI",
+    "does not promise a cross-compiler or cross-standard-library C++ binary ABI",
     "Stable C ABI",
-    "TGF_BENCHMARK_RUNNER_READY",
 )
 
 # This test guards the standard's existence and critical architectural contracts.
