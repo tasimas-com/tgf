@@ -1,6 +1,8 @@
 #include <cmath>
 #include <tgf/core/math.hpp>
 
+#include "tgf/core/types.hpp"
+
 namespace tgf::core {
 
 f32 srgb_to_linear(f32 c) noexcept {
