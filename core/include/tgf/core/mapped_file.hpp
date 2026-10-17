@@ -12,7 +12,8 @@ enum class MappedFileAccess : u8 { ReadOnly, ReadWrite };
 // Maps a whole file into the process address space. The OS controls which pages
 // become resident; a mapping is not a promise that the entire file fits in RAM.
 // Paths are UTF-8 on every platform. Empty files open successfully with size()==0
-// and data()==nullptr. This class is not thread-safe.
+// and data()==nullptr. Moves transfer ownership and leave the source closed and reusable.
+// This class is not thread-safe.
 class TGF_API MappedFile {
  public:
   MappedFile() noexcept = default;
