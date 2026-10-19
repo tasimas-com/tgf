@@ -22,8 +22,8 @@ PUBLIC_ONLY = frozenset({"widgets", "pro", "tools", "host", "c", "bindings"})
 REQUIRED_DIRS = ("core", "platform", "rhi", "render", "text", "ui", "widgets", "pro",
                  "tools", "host", "c", "bindings", "samples", "benchmarks", "tests",
                  "docs", "third_party", "cmake")
-SOURCE_SUFFIXES = {".h", ".hpp", ".hh", ".hxx", ".c", ".cc", ".cpp", ".cxx", ".inl"}
-POLICY_SUFFIXES = SOURCE_SUFFIXES | {".cmake", ".json", ".py", ".in", ".ps1", ".cmd", ".bat", ".yml", ".yaml"}
+SOURCE_SUFFIXES = {".h", ".hpp", ".hh", ".hxx", ".c", ".cc", ".cpp", ".cxx", ".m", ".mm", ".inl", ".ipp", ".inc"}
+POLICY_SUFFIXES = SOURCE_SUFFIXES | {".cmake", ".json", ".py", ".in", ".ps1", ".cmd", ".bat", ".yml", ".yaml", ".txt", ".toml", ".ini", ".xml", ".rc", ".props", ".targets", ".vcxproj"}
 EXCLUDED = {".git", ".venv", "venv", "__pycache__", "build", "out", "third_party"}
 INCLUDE_START = re.compile(r"^\s*#\s*include\b")
 INCLUDE_LITERAL = re.compile(r'^\s*#\s*include\s*[<"]([^>"]+)[>"]')
