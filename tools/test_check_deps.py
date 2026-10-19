@@ -147,6 +147,16 @@ def main() -> int:
         assert any("may not include backend" in error for error in errors), errors
 
         reset_sources(root)
+        d3d_source = root / "rhi/backends/d3d12/src"
+        d3d_source.mkdir(parents=True)
+        (d3d_source / "device.hpp").write_text("// backend-private fixture\\n", encoding="utf-8")
+        (backend_dir / "relative.cpp").write_text(
+            '#include "../../d3d12/src/device.hpp"\\n', encoding="utf-8"
+        )
+        errors = checker.check(root)
+        assert any("may not include backend" in error for error in errors), errors
+
+        reset_sources(root)
         (root / "ui/src/unknown.cpp").write_text(
             "#include <tgf/unknown/api.hpp>\n", encoding="utf-8"
         )
@@ -178,6 +188,14 @@ def main() -> int:
         machine_path = "C:" + chr(92) + "Users" + chr(92) + "Developer"
         (root / "tools/path.py").write_text(
             f'ROOT = "{machine_path}"\n', encoding="utf-8"
+        )
+        errors = checker.check(root)
+        assert any("absolute machine-specific path" in error for error in errors), errors
+
+        reset_sources(root)
+        posix_path = chr(47) + "home" + chr(47) + "rayen" + chr(47) + "project"
+        (root / "tools/posix_path.py").write_text(
+            f'ROOT = "{posix_path}"\\n', encoding="utf-8"
         )
         errors = checker.check(root)
         assert any("absolute machine-specific path" in error for error in errors), errors
