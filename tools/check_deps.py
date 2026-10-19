@@ -35,7 +35,7 @@ FORBIDDEN_PUBLIC = re.compile(
     r"X11/|xcb/|wayland(?:-client|-server)?\.h|hb(?:-ft)?\.h|ft2build\.h|"
     r"GL/|EGL/|GLES[0-9]*/)", re.IGNORECASE)
 ABS_WINDOWS = re.compile(r"(?<![A-Za-z0-9])[A-Za-z]:[\\/]+[A-Za-z]")
-ABS_POSIX = re.compile(r"(?<![A-Za-z0-9\"'])/(?:Users|home|mnt|Volumes|workspace|workspaces|Libraries|Program Files)/", re.I)
+ABS_POSIX = re.compile(r"(?<![A-Za-z0-9])/(?:Users|home|mnt|Volumes|workspace|workspaces|Libraries|Program Files)/", re.I)
 
 def parse_documented_policy(root: pathlib.Path) -> list[str]:
     todo = root / "TODO.md"
