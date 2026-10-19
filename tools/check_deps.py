@@ -27,7 +27,7 @@ POLICY_SUFFIXES = SOURCE_SUFFIXES | {".cmake", ".json", ".py", ".in", ".ps1", ".
 EXCLUDED = {".git", ".venv", "venv", "__pycache__", "build", "out", "third_party"}
 INCLUDE_START = re.compile(r"^\s*#\s*include\b")
 INCLUDE_LITERAL = re.compile(r'^\s*#\s*include\s*[<"]([^>"]+)[>"]')
-INCLUDE_ANGLE = re.compile(r'^\s*#\s*include\s*<[^>]+>\s*(?://.*)?
+INCLUDE_ANGLE = re.compile(r"^\s*#\s*include\s*<")
 INCLUDE_TGF = re.compile(r"^tgf/([^/]+)/(.+)$")
 FORBIDDEN_PUBLIC = re.compile(
     r"^(?:imgui(?:\.h|/)|GLFW(?:\.h|/)|glfw3\.h|SDL(?:\.h|/|2/|3/)|"
