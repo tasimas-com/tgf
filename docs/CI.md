@@ -111,6 +111,31 @@ caching**, not an sccache compiler cache. The CTest log is uploaded per job with
 
 The CI contract test checks the explicit seven-target/two-configuration matrix, exact compiler binaries/toolsets and version probes, Windows MSVC/Ninja configuration, cache path, artifact upload, and nightly runner guard.
 
+## Module dependency enforcement (P0.1.6)
+
+`tools/check_deps.py` enforces the dependency matrix in the root `TODO.md` §4. It rejects
+undeclared TGF module edges, non-canonical cross-module includes, include-path traversal,
+macro-based include directives that cannot be validated, unknown module names, and includes
+that bypass another module's public header tree. `widgets` can depend only on `ui`;
+`pro` can depend only on `widgets` and `ui`; `tools`, `host`, and `c` can consume any
+architectural layer through public headers; and `bindings` can consume only the public C ABI.
+RHI backend implementations are isolated from one another, and public headers cannot expose
+the platform/graphics SDK and implementation-only third-party headers covered by the policy.
+The checker also retains repository-layout and machine-specific absolute-path checks.
+
+The checker parses the normative table and fails when its executable policy drifts from
+`TODO.md`. Its black-box regression suite exercises all **38 allowed** and **94 forbidden**
+directed module edges, along with relative-include bypasses, private/missing public headers,
+SDK leaks, RHI cross-backend includes, uppercase/unknown module names, path traversal,
+non-literal includes, policy drift, and path hygiene.
+
+When `TGF_BUILD_TESTS=ON`, CMake now requires a Python interpreter instead of silently
+omitting policy tests. CTest runs both `dependency_dag` (the real repository) and
+`dependency_dag_policy_regressions` (the positive/negative fixture suite). Every hosted
+compiler/OS matrix job explicitly installs Python 3.13 with `actions/setup-python@v7`
+before configure/build/test, so the dependency gate cannot disappear on a runner missing
+a system Python installation.
+
 ## Source-quality enforcement (P0.1.3.c–e)
 
 The dedicated source-quality workflow runs on pushes, pull requests, and manual dispatches for both supported LLVM generations. It installs version-matched clang-format and clang-tidy packages, checks every repository-owned C/C++ source file, and builds IWYU from its matching release tag (0.26 for LLVM 22; 0.27 for LLVM 23). It then builds TGF with `TGF_ENABLE_CLANG_TIDY=ON` and `TGF_ENABLE_IWYU=ON`, keeping warnings-as-errors enabled. These jobs are required CI checks: missing tools, unsupported versions, format drift, analyzer diagnostics, or IWYU include violations fail the workflow. The local CMake switches remain opt-in so ordinary developers are not forced to install LLVM analysis tools.
