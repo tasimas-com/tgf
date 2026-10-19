@@ -26,25 +26,28 @@ if(TGF_BUILD_SHOWCASE)
   add_test(NAME showcase_checks COMMAND tgf_showcase --checks-only)
 endif()
 
-find_package(Python3 COMPONENTS Interpreter)
-if(Python3_FOUND)
-  add_test(NAME dependency_dag COMMAND ${Python3_EXECUTABLE} ${PROJECT_SOURCE_DIR}/tools/check_deps.py ${PROJECT_SOURCE_DIR})
-  add_test(NAME dependency_dag_bindings_rule
-           COMMAND ${Python3_EXECUTABLE} ${PROJECT_SOURCE_DIR}/tools/test_check_deps.py ${PROJECT_SOURCE_DIR}/tools/check_deps.py)
-  add_test(NAME cmake_preset_matrix
-           COMMAND ${Python3_EXECUTABLE} ${PROJECT_SOURCE_DIR}/tools/check_presets.py ${PROJECT_SOURCE_DIR}/CMakePresets.json)
-  add_test(NAME ci_workflow_contract
-           COMMAND ${Python3_EXECUTABLE} ${PROJECT_SOURCE_DIR}/tools/check_ci_workflows.py ${PROJECT_SOURCE_DIR})
-  add_test(NAME benchmark_host_policy
-           COMMAND ${Python3_EXECUTABLE} ${PROJECT_SOURCE_DIR}/tools/test_check_benchmark_host.py)
-  add_test(NAME benchmark_host_inventory
-           COMMAND ${Python3_EXECUTABLE} ${PROJECT_SOURCE_DIR}/tools/test_collect_benchmark_host_inventory.py)
-  add_test(NAME compiler_policy
-           COMMAND ${Python3_EXECUTABLE} ${PROJECT_SOURCE_DIR}/tools/check_compiler_policy.py ${PROJECT_SOURCE_DIR})
-  add_test(NAME coding_standard_policy
-           COMMAND ${Python3_EXECUTABLE} ${PROJECT_SOURCE_DIR}/tools/check_coding_standard.py ${PROJECT_SOURCE_DIR})
-  add_test(NAME source_quality_workflow
-           COMMAND ${Python3_EXECUTABLE} ${PROJECT_SOURCE_DIR}/tools/check_source_quality_workflow.py ${PROJECT_SOURCE_DIR})
-  add_test(NAME format_checker_discovery
-           COMMAND ${Python3_EXECUTABLE} ${PROJECT_SOURCE_DIR}/tools/test_check_format.py)
-endif()
+# Dependency policy is a required test gate, not an optional best-effort check.
+# Failing configuration when Python is unavailable prevents CI from silently
+# dropping the DAG checks on one of the supported operating systems.
+find_package(Python3 3.10 COMPONENTS Interpreter REQUIRED)
+
+add_test(NAME dependency_dag
+         COMMAND ${Python3_EXECUTABLE} ${PROJECT_SOURCE_DIR}/tools/check_deps.py ${PROJECT_SOURCE_DIR})
+add_test(NAME dependency_dag_policy_regressions
+         COMMAND ${Python3_EXECUTABLE} ${PROJECT_SOURCE_DIR}/tools/test_check_deps.py ${PROJECT_SOURCE_DIR}/tools/check_deps.py)
+add_test(NAME cmake_preset_matrix
+         COMMAND ${Python3_EXECUTABLE} ${PROJECT_SOURCE_DIR}/tools/check_presets.py ${PROJECT_SOURCE_DIR}/CMakePresets.json)
+add_test(NAME ci_workflow_contract
+         COMMAND ${Python3_EXECUTABLE} ${PROJECT_SOURCE_DIR}/tools/check_ci_workflows.py ${PROJECT_SOURCE_DIR})
+add_test(NAME benchmark_host_policy
+         COMMAND ${Python3_EXECUTABLE} ${PROJECT_SOURCE_DIR}/tools/test_check_benchmark_host.py)
+add_test(NAME benchmark_host_inventory
+         COMMAND ${Python3_EXECUTABLE} ${PROJECT_SOURCE_DIR}/tools/test_collect_benchmark_host_inventory.py)
+add_test(NAME compiler_policy
+         COMMAND ${Python3_EXECUTABLE} ${PROJECT_SOURCE_DIR}/tools/check_compiler_policy.py ${PROJECT_SOURCE_DIR})
+add_test(NAME coding_standard_policy
+         COMMAND ${Python3_EXECUTABLE} ${PROJECT_SOURCE_DIR}/tools/check_coding_standard.py ${PROJECT_SOURCE_DIR})
+add_test(NAME source_quality_workflow
+         COMMAND ${Python3_EXECUTABLE} ${PROJECT_SOURCE_DIR}/tools/check_source_quality_workflow.py ${PROJECT_SOURCE_DIR})
+add_test(NAME format_checker_discovery
+         COMMAND ${Python3_EXECUTABLE} ${PROJECT_SOURCE_DIR}/tools/test_check_format.py)

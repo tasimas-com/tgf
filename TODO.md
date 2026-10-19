@@ -271,12 +271,14 @@ Each becomes a file `docs/adr/NNNN-title.md` in Phase 0. Recommended decision an
 | widgets | ui (public API only) |
 | pro | widgets, ui (public API only) |
 | tools, host, c | any of the above through public headers |
+| bindings | c (stable C ABI only) |
 
 **Dependency rules:**
 - A layer may depend only on layers it is allowed in the table above.
 - `core` depends on nothing but the standard library.
 - `rhi` backends never include each other; platform code never includes `ui`.
 - `widgets` and `pro` use only the public `ui` API (same API as user widgets — "eat your own dog food").
+- Language bindings depend only on the public `c` module / stable C ABI, never on C++ module internals.
 
 **Frame pipeline:**
 `OS events → input queue → event routing → state update/animation → style resolve (dirty only) → layout (dirty only) → paint (generate display list, dirty only) → batch & sort → frame packet → render thread (or same thread in latency mode) → RHI submit → present (damage rects)`.
@@ -345,6 +347,10 @@ Each becomes a file `docs/adr/NNNN-title.md` in Phase 0. Recommended decision an
   - [x] Define private, experimental public C++, supported 1.x C++, and planned stable C ABI levels without claiming an unreleased ABI exists.
   - [x] Add a regression check for required policy sections and register it in CTest; document the check and link the policy from the README.
 - [p] P0.1.6 Dependency-DAG checker script (fails CI on illegal includes, using the §4 table)
+  - [ ] Validate that the checker policy matches the normative §4 table and fail if documentation drifts.
+  - [ ] Enforce permitted module edges, public-header-only consumer edges, canonical include spelling, and RHI backend isolation.
+  - [ ] Reject include-path traversal, uninspectable macro includes, public SDK leaks, unknown modules, and machine-specific absolute paths.
+  - [ ] Add exhaustive positive/negative dependency fixtures and make the checker a mandatory CTest/CI gate on every matrix runner.
 - [ ] P0.1.7 Contribution guide, code of conduct, issue/PR templates, ADR template
 - [ ] ★ P0.1.8 License/SBOM tooling and third-party policy file (ADR-0016)
 - [p] ★ P0.1.9 Build-time and header-hygiene tracking (clean + incremental build time budgets, per-header cost report)
