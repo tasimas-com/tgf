@@ -140,7 +140,7 @@ def check(root: pathlib.Path) -> list[str]:
                     if dependency != module and dependency not in allowed:
                         errors.append(f"{relative}:{number}: module '{module}' may not depend on '{dependency}'")
                     if dependency != module and module in PUBLIC_ONLY:
-                        header = root / dependency / "include" / pathlib.Path(*pathlib.PurePosixPath(remainder).parts)
+                        header = root / dependency / "include" / "tgf" / dependency / pathlib.Path(*pathlib.PurePosixPath(remainder).parts)
                         if not header.is_file():
                             errors.append(f"{relative}:{number}: module '{module}' must include '{dependency}' through an existing public header")
                     if module == "rhi" and importing_backend:
