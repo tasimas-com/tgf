@@ -54,6 +54,9 @@ def main() -> int:
                 "AppleClang",
                 "configuration: [debug, release]",
                 "actions/checkout@v7",
+                "actions/setup-python@v7",
+                "Set up Python 3.13",
+                'python-version: "3.13"',
                 "actions/cache@v4",
                 "ilammy/msvc-dev-cmd@v1.13.0",
                 "Install GCC 16 on Ubuntu 26.04",
@@ -194,6 +197,12 @@ def main() -> int:
 
             steps = job.get("steps", [])
             steps_by_name = {step.get("name"): step for step in steps if isinstance(step, dict)}
+            python_setup = steps_by_name.get("Set up Python 3.13", {})
+            if (
+                python_setup.get("uses") != "actions/setup-python@v7"
+                or python_setup.get("with", {}).get("python-version") != "3.13"
+            ):
+                errors.append("ci.yml: Python 3.13 must be explicitly installed for required policy tests")
             gcc_install = steps_by_name.get("Install GCC 16 on Ubuntu 26.04", {})
             if gcc_install.get("if") != "matrix.target.compiler-key == 'gcc-16'":
                 errors.append("ci.yml: GCC 16 installation must be scoped to the GCC 16 target")
