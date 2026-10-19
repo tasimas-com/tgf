@@ -175,9 +175,9 @@ def main() -> int:
         assert any("non-literal include" in error for error in errors), errors
 
         reset_sources(root)
+        machine_path = "C:" + chr(92) + "Users" + chr(92) + "Developer"
         (root / "tools/path.py").write_text(
-            'ROOT = "C:" + chr(92) + "Users" + chr(92) + "Developer"\n',
-            encoding="utf-8",
+            f'ROOT = "{machine_path}"\n', encoding="utf-8"
         )
         errors = checker.check(root)
         assert any("absolute machine-specific path" in error for error in errors), errors
