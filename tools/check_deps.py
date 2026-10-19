@@ -149,15 +149,22 @@ def check(root: pathlib.Path) -> list[str]:
                             errors.append(f"{relative}:{number}: RHI backend '{importing_backend}' may not include backend '{included_backend}'")
                 else:
                     foreign = foreign_target(root, source, name)
-                    if foreign and foreign[0] != module:
+                    if foreign:
                         dependency, target = foreign
-                        if dependency not in allowed:
-                            errors.append(f"{relative}:{number}: module '{module}' may not depend on '{dependency}' (relative include bypass)")
+                        if dependency != module:
+                            if dependency not in allowed:
+                                errors.append(f"{relative}:{number}: module '{module}' may not depend on '{dependency}' (relative include bypass)")
+                            if module in PUBLIC_ONLY:
+                                public_root = root / dependency / "include"
+                                if not target.parts or target.parts[0] != "include":
+                                    errors.append(f"{relative}:{number}: module '{module}' may include '{dependency}' only through its public header tree")
+                            errors.append(f"{relative}:{number}: cross-module include must use canonical <tgf/{dependency}/...> spelling")
+                        # RHI backends are separate implementation domains inside
+                        # one top-level module, so check this even when dependency == module.
                         if module == "rhi" and importing_backend:
                             included_backend = backend(target.parts)
                             if included_backend and included_backend != importing_backend:
                                 errors.append(f"{relative}:{number}: RHI backend '{importing_backend}' may not include backend '{included_backend}'")
-                        errors.append(f"{relative}:{number}: cross-module include must use canonical <tgf/{dependency}/...> spelling")
                 if public and FORBIDDEN_PUBLIC.match(name):
                     errors.append(f"{relative}:{number}: public header includes forbidden platform/graphics/third-party header")
 
