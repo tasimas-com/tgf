@@ -29,7 +29,7 @@ endif()
 # Dependency policy is a required test gate, not an optional best-effort check.
 # Failing configuration when Python is unavailable prevents CI from silently
 # dropping the DAG checks on one of the supported operating systems.
-find_package(Python3 COMPONENTS Interpreter REQUIRED)
+find_package(Python3 3.10 COMPONENTS Interpreter REQUIRED)
 
 add_test(NAME dependency_dag
          COMMAND ${Python3_EXECUTABLE} ${PROJECT_SOURCE_DIR}/tools/check_deps.py ${PROJECT_SOURCE_DIR})
