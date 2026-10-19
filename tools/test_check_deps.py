@@ -95,6 +95,13 @@ def main() -> int:
         errors = checker.check(root)
         assert not errors, "allowed edges failed:\n" + "\n".join(errors)
 
+        reset_sources(root)
+        (root / "render/src/quoted.cpp").write_text(
+            '#include "tgf/core/api.hpp"\n', encoding="utf-8"
+        )
+        errors = checker.check(root)
+        assert any("canonical angle-bracket spelling" in error for error in errors), errors
+
         # All 94 forbidden directed edges are rejected, not just one example.
         reset_sources(root)
         for importer, dependencies in ALLOWED.items():
