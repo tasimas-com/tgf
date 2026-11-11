@@ -146,7 +146,7 @@ def main() -> int:
         # A public header cannot reach into its own module's private src tree.
         reset_sources(root)
         write(root, "core/src/private.hpp", "// private\\n")
-        write(root, "core/include/tgf/core/leak.hpp", '#include "../../src/private.hpp"\\n')
+        write(root, "core/include/tgf/core/leak.hpp", '#include "../../../src/private.hpp"\\n')
         expect(
             checker.check(root),
             "public header may not include a private header from its own module",
@@ -214,6 +214,10 @@ def main() -> int:
                 "forbidden platform/graphics/third-party SDK header",
                 f"public SDK leak {header}",
             )
+        write(root, "core/include/tgf/core/stdlib.hpp", "#include <cstddef>\\n#include <cstdint>\\n#include <array>\\n#include <algorithm>\\n#include <string_view>\\n")
+        errors = checker.check(root)
+        if errors: raise AssertionError("standard library includes must be accepted:\\n" + "\\n".join(errors))
+
         write(root, "widgets/include/tgf/widgets/widget.hpp", "// public fixture restored\n")
 
         # Every TGF include has exact, canonical components and a real public file.
@@ -316,6 +320,11 @@ def main() -> int:
         reset_sources(root)
         unc_path = chr(92) * 2 + "build-server" + chr(92) + "workspace"
         write(root, "tools/unc_path.py", f'ROOT = "{unc_path}"\n')
+        write(root, "tools/ci_path.py", 'ROOT = "/home/runner/work/tgf/tgf"\\n')
+        write(root, "tools/url.py", 'URL = "https://example.com/path"\\n')
+        errors = checker.check(root)
+        if errors: raise AssertionError("portable runner paths and URLs are not machine-specific paths:\\n" + "\\n".join(errors))
+
         expect(checker.check(root), "absolute machine-specific path", "UNC path")
 
         # The normative policy may not drift, omit rows, or duplicate module rows.
