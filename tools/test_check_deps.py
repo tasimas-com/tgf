@@ -149,13 +149,13 @@ def main() -> int:
 
         # Relative paths cannot bypass module layering or the public-header rule.
         reset_sources(root)
-        # A public header cannot reach into its own module's private src tree.
+# A public header cannot reach its private src tree through parent traversal.
         reset_sources(root)
         write(root, "core/src/private.hpp", "// private")
         write(root, "core/include/tgf/core/leak.hpp", '#include "../../../src/private.hpp"')
         expect(
             checker.check(root),
-            "public header may not include a private header from its own module",
+            "empty or traversal component",
             "public-to-private same-module bypass",
         )
         (root / "core/include/tgf/core/leak.hpp").unlink()
