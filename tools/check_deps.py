@@ -105,7 +105,7 @@ def logical_source_lines(lines: list[str]) -> list[tuple[int, str]]:
             pending = line
         else:
             pending += line
-        if pending.endswith("\\\\"):
+        if pending.endswith(chr(92)):
             pending = pending[:-1]
             continuing = True
         else:
