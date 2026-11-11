@@ -32,7 +32,7 @@ REQUIRED_DIRS = (
 )
 SOURCE_SUFFIXES = {
     ".h", ".hpp", ".hh", ".hxx", ".c", ".cc", ".cpp", ".cxx",
-    ".m", ".mm", ".inl", ".ipp", ".inc", ".tpp", ".txx", ".cppm", ".ixx", ".ccm", ".cxxm", ".mpp", ".cu", ".cuh", ".hip",
+    ".m", ".mm", ".s", ".asm", ".inl", ".ipp", ".inc", ".tpp", ".txx", ".cppm", ".ixx", ".ccm", ".cxxm", ".mpp", ".cu", ".cuh", ".hip",
 }
 POLICY_SUFFIXES = SOURCE_SUFFIXES | {
     ".cmake", ".json", ".py", ".in", ".ps1", ".cmd", ".bat", ".sh",
@@ -72,6 +72,7 @@ INCLUDE_LITERAL = re.compile(
     r'^\s*#\s*(?:include|import)\s*(?:<([^>]+)>|"([^"]+)")\s*(?:(?://.*)|(?:/\*.*\*/\s*))?$'
 )
 MODULE_IMPORT = re.compile(r"^\s*(?:export\s+)?import\s+([^;]+);")
+OBJC_MODULE_IMPORT = re.compile(r"^\\s*@import\\s+([^;]+);")
 INCLUDE_TGF_PREFIX = re.compile(r"(?:^|/)tgf(?:/|$)", re.IGNORECASE)
 ABS_WINDOWS = re.compile(r"(?<![A-Za-z0-9])[A-Za-z]:[\\/]+[A-Za-z]")
 ABS_POSIX = re.compile(
@@ -343,11 +344,11 @@ def scan_source_tree(
                     f"{relative}:{number}: include directive contains a multi-line comment and cannot be checked"
                 )
                 continue
-            module_import = MODULE_IMPORT.match(line)
+            module_import = MODULE_IMPORT.match(line) or OBJC_MODULE_IMPORT.match(line)
             if module_import:
                 errors.append(
-                    f"{relative}:{number}: C++ named-module imports are not yet covered by the header DAG; "
-                    "use checked headers or extend the policy checker first"
+                    f"{relative}:{number}: named-module imports are prohibited until module-interface dependency policy is defined; "
+"use canonical checked headers instead"
                 )
                 continue
 
