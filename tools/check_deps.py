@@ -32,7 +32,7 @@ REQUIRED_DIRS = (
 )
 SOURCE_SUFFIXES = {
     ".h", ".hpp", ".hh", ".hxx", ".c", ".cc", ".cpp", ".cxx",
-    ".m", ".mm", ".inl", ".ipp", ".inc",
+    ".m", ".mm", ".inl", ".ipp", ".inc", ".tpp", ".txx", ".cppm", ".ixx", ".ccm", ".cxxm", ".mpp", ".cu", ".cuh", ".hip",
 }
 POLICY_SUFFIXES = SOURCE_SUFFIXES | {
     ".cmake", ".json", ".py", ".in", ".ps1", ".cmd", ".bat", ".sh",
@@ -91,6 +91,52 @@ def is_within(path: pathlib.Path, base: pathlib.Path) -> bool:
         return True
     except ValueError:
         return False
+
+
+def logical_source_lines(lines: list[str]) -> list[tuple[int, str]]:
+    """Apply C/C++ backslash-newline splicing before inspecting directives."""
+    records: list[tuple[int, str]] = []
+    pending = ""
+    pending_start = 1
+    continuing = False
+    for number, line in enumerate(lines, 1):
+        if not continuing:
+            pending_start = number
+            pending = line
+        else:
+            pending += line
+        if pending.endswith("\\\\"):
+            pending = pending[:-1]
+            continuing = True
+        else:
+            records.append((pending_start, pending))
+            pending = ""
+            continuing = False
+    if continuing:
+        records.append((pending_start, pending))
+    return records
+
+
+def strip_leading_comments(line: str, in_block_comment: bool) -> tuple[str, bool]:
+    """Remove only comments before the first token, preserving directive text."""
+    remaining = line.lstrip()
+    while True:
+        if in_block_comment:
+            end = remaining.find("*/")
+            if end < 0:
+                return "", True
+            remaining = remaining[end + 2:].lstrip()
+            in_block_comment = False
+            continue
+        if remaining.startswith("/*"):
+            end = remaining.find("*/", 2)
+            if end < 0:
+                return "", True
+            remaining = remaining[end + 2:].lstrip()
+            continue
+        if remaining.startswith("//"):
+            return "", False
+        return remaining, False
 
 
 def exact_file_exists(path: pathlib.Path) -> bool:
@@ -284,7 +330,11 @@ def scan_source_tree(
             errors.append(f"{relative}: cannot read source: {exc}")
             continue
 
-        for number, line in enumerate(source_lines, 1):
+        in_block_comment = False
+        for number, raw_line in logical_source_lines(source_lines):
+            line, in_block_comment = strip_leading_comments(raw_line, in_block_comment)
+            if not line:
+                continue
             module_import = MODULE_IMPORT.match(line)
             if module_import:
                 errors.append(
