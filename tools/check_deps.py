@@ -337,7 +337,7 @@ def scan_source_tree(
                 continue
             # C/C++ comments are replaced by whitespace before preprocessing-token
             # recognition. Handle same-line comments between directive tokens too.
-            line = re.sub(r"/\\*.*?\\*/", " ", line)
+            line = re.sub(r"/\*.*?\*/", " ", line)
             if line.lstrip().startswith("#") and ("/*" in line or "*/" in line):
                 errors.append(
                     f"{relative}:{number}: include directive contains a multi-line comment and cannot be checked"
