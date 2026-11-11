@@ -215,7 +215,7 @@ def foreign_target(
     quoted: bool,
 ) -> tuple[str, pathlib.Path] | None:
     path = pathlib.Path(include.replace("\\", "/"))
-    if path.is_absolute() or pathlib.PureWindowsPath(include).is_absolute():
+    if path.is_absolute() or pathlib.PureWindowsPath(name).is_absolute() or pathlib.PurePosixPath(name).is_absolute():
         candidates = (path,)
     elif quoted:
         candidates = (source.parent / path, root / path)
