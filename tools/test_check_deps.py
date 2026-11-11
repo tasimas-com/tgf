@@ -28,7 +28,7 @@ REQUIRED_DIRS = (
     "tools", "host", "c", "bindings", "samples", "benchmarks", "tests",
     "docs", "third_party", "cmake",
 )
-SOURCE_SUFFIXES = {".h", ".hpp", ".hh", ".hxx", ".c", ".cc", ".cpp", ".cxx", ".m", ".mm", ".inl", ".ipp", ".inc", ".tpp", ".txx", ".cppm", ".ixx", ".ccm", ".cxxm", ".mpp", ".cu", ".cuh", ".hip"}
+SOURCE_SUFFIXES = {".h", ".hpp", ".hh", ".hxx", ".c", ".cc", ".cpp", ".cxx", ".m", ".mm", ".s", ".asm", ".inl", ".ipp", ".inc", ".tpp", ".txx", ".cppm", ".ixx", ".ccm", ".cxxm", ".mpp", ".cu", ".cuh", ".hip"}
 TABLE = """**★ Explicit dependency table (fixtures)**
 | Module | May depend on |
 |---|---|
@@ -270,8 +270,8 @@ def main() -> int:
         for directive, diagnostic in (
             ("#include GENERATED_HEADER\n", "non-literal or malformed include"),
             ("#include_next <tgf/core/api.hpp>\n", "#include_next is forbidden"),
-            ("import tgf.core;\n", "named-module imports are not yet covered"),
-            ("export import tgf.core;\n", "named-module imports are not yet covered"),
+            ("import tgf.core;\n", "named-module imports are prohibited"),
+            ("export import tgf.core;\n", "named-module imports are prohibited"),
         ):
             reset_sources(root)
             write(root, "ui/src/uninspectable.cpp", directive)
@@ -305,18 +305,24 @@ def main() -> int:
         # Comment-separated named-module imports are still recognized.
         reset_sources(root)
         write(root, "ui/src/commented_import.cppm", "export /* separator */ import tgf.render;" + chr(10))
-        expect(checker.check(root), "named-module imports are not yet covered", "comment-separated module import")
+        expect(checker.check(root), "named-module imports are prohibited", "comment-separated module import")
 
         # An unterminated block comment in a preprocessing directive fails closed.
         reset_sources(root)
         write(root, "platform/src/multiline_comment.cpp", "# /* unterminated" + chr(10) + "comment */ include <tgf/ui/api.hpp>" + chr(10))
         expect(checker.check(root), "multi-line comment", "multiline comment in include directive")
 
+        # Objective-C modules are also imports and currently have no public/private
+        # dependency declaration, so they must fail closed rather than bypass the DAG.
+        reset_sources(root)
+        write(root, "ui/src/objc_module.mm", "@import Foundation;" + chr(10))
+        expect(checker.check(root), "named-module imports are prohibited", "Objective-C module import")
+
         # Imports in all common C++ module-unit extensions fail closed.
         for suffix in (".cppm", ".ixx", ".ccm", ".cxxm", ".mpp"):
             reset_sources(root)
             write(root, "ui/src/module" + suffix, "export module tgf.ui;" + chr(10) + "import tgf.render;" + chr(10))
-            expect(checker.check(root), "named-module imports are not yet covered", "named module unit " + suffix)
+            expect(checker.check(root), "named-module imports are prohibited", "named module unit " + suffix)
 
         # The same token sequence inside a block comment is not an import.
         reset_sources(root)
