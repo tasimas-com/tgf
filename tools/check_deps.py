@@ -46,7 +46,7 @@ INCLUDE_LITERAL = re.compile(
     r'^\s*#\s*(?:include|import)\s*(?:<([^>]+)>|"([^"]+)")\s*(?:(?://.*)|(?:/\*.*\*/\s*))?$'
 )
 MODULE_IMPORT = re.compile(r"^\s*(?:export\s+)?import\s+([^;]+);")
-INCLUDE_TGF_PREFIX = re.compile(r"^tgf(?:/|\\|$)")
+INCLUDE_TGF_PREFIX = re.compile(r"^(?:\./|\.\\)?tgf(?:/|\\|$)", re.IGNORECASE)
 FORBIDDEN_PUBLIC = re.compile(
     r"^(?:"
     r"imgui(?:\.h|_impl_[^/]*\.h|/)|"
@@ -75,7 +75,7 @@ ABS_POSIX = re.compile(
     re.IGNORECASE,
 )
 ABS_UNC = re.compile(
-    r"(?<![A-Za-z0-9])(?:\\\\|//)[A-Za-z0-9_.-]+[\\/][^\\/\s]+",
+    r"(?<![A-Za-z0-9:])(?:\\\\|//)[A-Za-z0-9_.-]+[\\/][^\\/\s]+",
     re.IGNORECASE,
 )
 
