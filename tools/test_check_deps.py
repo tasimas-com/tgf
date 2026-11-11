@@ -164,6 +164,20 @@ def main() -> int:
         assert any("may not include backend" in error for error in errors), errors
 
         reset_sources(root)
+        (root / "platform/src/escape_root.cpp").write_text(
+            '#include "../../../outside.hpp"\n', encoding="utf-8"
+        )
+        errors = checker.check(root)
+        assert any("relative include escapes repository root" in error for error in errors), errors
+
+        reset_sources(root)
+        (root / "platform/src/escape_non_module.cpp").write_text(
+            '#include "../../docs/private.hpp"\n', encoding="utf-8"
+        )
+        errors = checker.check(root)
+        assert any("relative include escapes its module boundary" in error for error in errors), errors
+
+        reset_sources(root)
         (root / "ui/src/unknown.cpp").write_text(
             "#include <tgf/unknown/api.hpp>\n", encoding="utf-8"
         )
@@ -221,7 +235,7 @@ def main() -> int:
     print(
         f"dependency DAG regression tests passed: {allowed_count} allowed edges, "
         f"{forbidden_count} forbidden edges, public/private boundaries, SDK leakage, "
-        "RHI isolation, malformed includes, policy drift, absolute paths, and layout"
+        "RHI isolation, malformed includes, traversal escape, policy drift, absolute paths, and layout"
     )
     return 0
 
