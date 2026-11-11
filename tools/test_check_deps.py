@@ -196,6 +196,7 @@ def main() -> int:
                 "forbidden platform/graphics/third-party SDK header",
                 f"public SDK leak {header}",
             )
+        write(root, "widgets/include/tgf/widgets/widget.hpp", "// public fixture restored\n")
 
         # Every TGF include has exact, canonical components and a real public file.
         invalid_tgf_paths = (
