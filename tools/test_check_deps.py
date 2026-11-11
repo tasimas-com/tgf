@@ -299,7 +299,8 @@ def main() -> int:
 
         # Include paths themselves may not be machine-specific.
         reset_sources(root)
-        write(root, "core/src/absolute_windows.cpp", '#include "C:\\Users\\Developer\\private.hpp"\n')
+        windows_include = "C:" + chr(92) + "Users" + chr(92) + "Developer" + chr(92) + "private.hpp"
+        write(root, "core/src/absolute_windows.cpp", f'#include "{windows_include}' + chr(10))
         expect(checker.check(root), "absolute include path is forbidden", "Windows absolute include")
 
         reset_sources(root)
