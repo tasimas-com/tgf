@@ -378,6 +378,10 @@ def scan_source_tree(
             ):
                 continue
 
+            if chr(92) in name:
+                errors.append(f"{relative}:{number}: include paths must use forward slashes")
+                continue
+
             include_components = name.replace(chr(92), "/").split("/")
             if any(component in {"", ".", ".."} for component in include_components):
                 errors.append(
