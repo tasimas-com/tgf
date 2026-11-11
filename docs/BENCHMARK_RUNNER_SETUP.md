@@ -26,6 +26,7 @@ Provision a dedicated bare-metal host from hardware you own or a provider that e
 
 Use an x86-64 Linux installation compatible with the repository's CMake/Ninja workflow. Install at least:
 
+- GitHub Actions self-hosted runner **2.327.1 or newer**. This is the minimum runner generation required for the Node.js 24 action runtime used by this repository's current checkout/cache/artifact actions. Verify the installed agent version before registration and keep it updated.
 - Git
 - Python 3
 - CMake 3.25 or newer

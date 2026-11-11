@@ -81,7 +81,7 @@ jobs:
           python-version: "3.13"
 
       - name: Restore incremental CMake build cache
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: build/${{ matrix.target.preset-prefix }}${{ matrix.configuration }}
           key: tgf-cmake-${{ runner.os }}-${{ matrix.target.compiler-key }}-${{ matrix.configuration }}-${{ hashFiles('CMakeLists.txt', 'CMakePresets.json', 'cmake/**', 'core/**', 'samples/**', 'tests/**', 'tools/**') }}

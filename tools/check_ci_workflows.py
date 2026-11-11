@@ -57,7 +57,7 @@ def main() -> int:
                 "actions/setup-python@v7",
                 "Set up Python 3.13",
                 'python-version: "3.13"',
-                "actions/cache@v4",
+                "actions/cache@v6",
                 "ilammy/msvc-dev-cmd@v1.13.0",
                 "Install GCC 16 on Ubuntu 26.04",
                 "sudo apt-get install --yes gcc-16 g++-16",
