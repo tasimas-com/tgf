@@ -43,7 +43,7 @@ EXCLUDED = {".git", ".venv", "venv", "__pycache__", "build", "out", "third_party
 
 INCLUDE_DIRECTIVE = re.compile(r"^\s*#\s*(include_next|include|import)\b")
 INCLUDE_LITERAL = re.compile(
-    r'^\s*#\s*(?:include|import)\s*(?:<([^>]+)>|"([^"]+)")\s*(?:(?://.*)|(?:/\*.*\*/\s*))?
+    r'^\s*#\s*(?:include|import)\s*(?:<([^>]+)>|"([^"]+)")\s*(?:(?://.*)|(?:/\*.*\*/\s*))?$'
 )
 MODULE_IMPORT = re.compile(r"^\s*(?:export\s+)?import\s+([^;]+);")
 INCLUDE_TGF_PREFIX = re.compile(r"^tgf(?:/|\\|$)")
