@@ -72,6 +72,7 @@ INCLUDE_LITERAL = re.compile(
     r'^\s*#\s*(?:include|import)\s*(?:<([^>]+)>|"([^"]+)")\s*(?:(?://.*)|(?:/\*.*\*/\s*))?$'
 )
 MODULE_IMPORT = re.compile(r"^\s*(?:export\s+)?import\b")
+MODULE_DECLARATION = re.compile(r"^\s*(?:export\s+)?module\s+(?!;)")
 RAW_STRING_START = re.compile(r'(?:u8|u|U|L)?R"([^ ()\\\t]{0,16})\(')
 OBJC_MODULE_IMPORT = re.compile(r"^\s*@import\b")
 INCLUDE_TGF_PREFIX = re.compile(r"(?:^|/)tgf(?:/|$)", re.IGNORECASE)
@@ -401,6 +402,13 @@ def scan_source_tree(
                     f"{relative}:{number}: include directive contains a multi-line comment and cannot be checked"
                 )
                 continue
+            if MODULE_DECLARATION.match(line):
+                errors.append(
+                    f"{relative}:{number}: named module declarations are prohibited until module dependency policy is defined; "
+                    "use the documented header-based dependency DAG instead"
+                )
+                continue
+
             module_import = MODULE_IMPORT.match(line) or OBJC_MODULE_IMPORT.match(line)
             if module_import:
                 errors.append(
