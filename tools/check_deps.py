@@ -215,7 +215,7 @@ def foreign_target(
     quoted: bool,
 ) -> tuple[str, pathlib.Path] | None:
     path = pathlib.Path(include.replace("\\", "/"))
-    if path.is_absolute() or pathlib.PureWindowsPath(name).is_absolute() or pathlib.PurePosixPath(name).is_absolute():
+    if path.is_absolute() or pathlib.PureWindowsPath(include).is_absolute() or pathlib.PurePosixPath(include).is_absolute():
         candidates = (path,)
     elif quoted:
         candidates = (source.parent / path, root / path)
@@ -358,7 +358,7 @@ def scan_source_tree(
             name = match.group(1) or match.group(2)
             quoted = match.group(2) is not None
 
-            if pathlib.Path(name).is_absolute() or pathlib.PureWindowsPath(name).is_absolute():
+            if pathlib.Path(name).is_absolute() or pathlib.PureWindowsPath(name).is_absolute() or pathlib.PurePosixPath(name).is_absolute():
                 errors.append(f"{relative}:{number}: absolute include path is forbidden")
                 continue
 
