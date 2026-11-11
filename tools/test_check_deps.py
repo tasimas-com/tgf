@@ -356,6 +356,10 @@ def main() -> int:
         write(root, "platform/src/escape_non_module.cpp", '#include "../../docs/private.hpp"\n')
         expect(checker.check(root), "relative include escapes its module/consumer boundary", "module traversal")
 
+        reset_sources(root)
+        write(root, "ui/src/windows_separator.cpp", "#include <foo\\bar.hpp>" + chr(10))
+        expect(checker.check(root), "include paths must use forward slashes", "Windows separator in ordinary include")
+
         # All include forms reject dot segments, traversal, repeated separators,
         # and drive-relative Windows paths before include-search-path lookup.
         for header in (
