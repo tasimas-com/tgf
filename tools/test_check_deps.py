@@ -209,7 +209,7 @@ def main() -> int:
         )
         for header in forbidden_public_headers:
             reset_sources(root)
-            write(root, "widgets/include/tgf/widgets/widget.hpp", f"#include <{header}>\\n")
+            write(root, "widgets/include/tgf/widgets/widget.hpp", f"#include <{header}>" + chr(10))
             expect(
                 checker.check(root),
                 "forbidden platform/graphics/third-party SDK header",
