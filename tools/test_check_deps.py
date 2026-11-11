@@ -181,7 +181,7 @@ def main() -> int:
         reset_sources(root)
         write(root, "core/src/private.hpp", "// private\n")
         write(root, "benchmarks/app/bench.cpp", "#include <core/src/private.hpp>\n")
-        expect(checker.check(root), "empty or traversal component", "benchmark private-header bypass")
+        expect(checker.check(root), "consumer may not include module-private paths", "benchmark private-header bypass")
 
         # Application, benchmark, and test targets are scanned as public consumers.
         reset_sources(root)
