@@ -143,6 +143,16 @@ def main() -> int:
 
         # Relative paths cannot bypass module layering or the public-header rule.
         reset_sources(root)
+        # A public header cannot reach into its own module's private src tree.
+        reset_sources(root)
+        write(root, "core/src/private.hpp", "// private\\n")
+        write(root, "core/include/tgf/core/leak.hpp", '#include "../../src/private.hpp"\\n')
+        expect(
+            checker.check(root),
+            "public header may not include a private header from its own module",
+            "public-to-private same-module bypass",
+        )
+
         write(root, "ui/src/private.hpp", "// private\n")
         write(root, "platform/src/bypass.cpp", '#include "../../ui/src/private.hpp"\n')
         expect(checker.check(root), "relative include bypass", "forbidden relative module edge")
@@ -215,6 +225,8 @@ def main() -> int:
             "tgf\\core\\api.hpp",
             "tgf/Core/api.hpp",
             "tgf/unknown/api.hpp",
+            "TGF/core/api.hpp",
+            "./tgf/core/api.hpp",
         )
         for header in invalid_tgf_paths:
             reset_sources(root)
@@ -222,6 +234,8 @@ def main() -> int:
             if header == "tgf/Core/api.hpp":
                 expected = "must be lowercase"
             elif header == "tgf/unknown/api.hpp":
+            elif header in {"TGF/core/api.hpp", "./tgf/core/api.hpp"}:
+                expected = "TGF include path"
                 expected = "unknown TGF module"
             elif header == "tgf\\core\\api.hpp":
                 expected = "forward slashes"
