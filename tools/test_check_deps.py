@@ -116,6 +116,14 @@ def main() -> int:
         if errors:
             raise AssertionError("permitted edges failed:\n" + "\n".join(errors))
 
+        # Same-module quoted canonical includes are valid and resolve through
+        # that module's own public include root (not a cross-module dependency).
+        reset_sources(root)
+        write(root, "core/src/same_module.cpp", '#include "tgf/core/api.hpp"\n')
+        errors = checker.check(root)
+        if errors:
+            raise AssertionError("same-module quoted public header should be valid:\n" + "\n".join(errors))
+
         reset_sources(root)
         write(root, "render/src/quoted.cpp", '#include "tgf/core/api.hpp"\n')
         expect(checker.check(root), "canonical angle-bracket spelling", "quoted TGF include")
@@ -272,7 +280,7 @@ def main() -> int:
         expect(checker.check(root), "absolute include path is forbidden", "Windows absolute include")
 
         reset_sources(root)
-        posix_include = "/" + "home" + "/" + "developer" + "/" + "private.hpp"
+        posix_include = chr(47) + "home" + chr(47) + "developer" + chr(47) + "private.hpp"
         write(root, "core/src/absolute_posix.cpp", f'#include "{posix_include}"\n')
         expect(checker.check(root), "absolute include path is forbidden", "POSIX absolute include")
 
