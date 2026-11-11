@@ -231,6 +231,13 @@ def main() -> int:
         if errors: raise AssertionError(f"standard library includes must be accepted: {errors!r}")
 
 
+        # Comment markers inside an angle-bracket header name are path characters,
+        # not preprocessing comments, and must remain visible to path validation.
+        for header in ("tgf//core/api.hpp", "tgf/core/name/*part.hpp"):
+            reset_sources(root)
+            write(root, "ui/src/header_name.cpp", f"#include <{header}>" + chr(10))
+            expect(checker.check(root), "TGF include path", "comment marker inside header name " + header)
+
         # Every TGF include has exact, canonical components and a real public file.
         invalid_tgf_paths = (
             "tgf/core/./api.hpp",
