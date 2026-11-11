@@ -75,7 +75,7 @@ MODULE_IMPORT = re.compile(r"^\s*(?:export\s+)?import\s+([^;]+);")
 INCLUDE_TGF_PREFIX = re.compile(r"(?:^|/)tgf(?:/|$)", re.IGNORECASE)
 ABS_WINDOWS = re.compile(r"(?<![A-Za-z0-9])[A-Za-z]:[\\/]+[A-Za-z]")
 ABS_POSIX = re.compile(
-    r"(?<![A-Za-z0-9:/])/(?:Users|root|mnt|Volumes|workspace|workspaces|Libraries|Program Files)(?:/|\\)|"
+    r"(?<![A-Za-z0-9:/])/(?:Users/(?!runner(?:/|$)|actions(?:/|$)|github(?:/|$)|buildagent(?:/|$)|oai(?:/|$))[A-Za-z0-9_.-]+|root|mnt|Volumes|workspace|workspaces|Libraries|Program Files)(?:/|\\)|"
     r"(?<![A-Za-z0-9:/])/home/(?!runner(?:/|$)|actions(?:/|$)|github(?:/|$)|buildagent(?:/|$)|oai(?:/|$))[A-Za-z0-9_.-]+(?:/|\\)",
     re.IGNORECASE,
 )
@@ -377,14 +377,14 @@ def scan_source_tree(
                     f"{relative}:{number}: public header includes forbidden platform/graphics/third-party SDK header "
                     "or an unapproved non-standard header"
                 )
-                if public and quoted:
-                    local_candidate = (source.parent / pathlib.Path(name.replace(chr(92), "/"))).resolve()
-                    if is_within(local_candidate, base.resolve()):
-                        target = local_candidate.relative_to(base.resolve())
-                        if target.parts and target.parts[0] != "include":
-                            errors.append(
-                                f"{relative}:{number}: public header may not include a private header from its own module"
-                            )
+            if public and quoted:
+                local_candidate = (source.parent / pathlib.Path(name.replace(chr(92), "/"))).resolve()
+                if is_within(local_candidate, base.resolve()):
+                    target = local_candidate.relative_to(base.resolve())
+                    if target.parts and target.parts[0] != "include":
+                        errors.append(
+                            f"{relative}:{number}: public header may not include a private header from its own module"
+                        )
 
 
 def check(root: pathlib.Path) -> list[str]:
