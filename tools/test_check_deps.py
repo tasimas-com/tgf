@@ -152,6 +152,7 @@ def main() -> int:
             "public header may not include a private header from its own module",
             "public-to-private same-module bypass",
         )
+        (root / "core/include/tgf/core/leak.hpp").unlink()
 
         write(root, "ui/src/private.hpp", "// private\n")
         write(root, "platform/src/bypass.cpp", '#include "../../ui/src/private.hpp"\n')
@@ -214,11 +215,12 @@ def main() -> int:
                 "forbidden platform/graphics/third-party SDK header",
                 f"public SDK leak {header}",
             )
-        write(root, "core/include/tgf/core/stdlib.hpp", "#include <cstddef>\\n#include <cstdint>\\n#include <array>\\n#include <algorithm>\\n#include <string_view>\\n")
+        write(root, "core/include/tgf/core/stdlib.hpp", chr(10).join(["#include <cstddef>", "#include <cstdint>", "#include <array>", "#include <algorithm>", "#include <string_view>"]) + chr(10))
         errors = checker.check(root)
-        if errors: raise AssertionError("standard library includes must be accepted:\\n" + "\\n".join(errors))
-
+        if errors: raise AssertionError(f"standard library includes must be accepted: {errors!r}")
         write(root, "widgets/include/tgf/widgets/widget.hpp", "// public fixture restored\n")
+
+
 
         # Every TGF include has exact, canonical components and a real public file.
         invalid_tgf_paths = (
@@ -320,8 +322,8 @@ def main() -> int:
         reset_sources(root)
         unc_path = chr(92) * 2 + "build-server" + chr(92) + "workspace"
         write(root, "tools/unc_path.py", f'ROOT = "{unc_path}"\n')
-        write(root, "tools/ci_path.py", 'ROOT = "/home/runner/work/tgf/tgf"\\n')
-        write(root, "tools/url.py", 'URL = "https://example.com/path"\\n')
+        write(root, "tools/ci_path.py", 'ROOT = "/home/runner/work/tgf/tgf"')
+        write(root, "tools/url.py", 'URL = "https://example.com/path"')
         errors = checker.check(root)
         if errors: raise AssertionError("portable runner paths and URLs are not machine-specific paths:\\n" + "\\n".join(errors))
 
