@@ -325,7 +325,7 @@ def scan_source_tree(
         public = importer_module is not None and "include" in source.relative_to(base).parts
         importing_backend = backend(relative.parts) if importer_module == "rhi" else None
         try:
-            source_lines = source.read_text(encoding="utf-8").splitlines()
+            source_lines = source.read_text(encoding="utf-8-sig").splitlines()
         except (OSError, UnicodeError) as exc:
             errors.append(f"{relative}: cannot read source: {exc}")
             continue
@@ -334,6 +334,14 @@ def scan_source_tree(
         for number, raw_line in logical_source_lines(source_lines):
             line, in_block_comment = strip_leading_comments(raw_line, in_block_comment)
             if not line:
+                continue
+            # C/C++ comments are replaced by whitespace before preprocessing-token
+            # recognition. Handle same-line comments between directive tokens too.
+            line = re.sub(r"/\\*.*?\\*/", " ", line)
+            if line.lstrip().startswith("#") and ("/*" in line or "*/" in line):
+                errors.append(
+                    f"{relative}:{number}: include directive contains a multi-line comment and cannot be checked"
+                )
                 continue
             module_import = MODULE_IMPORT.match(line)
             if module_import:
