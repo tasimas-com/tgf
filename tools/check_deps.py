@@ -39,6 +39,32 @@ POLICY_SUFFIXES = SOURCE_SUFFIXES | {
     ".mk", ".make", ".bzl", ".bazel", ".yml", ".yaml", ".txt",
     ".toml", ".ini", ".xml", ".rc", ".props", ".targets", ".vcxproj",
 }
+# Standard C++20 library headers and the C compatibility headers. Public headers
+# may include these or another TGF public header; every other angle include is
+# rejected, which is safer than trying to maintain a third-party SDK deny-list.
+STANDARD_HEADERS = frozenset({
+    "algorithm", "any", "array", "atomic", "barrier", "bit", "bitset",
+    "cassert", "ccomplex", "cctype", "cerrno", "cfenv", "cfloat", "charconv",
+    "chrono", "cinttypes", "ciso646", "climits", "clocale", "cmath", "codecvt",
+    "compare", "complex", "concepts", "condition_variable", "coroutine",
+    "csetjmp", "csignal", "cstdarg", "cstddef", "cstdint", "cstdio", "cstdlib",
+    "cstring", "ctgmath", "ctime", "cuchar", "cwchar", "cwctype", "deque",
+    "exception", "execution", "filesystem", "forward_list", "fstream",
+    "functional", "future", "initializer_list", "iomanip", "ios", "iosfwd",
+    "iostream", "istream", "iterator", "latch", "limits", "list", "locale",
+    "map", "memory", "memory_resource", "mutex", "new", "numbers", "numeric",
+    "optional", "ostream", "queue", "random", "ranges", "ratio", "regex",
+    "scoped_allocator", "semaphore", "set", "shared_mutex", "source_location",
+    "span", "sstream", "stack", "stdexcept", "stop_token", "streambuf",
+    "string", "string_view", "syncstream", "system_error", "thread", "tuple",
+    "type_traits", "typeindex", "typeinfo", "unordered_map", "unordered_set",
+    "utility", "valarray", "variant", "vector", "version",
+    "assert.h", "complex.h", "ctype.h", "errno.h", "fenv.h", "float.h",
+    "inttypes.h", "iso646.h", "limits.h", "locale.h", "math.h", "setjmp.h",
+    "signal.h", "stdarg.h", "stdatomic.h", "stdbool.h", "stddef.h", "stdint.h",
+    "stdio.h", "stdlib.h", "string.h", "tgmath.h", "threads.h", "time.h",
+    "uchar.h", "wchar.h", "wctype.h",
+})
 EXCLUDED = {".git", ".venv", "venv", "__pycache__", "build", "out", "third_party"}
 
 INCLUDE_DIRECTIVE = re.compile(r"^\s*#\s*(include_next|include|import)\b")
@@ -47,27 +73,6 @@ INCLUDE_LITERAL = re.compile(
 )
 MODULE_IMPORT = re.compile(r"^\s*(?:export\s+)?import\s+([^;]+);")
 INCLUDE_TGF_PREFIX = re.compile(r"^(?:\./|\.\\)?tgf(?:/|\\|$)", re.IGNORECASE)
-FORBIDDEN_PUBLIC = re.compile(
-    r"^(?:"
-    r"imgui(?:\.h|_impl_[^/]*\.h|/)|"
-    r"GLFW(?:\.h|/)|glfw3\.h|"
-    r"SDL(?:\.h|/|2/|3/)|"
-    r"windows(?:\.h|x\.h)|winuser\.h|"
-    r"vulkan/|vk_[^/]*\.h|"
-    r"d3d[^/]*\.h|d3d(?:9|10|11|12)/|"
-    r"dxgi(?:\.h|[0-9_]*\.h)|"
-    r"Metal/|QuartzCore/|AppKit/|CoreGraphics/|"
-    r"X11/|xcb/|wayland(?:-client|-server)?\.h|"
-    r"hb(?:-ft)?\.h|harfbuzz/|ft2build\.h|freetype/|"
-    r"GL/|EGL/|GLES[0-9]*/|"
-    r"Qt(?:Core|Gui|Widgets|Network|OpenGL|Quick|Qml|Concurrent|Test)(?:/|$)|"
-    r"Q(?:Application|Widget|Object|Window|Painter|GuiApplication|String)\b|"
-    r"third_party/|vendor/|external/|"
-    r"stb_[^/]*\.h|glm/|fmt/|spdlog/|nlohmann/|boost/|"
-    r"cairo(?:\.h|/)|pango/|gtk/|glib\.h|gdk/"
-    r")",
-    re.IGNORECASE,
-)
 ABS_WINDOWS = re.compile(r"(?<![A-Za-z0-9])[A-Za-z]:[\\/]+[A-Za-z]")
 ABS_POSIX = re.compile(
     r"(?<![A-Za-z0-9:/])/(?:Users|root|mnt|Volumes|workspace|workspaces|Libraries|Program Files)(?:/|\\)|"
@@ -367,9 +372,10 @@ def scan_source_tree(
                     elif not is_within(local_candidate, base.resolve()):
                         errors.append(f"{relative}:{number}: relative include escapes its module/consumer boundary")
 
-            if public and FORBIDDEN_PUBLIC.match(name):
+            if public and not quoted and name not in STANDARD_HEADERS:
                 errors.append(
-                    f"{relative}:{number}: public header includes forbidden platform/graphics/third-party SDK header"
+                    f"{relative}:{number}: public header includes forbidden platform/graphics/third-party SDK header "
+                    "or an unapproved non-standard header"
                 )
                 if public and quoted:
                     local_candidate = (source.parent / pathlib.Path(name.replace(chr(92), "/"))).resolve()
