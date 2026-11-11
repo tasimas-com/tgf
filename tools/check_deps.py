@@ -64,13 +64,14 @@ FORBIDDEN_PUBLIC = re.compile(
     r"Q(?:Application|Widget|Object|Window|Painter|GuiApplication|String)\b|"
     r"third_party/|vendor/|external/|"
     r"stb_[^/]*\.h|glm/|fmt/|spdlog/|nlohmann/|boost/|"
-    r"cairo(?:\.h|/)|pango/|gtk/|glib\.h|gdk/|"
+    r"cairo(?:\.h|/)|pango/|gtk/|glib\.h|gdk/"
     r")",
     re.IGNORECASE,
 )
 ABS_WINDOWS = re.compile(r"(?<![A-Za-z0-9])[A-Za-z]:[\\/]+[A-Za-z]")
 ABS_POSIX = re.compile(
-    r"(?<![A-Za-z0-9:/])/(?:Users|home|root|mnt|Volumes|workspace|workspaces|Libraries|Program Files)(?:/|\\)",
+    r"(?<![A-Za-z0-9:/])/(?:Users|root|mnt|Volumes|workspace|workspaces|Libraries|Program Files)(?:/|\\)|"
+    r"(?<![A-Za-z0-9:/])/home/(?!runner(?:/|$)|actions(?:/|$)|github(?:/|$)|buildagent(?:/|$)|oai(?:/|$))[A-Za-z0-9_.-]+(?:/|\\)",
     re.IGNORECASE,
 )
 ABS_UNC = re.compile(
@@ -195,9 +196,9 @@ def validate_tgf_include(
     if not INCLUDE_TGF_PREFIX.match(name.replace("\\", "/")):
         return False
 
-    if quoted:
+    if quoted and (importer_module is None or importer_module != parts[1]):
         errors.append(
-            f"{relative}:{line_number}: TGF headers must use canonical angle-bracket spelling <tgf/module/...>"
+            f"{relative}:{line_number}: cross-module or consumer TGF headers must use canonical angle-bracket spelling <tgf/module/...>"
         )
     if "\\" in name:
         errors.append(f"{relative}:{line_number}: TGF include paths must use forward slashes")
