@@ -28,7 +28,7 @@ REQUIRED_DIRS = (
     "tools", "host", "c", "bindings", "samples", "benchmarks", "tests",
     "docs", "third_party", "cmake",
 )
-SOURCE_SUFFIXES = {".h", ".hpp", ".hh", ".hxx", ".c", ".cc", ".cpp", ".cxx", ".m", ".mm", ".inl", ".ipp", ".inc"}
+SOURCE_SUFFIXES = {".h", ".hpp", ".hh", ".hxx", ".c", ".cc", ".cpp", ".cxx", ".m", ".mm", ".inl", ".ipp", ".inc", ".tpp", ".txx", ".cppm", ".ixx", ".ccm", ".cxxm", ".mpp", ".cu", ".cuh", ".hip"}
 TABLE = """**★ Explicit dependency table (fixtures)**
 | Module | May depend on |
 |---|---|
@@ -270,6 +270,29 @@ def main() -> int:
             reset_sources(root)
             write(root, "ui/src/uninspectable.cpp", directive)
             expect(checker.check(root), diagnostic, f"unsupported include form {directive.strip()}")
+
+        # C/C++ translation phases splice backslash-newline before directives are read.
+        reset_sources(root)
+        split_include = "#inc" + chr(92) + chr(10) + "lude <tgf/ui/api.hpp>" + chr(10)
+        write(root, "platform/src/split_include.cpp", split_include)
+        expect(checker.check(root), "may not depend on 'ui'", "line-spliced include bypass")
+
+        # Comments before a preprocessing token are removed before directive parsing.
+        reset_sources(root)
+        write(root, "platform/src/comment_prefix.cpp", "/* leading comment */ #include <tgf/ui/api.hpp>" + chr(10))
+        expect(checker.check(root), "may not depend on 'ui'", "comment-prefixed include")
+
+        # Imports in all common C++ module-unit extensions fail closed.
+        for suffix in (".cppm", ".ixx", ".ccm", ".cxxm", ".mpp"):
+            reset_sources(root)
+            write(root, "ui/src/module" + suffix, "export module tgf.ui;" + chr(10) + "import tgf.render;" + chr(10))
+            expect(checker.check(root), "named-module imports are not yet covered", "named module unit " + suffix)
+
+        # The same token sequence inside a block comment is not an import.
+        reset_sources(root)
+        write(root, "ui/src/commented_module.cppm", "/*" + chr(10) + "import tgf.render;" + chr(10) + "*/" + chr(10))
+        errors = checker.check(root)
+        if errors: raise AssertionError(f"commented module example must not be parsed as an import: {errors!r}")
 
         # RHI backends cannot include another backend, including through the
         # canonical public namespace or an internal relative path.
