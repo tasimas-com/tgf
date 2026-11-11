@@ -71,9 +71,9 @@ INCLUDE_DIRECTIVE = re.compile(r"^\s*#\s*(include_next|include|import)\b")
 INCLUDE_LITERAL = re.compile(
     r'^\s*#\s*(?:include|import)\s*(?:<([^>]+)>|"([^"]+)")\s*(?:(?://.*)|(?:/\*.*\*/\s*))?$'
 )
-MODULE_IMPORT = re.compile(r"^\s*(?:export\s+)?import\s+([^;]+);")
+MODULE_IMPORT = re.compile(r"^\s*(?:export\s+)?import\b")
 RAW_STRING_START = re.compile(r'(?:u8|u|U|L)?R"([^ ()\\\t]{0,16})\(')
-OBJC_MODULE_IMPORT = re.compile(r"^\s*@import\s+([^;]+);")
+OBJC_MODULE_IMPORT = re.compile(r"^\s*@import\b")
 INCLUDE_TGF_PREFIX = re.compile(r"(?:^|/)tgf(?:/|$)", re.IGNORECASE)
 ABS_WINDOWS = re.compile(r"(?<![A-Za-z0-9])[A-Za-z]:[\\/]+[A-Za-z]")
 ABS_POSIX = re.compile(
