@@ -158,7 +158,6 @@ def strip_comments(
             index += 1
             continue
         if quote is not None:
-        if quote is not None:
             output.append(character)
             if escaped:
                 escaped = False
@@ -196,6 +195,7 @@ def strip_comments(
         index += 1
 
     return "".join(output), in_block_comment, raw_string_end
+
 def exact_file_exists(path: pathlib.Path) -> bool:
     """Check spelling component-by-component, including on case-insensitive Windows."""
     try:
