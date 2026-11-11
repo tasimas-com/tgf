@@ -196,10 +196,6 @@ def validate_tgf_include(
     if not INCLUDE_TGF_PREFIX.match(name.replace("\\", "/")):
         return False
 
-    if quoted and (importer_module is None or importer_module != parts[1]):
-        errors.append(
-            f"{relative}:{line_number}: cross-module or consumer TGF headers must use canonical angle-bracket spelling <tgf/module/...>"
-        )
     if "\\" in name:
         errors.append(f"{relative}:{line_number}: TGF include paths must use forward slashes")
         return True
@@ -216,6 +212,11 @@ def validate_tgf_include(
     if dependency not in ALLOWED:
         errors.append(f"{relative}:{line_number}: unknown TGF module '{dependency}'")
         return True
+
+    if quoted and (importer_module is None or importer_module != dependency):
+        errors.append(
+            f"{relative}:{line_number}: cross-module or consumer TGF headers must use canonical angle-bracket spelling <tgf/module/...>"
+        )
 
     if importer_module is not None and dependency != importer_module:
         if dependency not in allowed:
