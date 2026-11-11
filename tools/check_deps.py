@@ -182,7 +182,7 @@ def parse_documented_policy(root: pathlib.Path) -> list[str]:
         value = re.sub(r"\s*\([^)]*\)", "", cells[1]).strip()
         if value == "std only":
             permitted = frozenset()
-        elif value.startswith("any of the above"):
+        elif value == "any of the above through public headers":
             permitted = LAYERS
         else:
             permitted = frozenset(
