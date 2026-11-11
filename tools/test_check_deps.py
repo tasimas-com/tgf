@@ -149,7 +149,7 @@ def main() -> int:
 
         # Relative paths cannot bypass module layering or the public-header rule.
         reset_sources(root)
-# A public header cannot reach its private src tree through parent traversal.
+        # A public header cannot reach its private src tree through parent traversal.
         reset_sources(root)
         write(root, "core/src/private.hpp", "// private")
         write(root, "core/include/tgf/core/leak.hpp", '#include "../../../src/private.hpp"')
@@ -162,12 +162,12 @@ def main() -> int:
 
         write(root, "ui/src/private.hpp", "// private\n")
         write(root, "platform/src/bypass.cpp", '#include "../../ui/src/private.hpp"\n')
-        expect(checker.check(root), "relative include bypass", "forbidden relative module edge")
+        expect(checker.check(root), "empty or traversal component", "forbidden relative module edge")
 
         reset_sources(root)
         write(root, "c/src/private.h", "/* private */\n")
         write(root, "bindings/src/private.cpp", '#include "../../c/src/private.h"\n')
-        expect(checker.check(root), "public header tree", "bindings private-header bypass")
+        expect(checker.check(root), "empty or traversal component", "bindings private-header bypass")
 
         reset_sources(root)
         write(root, "bindings/src/missing.cpp", "#include <tgf/c/not_public.hpp>\n")
@@ -176,12 +176,12 @@ def main() -> int:
         reset_sources(root)
         write(root, "core/src/private.hpp", "// private\n")
         write(root, "samples/app/src/main.cpp", '#include "../../../core/src/private.hpp"\n')
-        expect(checker.check(root), "consumer may not include module-private paths", "sample private-header bypass")
+        expect(checker.check(root), "empty or traversal component", "sample private-header bypass")
 
         reset_sources(root)
         write(root, "core/src/private.hpp", "// private\n")
         write(root, "benchmarks/app/bench.cpp", "#include <core/src/private.hpp>\n")
-        expect(checker.check(root), "consumer may not include module-private paths", "benchmark private-header bypass")
+        expect(checker.check(root), "empty or traversal component", "benchmark private-header bypass")
 
         # Application, benchmark, and test targets are scanned as public consumers.
         reset_sources(root)
@@ -344,17 +344,17 @@ def main() -> int:
         backend_dir.mkdir(parents=True, exist_ok=True)
         write(root, "rhi/backends/d3d12/src/device.hpp", "// private fixture\n")
         write(root, "rhi/backends/vulkan/src/relative.cpp", '#include "../../d3d12/src/device.hpp"\n')
-        expect(checker.check(root), "may not include backend", "relative RHI backend isolation")
+        expect(checker.check(root), "empty or traversal component", "relative RHI backend isolation")
 
         # Traversal is diagnosed even when the destination does not exist.
         reset_sources(root)
         write(root, "platform/src/escape_root.cpp", '#include "../../../outside.hpp"\n')
-        expect(checker.check(root), "relative include escapes repository root", "repository-root traversal")
+        expect(checker.check(root), "empty or traversal component", "repository-root traversal")
 
         reset_sources(root)
         write(root, "docs/private.hpp", "// fixture\n")
         write(root, "platform/src/escape_non_module.cpp", '#include "../../docs/private.hpp"\n')
-        expect(checker.check(root), "relative include escapes its module/consumer boundary", "module traversal")
+        expect(checker.check(root), "empty or traversal component", "module traversal")
 
         reset_sources(root)
         write(root, "ui/src/windows_separator.cpp", "#include <foo\\bar.hpp>" + chr(10))
