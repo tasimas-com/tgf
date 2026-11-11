@@ -300,7 +300,7 @@ def main() -> int:
         # Include paths themselves may not be machine-specific.
         reset_sources(root)
         windows_include = "C:" + chr(92) + "Users" + chr(92) + "Developer" + chr(92) + "private.hpp"
-        write(root, "core/src/absolute_windows.cpp", f'#include "{windows_include}' + chr(10))
+        write(root, "core/src/absolute_windows.cpp", f'#include "{windows_include}"' + chr(10))
         expect(checker.check(root), "absolute include path is forbidden", "Windows absolute include")
 
         reset_sources(root)
@@ -327,6 +327,7 @@ def main() -> int:
         unc_path = chr(92) * 2 + "build-server" + chr(92) + "workspace"
         (root / "tools/unc_path.py").unlink()
         write(root, "tools/ci_path.py", 'ROOT = "/home/runner/work/tgf/tgf"')
+        write(root, "tools/mac_path.py", 'ROOT = "/Users/runner/hostedtoolcache"')
         write(root, "tools/url.py", 'URL = "https://example.com/path"')
         errors = checker.check(root)
         if errors: raise AssertionError(f"portable runner paths and URLs must be accepted: {errors!r}")
