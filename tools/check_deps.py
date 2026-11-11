@@ -264,9 +264,9 @@ def validate_tgf_include(
         errors.append(f"{relative}:{line_number}: unknown TGF module '{dependency}'")
         return True
 
-    if quoted:
+    if quoted and (importer_module is None or importer_module != dependency):
         errors.append(
-            f"{relative}:{line_number}: TGF headers must use canonical angle-bracket spelling <tgf/module/...>"
+            f"{relative}:{line_number}: cross-module or consumer TGF headers must use canonical angle-bracket spelling <tgf/module/...>"
         )
 
     if importer_module is not None and dependency != importer_module:
