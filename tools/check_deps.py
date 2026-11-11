@@ -198,7 +198,7 @@ def validate_tgf_include(
     errors: list[str],
 ) -> bool:
     """Validate a canonical <tgf/module/public/header> include; return True if handled."""
-    if not INCLUDE_TGF_PREFIX.match(name.replace("\\", "/")):
+    if not INCLUDE_TGF_PREFIX.search(name.replace("\\", "/")):
         return False
 
     if "\\" in name:
