@@ -377,7 +377,7 @@ def scan_source_tree(
             ):
                 continue
 
-            include_components = name.replace("\\\\", "/").split("/")
+            include_components = name.replace(chr(92), "/").split("/")
             if any(component in {"", ".", ".."} for component in include_components):
                 errors.append(
                     f"{relative}:{number}: include path contains an empty or traversal component"
