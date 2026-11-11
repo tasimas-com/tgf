@@ -282,6 +282,25 @@ def main() -> int:
         write(root, "platform/src/comment_prefix.cpp", "/* leading comment */ #include <tgf/ui/api.hpp>" + chr(10))
         expect(checker.check(root), "may not depend on 'ui'", "comment-prefixed include")
 
+        # Comments between preprocessing tokens must not hide a forbidden include.
+        for directive in (
+            "# /* separator */ include <tgf/ui/api.hpp>" + chr(10),
+            "#include /* separator */ <tgf/ui/api.hpp>" + chr(10),
+        ):
+            reset_sources(root)
+            write(root, "platform/src/commented_directive.cpp", directive)
+            expect(checker.check(root), "may not depend on 'ui'", "comment-separated include tokens")
+
+        # Comment-separated named-module imports are still recognized.
+        reset_sources(root)
+        write(root, "ui/src/commented_import.cppm", "export /* separator */ import tgf.render;" + chr(10))
+        expect(checker.check(root), "named-module imports are not yet covered", "comment-separated module import")
+
+        # An unterminated block comment in a preprocessing directive fails closed.
+        reset_sources(root)
+        write(root, "platform/src/multiline_comment.cpp", "# /* unterminated" + chr(10) + "comment */ include <tgf/ui/api.hpp>" + chr(10))
+        expect(checker.check(root), "multi-line comment", "multiline comment in include directive")
+
         # Imports in all common C++ module-unit extensions fail closed.
         for suffix in (".cppm", ".ixx", ".ccm", ".cxxm", ".mpp"):
             reset_sources(root)
