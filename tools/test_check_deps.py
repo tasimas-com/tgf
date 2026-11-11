@@ -407,6 +407,14 @@ def main() -> int:
         write(root, "tools/unc_path.py", f'ROOT = "{unc_path}"\n')
         expect(checker.check(root), "absolute machine-specific path", "UNC path")
 
+        reset_sources(root)
+        widened_consumer_policy = TABLE.replace(
+            "any of the above through public headers",
+            "any of the above plus bindings through public headers",
+        )
+        write(root, "TODO.md", widened_consumer_policy)
+        expect(checker.check(root), "unknown or empty dependency-table module", "policy wording drift")
+
         # The normative policy may not drift, omit rows, or duplicate module rows.
         reset_sources(root)
         changed_table = TABLE.replace("| render | core, rhi, text |", "| render | core |")
