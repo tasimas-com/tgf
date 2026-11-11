@@ -196,6 +196,7 @@ def strip_comments(
 
     return "".join(output), in_block_comment, raw_string_end
 
+
 def exact_file_exists(path: pathlib.Path) -> bool:
     """Check spelling component-by-component, including on case-insensitive Windows."""
     try:
