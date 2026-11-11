@@ -204,6 +204,10 @@ def main() -> int:
             "ft2build.h", "hb.h", "imgui.h", "imgui_impl_glfw.h",
             "QtWidgets/QWidget", "QWidget", "third_party/foo.h",
             "vendor/foo.hpp", "stb_image.h", "glm/glm.hpp", "fmt/core.h",
+            "mystery_sdk/api.hpp",
+            "not_a_standard_header.hpp",
+            "sys/types.h",
+            "pthread.h",
             "spdlog/spdlog.h", "nlohmann/json.hpp", "boost/optional.hpp",
             "cairo.h", "pango/pango.h", "gtk/gtk.h", "glib.h", "gdk/gdk.h",
         )
@@ -232,6 +236,8 @@ def main() -> int:
             "tgf/unknown/api.hpp",
             "TGF/core/api.hpp",
             "./tgf/core/api.hpp",
+            "../tgf/core/api.hpp",
+            "folder/tgf/core/api.hpp",
         )
         for header in invalid_tgf_paths:
             reset_sources(root)
