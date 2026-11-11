@@ -56,7 +56,7 @@ def parse_documented_policy(root: pathlib.Path) -> list[str]:
         if len(cells) != 2 or cells[0] == "Module" or set(cells[0]) <= {"-", ":", " "}:
             continue
         modules = [part.strip().strip(chr(96)) for part in cells[0].split(",")]
-        value = cells[1].strip()
+        value = re.sub(r"\s*\([^)]*\)", "", cells[1]).strip()
         if value == "std only":
             permitted = frozenset()
         elif value.startswith("any of the above"):
