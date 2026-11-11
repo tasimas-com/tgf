@@ -326,6 +326,8 @@ def main() -> int:
         reset_sources(root)
         unc_path = chr(92) * 2 + "build-server" + chr(92) + "workspace"
         (root / "tools/unc_path.py").unlink()
+        for fixture in ("path.py", "posix_path.py", "unc_path.py"):
+            (root / "tools" / fixture).unlink(missing_ok=True)
         write(root, "tools/ci_path.py", 'ROOT = "/home/runner/work/tgf/tgf"')
         write(root, "tools/mac_path.py", 'ROOT = "/Users/runner/hostedtoolcache"')
         write(root, "tools/url.py", 'URL = "https://example.com/path"')
