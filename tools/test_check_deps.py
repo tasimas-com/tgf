@@ -35,7 +35,7 @@ TABLE = """**★ Explicit dependency table (fixtures)**
 | rhi | core |
 | text | core |
 | render | core, rhi, text |
-| ui | core, text, render, platform |
+| ui | core, text, render (display-list API only), platform (event structs only) |
 | widgets | ui (public API only) |
 | pro | widgets, ui (public API only) |
 | tools, host, c | any of the above through public headers |
@@ -119,7 +119,7 @@ def main() -> int:
             '#include "../../ui/src/private.hpp"\n', encoding="utf-8"
         )
         errors = checker.check(root)
-        assert any("relative include bypass" in error for error in errors), errors
+        assert any("public header tree" in error for error in errors), errors
 
         reset_sources(root)
         (root / "bindings/src/private.cpp").write_text(
