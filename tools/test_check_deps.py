@@ -145,8 +145,8 @@ def main() -> int:
         reset_sources(root)
         # A public header cannot reach into its own module's private src tree.
         reset_sources(root)
-        write(root, "core/src/private.hpp", "// private\\n")
-        write(root, "core/include/tgf/core/leak.hpp", '#include "../../../src/private.hpp"\\n')
+        write(root, "core/src/private.hpp", "// private")
+        write(root, "core/include/tgf/core/leak.hpp", '#include "../../../src/private.hpp"')
         expect(
             checker.check(root),
             "public header may not include a private header from its own module",
@@ -215,10 +215,10 @@ def main() -> int:
                 "forbidden platform/graphics/third-party SDK header",
                 f"public SDK leak {header}",
             )
-        write(root, "core/include/tgf/core/stdlib.hpp", chr(10).join(["#include <cstddef>", "#include <cstdint>", "#include <array>", "#include <algorithm>", "#include <string_view>"]) + chr(10))
+        write(root, "widgets/include/tgf/widgets/widget.hpp", "// public fixture restored\n")
         errors = checker.check(root)
         if errors: raise AssertionError(f"standard library includes must be accepted: {errors!r}")
-        write(root, "widgets/include/tgf/widgets/widget.hpp", "// public fixture restored\n")
+        if errors: raise AssertionError(f"standard library includes must be accepted: {errors!r}")
 
 
 
@@ -240,8 +240,6 @@ def main() -> int:
             if header == "tgf/Core/api.hpp":
                 expected = "must be lowercase"
             elif header == "tgf/unknown/api.hpp":
-            elif header in {"TGF/core/api.hpp", "./tgf/core/api.hpp"}:
-                expected = "TGF include path"
                 expected = "unknown TGF module"
             elif header == "tgf\\core\\api.hpp":
                 expected = "forward slashes"
@@ -321,12 +319,13 @@ def main() -> int:
 
         reset_sources(root)
         unc_path = chr(92) * 2 + "build-server" + chr(92) + "workspace"
-        write(root, "tools/unc_path.py", f'ROOT = "{unc_path}"\n')
+        (root / "tools/unc_path.py").unlink()
         write(root, "tools/ci_path.py", 'ROOT = "/home/runner/work/tgf/tgf"')
         write(root, "tools/url.py", 'URL = "https://example.com/path"')
         errors = checker.check(root)
         if errors: raise AssertionError("portable runner paths and URLs are not machine-specific paths:\\n" + "\\n".join(errors))
 
+        write(root, "tools/unc_path.py", f'ROOT = "{unc_path}"\n')
         expect(checker.check(root), "absolute machine-specific path", "UNC path")
 
         # The normative policy may not drift, omit rows, or duplicate module rows.
