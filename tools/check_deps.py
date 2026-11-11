@@ -390,7 +390,7 @@ def scan_source_tree(
             if module_import:
                 errors.append(
                     f"{relative}:{number}: named-module imports are prohibited until module-interface dependency policy is defined; "
-"use canonical checked headers instead"
+                    "use canonical checked headers instead"
                 )
                 continue
 
@@ -500,6 +500,11 @@ def scan_source_tree(
                         )
 
 
+        if in_block_comment:
+            errors.append(f"{relative}: unterminated block comment prevents dependency scanning")
+        if raw_string_end is not None:
+            errors.append(f"{relative}: unterminated raw string prevents dependency scanning")
+
 def check(root: pathlib.Path) -> list[str]:
     errors: list[str] = []
     if not root.is_dir():
@@ -545,10 +550,6 @@ def check(root: pathlib.Path) -> list[str]:
             if ABS_WINDOWS.search(line) or ABS_POSIX.search(line) or ABS_UNC.search(line):
                 errors.append(f"{relative}:{number}: absolute machine-specific path")
 
-        if in_block_comment:
-            errors.append(f"{relative}: unterminated block comment prevents dependency scanning")
-        if raw_string_end is not None:
-            errors.append(f"{relative}: unterminated raw string prevents dependency scanning")
 
     return errors
 
