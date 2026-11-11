@@ -207,19 +207,18 @@ def main() -> int:
             "spdlog/spdlog.h", "nlohmann/json.hpp", "boost/optional.hpp",
             "cairo.h", "pango/pango.h", "gtk/gtk.h", "glib.h", "gdk/gdk.h",
         )
-        for index, header in enumerate(forbidden_public_headers):
+        for header in forbidden_public_headers:
             reset_sources(root)
-            write(root, "widgets/include/tgf/widgets/widget.hpp", f"#include <{header}>\n")
+            write(root, "widgets/include/tgf/widgets/widget.hpp", f"#include <{header}>\\n")
             expect(
                 checker.check(root),
                 "forbidden platform/graphics/third-party SDK header",
                 f"public SDK leak {header}",
             )
-        write(root, "widgets/include/tgf/widgets/widget.hpp", "// public fixture restored\n")
+        write(root, "widgets/include/tgf/widgets/widget.hpp", "// public fixture restored")
+        write(root, "core/include/tgf/core/stdlib.hpp", chr(10).join(["#include <cstddef>", "#include <cstdint>", "#include <array>", "#include <algorithm>", "#include <string_view>"]) + chr(10))
         errors = checker.check(root)
         if errors: raise AssertionError(f"standard library includes must be accepted: {errors!r}")
-        if errors: raise AssertionError(f"standard library includes must be accepted: {errors!r}")
-
 
 
         # Every TGF include has exact, canonical components and a real public file.
@@ -323,7 +322,7 @@ def main() -> int:
         write(root, "tools/ci_path.py", 'ROOT = "/home/runner/work/tgf/tgf"')
         write(root, "tools/url.py", 'URL = "https://example.com/path"')
         errors = checker.check(root)
-        if errors: raise AssertionError("portable runner paths and URLs are not machine-specific paths:\\n" + "\\n".join(errors))
+        if errors: raise AssertionError(f"portable runner paths and URLs must be accepted: {errors!r}")
 
         write(root, "tools/unc_path.py", f'ROOT = "{unc_path}"\n')
         expect(checker.check(root), "absolute machine-specific path", "UNC path")
