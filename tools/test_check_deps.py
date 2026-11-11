@@ -335,6 +335,16 @@ def main() -> int:
         write(root, "ui/src/unterminated_raw.cpp", 'auto example = R"tag(' + chr(10) + "import tgf.render;" + chr(10))
         expect(checker.check(root), "unterminated raw string", "unterminated raw string")
 
+        # An import keyword cannot be separated from its module name by a
+        # multiline comment, or that first line would evade whole-line matching.
+        for source, filename in (
+            ("import /* comment begins" + chr(10) + "*/ tgf.render;" + chr(10), "split_import.cpp"),
+            ("@import /* comment begins" + chr(10) + "*/ Foundation;" + chr(10), "split_objc_import.mm"),
+        ):
+            reset_sources(root)
+            write(root, "ui/src/" + filename, source)
+            expect(checker.check(root), "named-module imports are prohibited", "split module import token")
+
         # Comment-separated named-module imports are still recognized.
         reset_sources(root)
         write(root, "ui/src/commented_import.cppm", "export /* separator */ import tgf.render;" + chr(10))
