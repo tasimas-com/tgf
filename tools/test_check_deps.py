@@ -233,9 +233,14 @@ def main() -> int:
 
         # Comment markers inside an angle-bracket header name are path characters,
         # not preprocessing comments, and must remain visible to path validation.
-        for header in ("tgf//core/api.hpp", "tgf/core/name/*part.hpp"):
+        for header, expected in (
+            ("tgf//core/api.hpp", "TGF include path"),
+            ("tgf/core/name/*part.hpp", "existing public header"),
+        ):
             reset_sources(root)
             write(root, "ui/src/header_name.cpp", f"#include <{header}>" + chr(10))
+            expect(checker.check(root), expected, "comment marker inside header name " + header)
+
             expect(checker.check(root), "TGF include path", "comment marker inside header name " + header)
 
         # Every TGF include has exact, canonical components and a real public file.
