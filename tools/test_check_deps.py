@@ -116,13 +116,23 @@ def main() -> int:
         if errors:
             raise AssertionError("permitted edges failed:\n" + "\n".join(errors))
 
-        # Same-module quoted canonical includes are valid and resolve through
-        # that module's own public include root (not a cross-module dependency).
+        # Same-module public headers still use canonical angle-bracket spelling.
         reset_sources(root)
-        write(root, "core/src/same_module.cpp", '#include "tgf/core/api.hpp"\n')
+        write(root, "core/src/same_module.cpp", "#include <tgf/core/api.hpp>" + chr(10))
         errors = checker.check(root)
         if errors:
-            raise AssertionError("same-module quoted public header should be valid:\n" + "\n".join(errors))
+            raise AssertionError(f"same-module public header should be valid: {errors!r}")
+
+        reset_sources(root)
+        write(root, "core/src/private.hpp", "// internal implementation header")
+        write(root, "core/src/same_module.cpp", '#include "private.hpp"' + chr(10))
+        errors = checker.check(root)
+        if errors:
+            raise AssertionError(f"same-module private quoted include should be valid: {errors!r}")
+
+        reset_sources(root)
+        write(root, "core/src/same_module.cpp", '#include "tgf/core/api.hpp"' + chr(10))
+        expect(checker.check(root), "canonical angle-bracket spelling", "same-module quoted public header")
 
         reset_sources(root)
         write(root, "render/src/quoted.cpp", '#include "tgf/core/api.hpp"\n')
@@ -276,6 +286,11 @@ def main() -> int:
         split_include = "#inc" + chr(92) + chr(10) + "lude <tgf/ui/api.hpp>" + chr(10)
         write(root, "platform/src/split_include.cpp", split_include)
         expect(checker.check(root), "may not depend on 'ui'", "line-spliced include bypass")
+
+        # A UTF-8 BOM at the beginning of a source file must not hide a directive.
+        reset_sources(root)
+        write(root, "platform/src/bom.cpp", "\ufeff#include <tgf/ui/api.hpp>" + chr(10))
+        expect(checker.check(root), "may not depend on 'ui'", "UTF-8 BOM include")
 
         # Comments before a preprocessing token are removed before directive parsing.
         reset_sources(root)
