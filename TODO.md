@@ -347,10 +347,11 @@ Each becomes a file `docs/adr/NNNN-title.md` in Phase 0. Recommended decision an
   - [x] Define private, experimental public C++, supported 1.x C++, and planned stable C ABI levels without claiming an unreleased ABI exists.
   - [x] Add a regression check for required policy sections and register it in CTest; document the check and link the policy from the README.
 - [p] P0.1.6 Dependency-DAG checker script (fails CI on illegal includes, using the §4 table)
-  - [ ] Validate that the checker policy matches the normative §4 table and fail if documentation drifts.
-  - [ ] Enforce permitted module edges, public-header-only consumer edges, canonical include spelling, and RHI backend isolation.
-  - [ ] Reject include-path traversal, uninspectable macro includes, public SDK leaks, unknown modules, and machine-specific absolute paths.
-  - [ ] Add exhaustive positive/negative dependency fixtures and make the checker a mandatory CTest/CI gate on every matrix runner.
+  - [p] Validate that the checker policy matches the normative §4 table and fail if documentation drifts.
+  - [p] Enforce permitted module edges, public-header-only consumer edges, canonical include spelling, and RHI backend isolation.
+  - [p] Reject include-path traversal, uninspectable macro includes, public SDK leaks, unknown modules, and machine-specific absolute paths.
+  - [p] Add exhaustive positive/negative dependency fixtures and make the checker a mandatory CTest/CI gate on every matrix runner.
+  - **Code audit (2026-11-11):** keep all four subconditions partial. The current `tools/check_deps.py` is not executable: a stray closing `)` immediately after its `__main__` block causes `SyntaxError: unmatched ')'` (reported at line 200), and duplicated policy definitions follow it. GitHub Actions [main run #228](https://github.com/tasimas-com/tgf/actions/runs/39280455992) on commit `ba2eb47b950e5dbdf6f8f2c6124a55df18a5b406` failed both dependency-DAG CTest cases in all 14 matrix jobs. There is also a traversal-coverage gap: relative includes that escape all recognized module roots can return `None` from `foreign_target()` without being rejected. Repair the parser, add a fixture for paths escaping the repository/module roots, then require a fresh green full matrix before checking these subconditions.
 - [ ] P0.1.7 Contribution guide, code of conduct, issue/PR templates, ADR template
 - [ ] ★ P0.1.8 License/SBOM tooling and third-party policy file (ADR-0016)
 - [p] ★ P0.1.9 Build-time and header-hygiene tracking (clean + incremental build time budgets, per-header cost report)
