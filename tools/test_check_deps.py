@@ -116,9 +116,9 @@ def main() -> int:
         if errors:
             raise AssertionError("permitted edges failed:\n" + "\n".join(errors))
 
-        # Same-module public headers still use canonical angle-bracket spelling.
+        # Same-module TGF headers can be quoted because this is not a module edge.
         reset_sources(root)
-        write(root, "core/src/same_module.cpp", "#include <tgf/core/api.hpp>" + chr(10))
+        write(root, "core/src/same_module.cpp", '#include "tgf/core/api.hpp"' + chr(10))
         errors = checker.check(root)
         if errors:
             raise AssertionError(f"same-module public header should be valid: {errors!r}")
@@ -129,10 +129,6 @@ def main() -> int:
         errors = checker.check(root)
         if errors:
             raise AssertionError(f"same-module private quoted include should be valid: {errors!r}")
-
-        reset_sources(root)
-        write(root, "core/src/same_module.cpp", '#include "tgf/core/api.hpp"' + chr(10))
-        expect(checker.check(root), "canonical angle-bracket spelling", "same-module quoted public header")
 
         reset_sources(root)
         write(root, "render/src/quoted.cpp", '#include "tgf/core/api.hpp"\n')
