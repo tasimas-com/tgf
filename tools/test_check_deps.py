@@ -242,7 +242,6 @@ def main() -> int:
             expect(checker.check(root), expected, "comment marker inside header name " + header)
 
             expect(checker.check(root), "TGF include path", "comment marker inside header name " + header)
-
         # Every TGF include has exact, canonical components and a real public file.
         invalid_tgf_paths = (
             "tgf/core/./api.hpp",
