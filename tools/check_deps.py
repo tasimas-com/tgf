@@ -366,7 +366,8 @@ def scan_source_tree(
             name = match.group(1) or match.group(2)
             quoted = match.group(2) is not None
 
-            if pathlib.Path(name).is_absolute() or pathlib.PureWindowsPath(name).is_absolute() or pathlib.PurePosixPath(name).is_absolute():
+            windows_include = pathlib.PureWindowsPath(name)
+            if pathlib.Path(name).is_absolute() or windows_include.is_absolute() or windows_include.drive or pathlib.PurePosixPath(name).is_absolute():
                 errors.append(f"{relative}:{number}: absolute include path is forbidden")
                 continue
 
@@ -374,6 +375,13 @@ def scan_source_tree(
                 root, source, relative, number, name, quoted,
                 importer_module, allowed, importing_backend, errors,
             ):
+                continue
+
+            include_components = name.replace("\\\\", "/").split("/")
+            if any(component in {"", ".", ".."} for component in include_components):
+                errors.append(
+                    f"{relative}:{number}: include path contains an empty or traversal component"
+                )
                 continue
 
             foreign = foreign_target(root, source, name, quoted)
