@@ -129,6 +129,7 @@ def strip_comments(
     index = 0
     quote: str | None = None
     escaped = False
+    in_header_name = False
 
     while index < len(line):
         if raw_string_end is not None:
@@ -150,6 +151,13 @@ def strip_comments(
             continue
 
         character = line[index]
+        if in_header_name:
+            output.append(character)
+            if character == ">":
+                in_header_name = False
+            index += 1
+            continue
+        if quote is not None:
         if quote is not None:
             output.append(character)
             if escaped:
@@ -158,6 +166,12 @@ def strip_comments(
                 escaped = True
             elif character == quote:
                 quote = None
+            index += 1
+            continue
+
+        if character == "<" and INCLUDE_DIRECTIVE.match("".join(output)):
+            in_header_name = True
+            output.append(character)
             index += 1
             continue
 
