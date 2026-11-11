@@ -371,6 +371,14 @@ def scan_source_tree(
                 errors.append(
                     f"{relative}:{number}: public header includes forbidden platform/graphics/third-party SDK header"
                 )
+                if public and quoted:
+                    local_candidate = (source.parent / pathlib.Path(name.replace("\\\\", "/"))).resolve()
+                    if is_within(local_candidate, base.resolve()):
+                        target = local_candidate.relative_to(base.resolve())
+                        if target.parts and target.parts[0] != "include":
+                            errors.append(
+                                f"{relative}:{number}: public header may not include a private header from its own module"
+                            )
 
 
 def check(root: pathlib.Path) -> list[str]:
