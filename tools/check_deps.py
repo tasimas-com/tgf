@@ -72,6 +72,7 @@ INCLUDE_LITERAL = re.compile(
     r'^\s*#\s*(?:include|import)\s*(?:<([^>]+)>|"([^"]+)")\s*(?:(?://.*)|(?:/\*.*\*/\s*))?$'
 )
 MODULE_IMPORT = re.compile(r"^\s*(?:export\s+)?import\s+([^;]+);")
+RAW_STRING_START = re.compile(r'(?:u8|u|U|L)?R"([^ ()\\\t]{0,16})\(')
 OBJC_MODULE_IMPORT = re.compile(r"^\s*@import\s+([^;]+);")
 INCLUDE_TGF_PREFIX = re.compile(r"(?:^|/)tgf(?:/|$)", re.IGNORECASE)
 ABS_WINDOWS = re.compile(r"(?<![A-Za-z0-9])[A-Za-z]:[\\/]+[A-Za-z]")
@@ -118,28 +119,69 @@ def logical_source_lines(lines: list[str]) -> list[tuple[int, str]]:
     return records
 
 
-def strip_leading_comments(line: str, in_block_comment: bool) -> tuple[str, bool]:
-    """Remove only comments before the first token, preserving directive text."""
-    remaining = line.lstrip()
-    while True:
+def strip_comments(
+    line: str,
+    in_block_comment: bool,
+    raw_string_end: str | None,
+) -> tuple[str, bool, str | None]:
+    """Remove comments while preserving literals and tracking raw strings across lines."""
+    output: list[str] = []
+    index = 0
+    quote: str | None = None
+    escaped = False
+
+    while index < len(line):
+        if raw_string_end is not None:
+            closing = line.find(raw_string_end, index)
+            if closing < 0:
+                return "".join(output), in_block_comment, raw_string_end
+            index = closing + len(raw_string_end)
+            raw_string_end = None
+            output.append(" ")
+            continue
+
         if in_block_comment:
-            end = remaining.find("*/")
-            if end < 0:
-                return "", True
-            remaining = remaining[end + 2:].lstrip()
+            closing = line.find("*/", index)
+            if closing < 0:
+                return "".join(output), True, raw_string_end
+            index = closing + 2
             in_block_comment = False
+            output.append(" ")
             continue
-        if remaining.startswith("/*"):
-            end = remaining.find("*/", 2)
-            if end < 0:
-                return "", True
-            remaining = remaining[end + 2:].lstrip()
+
+        character = line[index]
+        if quote is not None:
+            output.append(character)
+            if escaped:
+                escaped = False
+            elif character == chr(92):
+                escaped = True
+            elif character == quote:
+                quote = None
+            index += 1
             continue
-        if remaining.startswith("//"):
-            return "", False
-        return remaining, False
 
+        raw_match = RAW_STRING_START.match(line, index)
+        previous = line[index - 1] if index else ""
+        if raw_match and not (previous.isalnum() or previous == "_"):
+            raw_string_end = ")" + raw_match.group(1) + '"'
+            index = raw_match.end()
+            output.append(" ")
+            continue
 
+        if line.startswith("/*", index):
+            in_block_comment = True
+            index += 2
+            output.append(" ")
+            continue
+        if line.startswith("//", index):
+            break
+        if character in {'"', "'"}:
+            quote = character
+        output.append(character)
+        index += 1
+
+    return "".join(output), in_block_comment, raw_string_end
 def exact_file_exists(path: pathlib.Path) -> bool:
     """Check spelling component-by-component, including on case-insensitive Windows."""
     try:
@@ -332,14 +374,14 @@ def scan_source_tree(
             continue
 
         in_block_comment = False
+        raw_string_end = None
         for number, raw_line in logical_source_lines(source_lines):
-            line, in_block_comment = strip_leading_comments(raw_line, in_block_comment)
+            line, in_block_comment, raw_string_end = strip_comments(
+                raw_line, in_block_comment, raw_string_end
+            )
             if not line:
                 continue
-            # C/C++ comments are replaced by whitespace before preprocessing-token
-            # recognition. Handle same-line comments between directive tokens too.
-            line = re.sub(r"/\*.*?\*/", " ", line)
-            if line.lstrip().startswith("#") and ("/*" in line or "*/" in line):
+            if line.lstrip().startswith("#") and in_block_comment:
                 errors.append(
                     f"{relative}:{number}: include directive contains a multi-line comment and cannot be checked"
                 )
@@ -502,6 +544,11 @@ def check(root: pathlib.Path) -> list[str]:
         for number, line in enumerate(lines, 1):
             if ABS_WINDOWS.search(line) or ABS_POSIX.search(line) or ABS_UNC.search(line):
                 errors.append(f"{relative}:{number}: absolute machine-specific path")
+
+        if in_block_comment:
+            errors.append(f"{relative}: unterminated block comment prevents dependency scanning")
+        if raw_string_end is not None:
+            errors.append(f"{relative}: unterminated raw string prevents dependency scanning")
 
     return errors
 
