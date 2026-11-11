@@ -62,7 +62,14 @@ def parse_documented_policy(root: pathlib.Path) -> list[str]:
         elif value.startswith("any of the above"):
             permitted = LAYERS
         else:
-            permitted = frozenset(part.strip().strip(chr(96)) for part in value.split(","))
+            # Strip parenthetical explanations per comma-separated module. Do
+            # not truncate the whole row at the first explanation: rows such
+            # as "core, text, render (display list only), platform (event types)"
+            # still permit both render and platform.
+            permitted = frozenset(
+                part.split(" (", 1)[0].strip().strip(chr(96))
+                for part in value.split(",")
+            )
         if set(modules) - ALLOWED.keys() or permitted - ALLOWED.keys():
             return [f"TODO.md:{number}: unknown dependency-table module"]
         for module in modules:
