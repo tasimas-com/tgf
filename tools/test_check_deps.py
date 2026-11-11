@@ -361,6 +361,18 @@ def main() -> int:
         write(root, "ui/src/objc_module.mm", "@import Foundation;" + chr(10))
         expect(checker.check(root), "named-module imports are prohibited", "Objective-C module import")
 
+        # Named module interfaces and partitions have no declared module DAG yet.
+        for declaration in ("export module tgf.ui;" + chr(10), "module tgf.ui:details;" + chr(10)):
+            reset_sources(root)
+            write(root, "ui/src/interface.cppm", declaration)
+            expect(checker.check(root), "named module declarations are prohibited", "named module interface")
+
+        # A global module fragment is not a named module declaration.
+        reset_sources(root)
+        write(root, "ui/src/global_fragment.cppm", "module;" + chr(10) + "#include <tgf/ui/api.hpp>" + chr(10))
+        errors = checker.check(root)
+        if errors: raise AssertionError(f"global module fragment should not declare a named module: {errors!r}")
+
         # Imports in all common C++ module-unit extensions fail closed.
         for suffix in (".cppm", ".ixx", ".ccm", ".cxxm", ".mpp"):
             reset_sources(root)
