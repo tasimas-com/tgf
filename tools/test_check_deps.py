@@ -302,6 +302,27 @@ def main() -> int:
             write(root, "platform/src/commented_directive.cpp", directive)
             expect(checker.check(root), "may not depend on 'ui'", "comment-separated include tokens")
 
+        # A multiline comment must not hide an import after the comment closes.
+        reset_sources(root)
+        write(root, "ui/src/multiline_comment_import.cppm", "export /* comment begins" + chr(10) + "*/ import tgf.render;" + chr(10))
+        expect(checker.check(root), "named-module imports are prohibited", "multiline comment around module import")
+
+        # Module-looking text inside a multiline raw string is not an import.
+        reset_sources(root)
+        raw_string = 'constexpr auto example = R"tag(' + chr(10) + "import tgf.render;" + chr(10) + ')tag";' + chr(10)
+        write(root, "ui/src/multiline_raw_string.cpp", raw_string)
+        errors = checker.check(root)
+        if errors: raise AssertionError(f"module-looking text inside raw string must be ignored: {errors!r}")
+
+        # Unterminated comments and raw strings fail closed.
+        reset_sources(root)
+        write(root, "ui/src/unterminated_comment.cpp", "/* unterminated" + chr(10))
+        expect(checker.check(root), "unterminated block comment", "unterminated source comment")
+
+        reset_sources(root)
+        write(root, "ui/src/unterminated_raw.cpp", 'auto example = R"tag(' + chr(10) + "import tgf.render;" + chr(10))
+        expect(checker.check(root), "unterminated raw string", "unterminated raw string")
+
         # Comment-separated named-module imports are still recognized.
         reset_sources(root)
         write(root, "ui/src/commented_import.cppm", "export /* separator */ import tgf.render;" + chr(10))
