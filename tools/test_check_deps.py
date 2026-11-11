@@ -350,6 +350,24 @@ def main() -> int:
         write(root, "platform/src/escape_non_module.cpp", '#include "../../docs/private.hpp"\n')
         expect(checker.check(root), "relative include escapes its module/consumer boundary", "module traversal")
 
+        # All include forms reject dot segments, traversal, repeated separators,
+        # and drive-relative Windows paths before include-search-path lookup.
+        for header in (
+            "../../core/src/private.hpp",
+            "../outside.hpp",
+            "foo/../bar.hpp",
+            "./private.hpp",
+            "foo//bar.hpp",
+            "foo\\..\\bar.hpp",
+        ):
+            reset_sources(root)
+            write(root, "ui/src/traversal.cpp", f"#include <{header}>" + chr(10))
+            expect(checker.check(root), "empty or traversal component", "angle include path traversal " + header)
+
+        reset_sources(root)
+        write(root, "ui/src/drive_relative.cpp", "#include <C:private.hpp>" + chr(10))
+        expect(checker.check(root), "absolute include path is forbidden", "Windows drive-relative include")
+
         # Include paths themselves may not be machine-specific.
         reset_sources(root)
         windows_include = "C:" + chr(92) + "Users" + chr(92) + "Developer" + chr(92) + "private.hpp"
