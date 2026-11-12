@@ -421,11 +421,14 @@ def main() -> int:
             "foo/../bar.hpp",
             "./private.hpp",
             "foo//bar.hpp",
-            "foo\\..\\bar.hpp",
         ):
             reset_sources(root)
             write(root, "ui/src/traversal.cpp", f"#include <{header}>" + chr(10))
             expect(checker.check(root), "empty or traversal component", "angle include path traversal " + header)
+
+        reset_sources(root)
+        write(root, "ui/src/traversal.cpp", "#include <foo\\\\..\\\\bar.hpp>" + chr(10))
+        expect(checker.check(root), "forward slashes", "backslash traversal path")
 
         reset_sources(root)
         write(root, "ui/src/drive_relative.cpp", "#include <C:private.hpp>" + chr(10))
