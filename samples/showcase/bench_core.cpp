@@ -5,13 +5,13 @@
 #include <tgf/core/hash.hpp>
 #include <tgf/core/memory.hpp>
 #include <tgf/core/profiler.hpp>
+#include <tgf/core/result.hpp>
 #include <tgf/core/slot_map.hpp>
 #include <tgf/core/spsc.hpp>
+#include <tgf/core/types.hpp>
 #include <vector>
 
 #include "harness.hpp"
-#include "tgf/core/result.hpp"
-#include "tgf/core/types.hpp"
 
 using namespace tgf;
 using namespace tgf::core;

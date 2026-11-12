@@ -9,10 +9,10 @@
 #include <string>
 #include <tgf/core/build_info.hpp>
 #include <tgf/core/profiler.hpp>
+#include <tgf/core/types.hpp>  // IWYU pragma: keep
 #include <vector>
 
 #include "harness.hpp"
-#include "tgf/core/types.hpp"
 
 namespace {
 
