@@ -362,22 +362,51 @@ def scan_source_tree(
 ) -> None:
     allowed = ALLOWED[importer_module] if importer_module else LAYERS
     public_only = importer_module in PUBLIC_ONLY if importer_module else True
+    root_resolved = root.resolve()
+    base_resolved = base.resolve()
+
     for source in sorted(base.rglob("*")):
-        if source.is_symlink() and source.is_dir():
-            errors.append(
-                f"{source.relative_to(root)}: directory symlink is not allowed in a scanned source tree"
-            )
-            continue
-        if not source.is_file() or source.suffix.lower() not in SOURCE_SUFFIXES:
-            continue
         relative = source.relative_to(root)
         if any(part in EXCLUDED or part.startswith("build-") for part in relative.parts):
             continue
-        resolved_source = source.resolve()
-        if not is_within(resolved_source, root.resolve()):
+
+        is_symlink = source.is_symlink()
+        if is_symlink:
+            # Resolve links strictly: dangling links and loops are not silently
+            # ignored, because they can hide a source file from the policy scan.
+            try:
+                resolved_source = source.resolve(strict=True)
+            except (OSError, RuntimeError) as exc:
+                errors.append(f"{relative}: source symlink cannot be resolved: {exc}")
+                continue
+
+            if resolved_source.is_dir():
+                if not is_within(resolved_source, root_resolved):
+                    errors.append(f"{relative}: directory symlink escapes repository root")
+                elif not is_within(resolved_source, base_resolved):
+                    errors.append(
+                        f"{relative}: directory symlink escapes its module/consumer boundary"
+                    )
+                else:
+                    errors.append(
+                        f"{relative}: directory symlink is not allowed in a scanned source tree"
+                    )
+                continue
+
+            if source.suffix.lower() not in SOURCE_SUFFIXES:
+                continue
+            if not resolved_source.is_file():
+                errors.append(f"{relative}: source symlink does not resolve to a regular file")
+                continue
+        else:
+            if not source.is_file() or source.suffix.lower() not in SOURCE_SUFFIXES:
+                continue
+            resolved_source = source.resolve(strict=True)
+
+        if not is_within(resolved_source, root_resolved):
             errors.append(f"{relative}: source symlink escapes repository root")
             continue
-        if not is_within(resolved_source, base.resolve()):
+        if not is_within(resolved_source, base_resolved):
             errors.append(f"{relative}: source symlink escapes its module/consumer boundary")
             continue
 
@@ -493,9 +522,9 @@ def scan_source_tree(
                 include_path = pathlib.Path(name.replace("\\", "/"))
                 local_candidate = (source.parent / include_path).resolve()
                 if not local_candidate.exists():
-                    if ".." in include_path.parts and not is_within(local_candidate, root.resolve()):
+                    if ".." in include_path.parts and not is_within(local_candidate, root_resolved):
                         errors.append(f"{relative}:{number}: relative include escapes repository root")
-                    elif ".." in include_path.parts and not is_within(local_candidate, base.resolve()):
+                    elif ".." in include_path.parts and not is_within(local_candidate, base_resolved):
                         errors.append(f"{relative}:{number}: relative include escapes its module/consumer boundary")
                     else:
                         errors.append(
@@ -503,9 +532,9 @@ def scan_source_tree(
                             "implicit include-search-path resolution is forbidden"
                         )
                 else:
-                    if not is_within(local_candidate, root.resolve()):
+                    if not is_within(local_candidate, root_resolved):
                         errors.append(f"{relative}:{number}: relative include escapes repository root")
-                    elif not is_within(local_candidate, base.resolve()):
+                    elif not is_within(local_candidate, base_resolved):
                         errors.append(f"{relative}:{number}: relative include escapes its module/consumer boundary")
 
             if public and not quoted and name not in STANDARD_HEADERS:
@@ -515,13 +544,12 @@ def scan_source_tree(
                 )
             if public and quoted:
                 local_candidate = (source.parent / pathlib.Path(name.replace(chr(92), "/"))).resolve()
-                if is_within(local_candidate, base.resolve()):
-                    target = local_candidate.relative_to(base.resolve())
+                if is_within(local_candidate, base_resolved):
+                    target = local_candidate.relative_to(base_resolved)
                     if target.parts and target.parts[0] != "include":
                         errors.append(
                             f"{relative}:{number}: public header may not include a private header from its own module"
                         )
-
 
         if in_block_comment:
             errors.append(f"{relative}: unterminated block comment prevents dependency scanning")
@@ -537,19 +565,28 @@ def check(root: pathlib.Path) -> list[str]:
 
     for directory in REQUIRED_DIRS:
         path = root / directory
+        if path.is_symlink():
+            try:
+                target = path.resolve(strict=True)
+            except (OSError, RuntimeError) as exc:
+                errors.append(f"top-level directory '{directory}/' symlink cannot be resolved: {exc}")
+                continue
+            if not is_within(target, root):
+                errors.append(f"top-level directory '{directory}/' symlink escapes repository root")
+            else:
+                errors.append(f"top-level directory '{directory}/' must not be a symlink")
+            continue
         if not path.is_dir():
             errors.append(f"missing top-level directory '{directory}/' (P0.1.1)")
-        elif path.is_symlink() and not is_within(path.resolve(), root):
-            errors.append(f"top-level directory '{directory}/' resolves outside repository root")
 
     for module in ALLOWED:
         base = root / module
-        if base.is_dir():
+        if base.is_dir() and not base.is_symlink():
             scan_source_tree(root, base, module, errors)
 
     for consumer in CONSUMER_DIRS:
         base = root / consumer
-        if base.is_dir():
+        if base.is_dir() and not base.is_symlink():
             scan_source_tree(root, base, None, errors)
 
     # Reject machine-specific paths in repository-owned source and build metadata.
