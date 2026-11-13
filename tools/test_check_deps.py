@@ -331,7 +331,7 @@ def main() -> int:
         # Ordinary string and character literals may contain text that looks like
         # preprocessing directives or module imports; those are not dependencies.
         reset_sources(root)
-        literal_lookalikes = "\\n".join((
+        literal_lookalikes = chr(10).join((
             'const char* include_text = "#include <tgf/ui/api.hpp>";',
             'const char* module_text = "import tgf.render;";',
             'const char* objc_text = "@import Foundation;";',
@@ -340,7 +340,7 @@ def main() -> int:
             "constexpr char slash = '/';",
             "constexpr char import_marker = 'i';",
             "constexpr char apostrophe = '\\\\'';",
-        )) + "\\n"
+        )) + chr(10)
         write(root, "ui/src/literal_lookalikes.cpp", literal_lookalikes)
         errors = checker.check(root)
         if errors: raise AssertionError(f"ordinary string/character literal lookalikes must not be treated as dependencies: {errors!r}")
@@ -534,12 +534,12 @@ def main() -> int:
         with tempfile.TemporaryDirectory(prefix="tgf-deps-outside-") as outside:
             outside_root = pathlib.Path(outside)
             outside_file = outside_root / "escaped.cpp"
-            outside_file.write_text("// external source\\n", encoding="utf-8")
+            outside_file.write_text("// external source" + chr(10), encoding="utf-8")
             outside_dir = outside_root / "external-dir"
             outside_dir.mkdir()
 
             reset_sources(root)
-            module_target = write(root, "core/src/target.cpp", "// same module\\n")
+            module_target = write(root, "core/src/target.cpp", "// same module" + chr(10))
             (root / "core/src/safe_alias.cpp").symlink_to(
                 module_target, target_is_directory=False
             )
@@ -548,7 +548,7 @@ def main() -> int:
                 raise AssertionError(f"same-module source symlink should be accepted: {errors!r}")
 
             reset_sources(root)
-            consumer_target = write(root, "tests/consumer/target.cpp", "// same consumer\\n")
+            consumer_target = write(root, "tests/consumer/target.cpp", "// same consumer" + chr(10))
             (root / "tests/consumer/safe_alias.cpp").symlink_to(
                 consumer_target, target_is_directory=False
             )
@@ -563,12 +563,12 @@ def main() -> int:
             expect(checker.check(root), "source symlink escapes repository root", "source file symlink escaping repository")
 
             reset_sources(root)
-            module_target = write(root, "ui/src/foreign.cpp", "// another module\\n")
+            module_target = write(root, "ui/src/foreign.cpp", "// another module" + chr(10))
             (root / "core/src/foreign.cpp").symlink_to(module_target, target_is_directory=False)
             expect(checker.check(root), "source symlink escapes its module/consumer boundary", "source file symlink crossing module boundary")
 
             reset_sources(root)
-            consumer_target = write(root, "samples/app/src/shared.cpp", "// another consumer\\n")
+            consumer_target = write(root, "samples/app/src/shared.cpp", "// another consumer" + chr(10))
             (root / "tests/consumer/shared.cpp").symlink_to(consumer_target, target_is_directory=False)
             expect(checker.check(root), "source symlink escapes its module/consumer boundary", "source file symlink crossing consumer boundary")
 
@@ -595,7 +595,6 @@ def main() -> int:
             # Top-level scan roots may never be aliases, even when the target
             # remains somewhere inside the repository.
             platform = root / "platform"
-            shutil.rmtree(platform)
             platform.symlink_to(root / "core", target_is_directory=True)
             expect(checker.check(root), "top-level directory 'platform/' must not be a symlink", "top-level in-repository directory symlink")
             platform.unlink()
