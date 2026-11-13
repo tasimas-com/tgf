@@ -74,7 +74,7 @@ def main() -> int:
                 "180 seconds",
                 "45 seconds",
                 "Total ExecuteCompiler",
-                "not a runtime benchmark",
+                "runtime benchmark suite",
             ),
             "BUILD_PERFORMANCE.md",
         )

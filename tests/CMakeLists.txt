@@ -57,7 +57,7 @@ if(TGF_ENABLE_HEADER_TIME_TRACE)
   if(NOT CMAKE_CXX_COMPILER_ID MATCHES "Clang|AppleClang")
     message(FATAL_ERROR "TGF_ENABLE_HEADER_TIME_TRACE requires Clang or AppleClang (-ftime-trace).")
   endif()
-  target_compile_options(tgf_header_check PRIVATE -ftime-trace -ftime-trace-granularity=0)
+  target_compile_options(tgf_header_check PRIVATE -ftime-trace -ftime-trace-granularity=0 -ftime-trace-verbose)
 endif()
 
 # ---- CTest entries -------------------------------------------------------------

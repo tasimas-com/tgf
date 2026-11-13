@@ -49,8 +49,8 @@ This remains part of the required CTest build on the full compiler matrix.
 For the cost report, the dedicated Clang 23 lane adds -ftime-trace only to the
 tgf_header_check target. Each generated translation unit contains one public header, so
 its Total ExecuteCompiler trace duration provides an isolated per-header compile-cost proxy.
-The report also records the matching Source event duration for the header itself when Clang
-emits that event. Results are sorted from most expensive to least expensive and published as
+The trace uses Clang's verbose mode so source-file metadata is recorded; the report also
+records the matching Source event duration for the header itself when Clang emits that event. Results are sorted from most expensive to least expensive and published as
 both JSON and Markdown.
 
 The isolated translation-unit value includes fixed compiler/front-end overhead and any
