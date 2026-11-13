@@ -529,6 +529,11 @@ def main() -> int:
         expect(checker.check(missing_todo_root), "TODO.md is missing", "missing policy source")
 
 
+        # Earlier negative fixtures intentionally remove platform/ and leave a
+        # machine-path fixture behind. Restore a clean project root before symlink tests.
+        prepare(root)
+        (root / "tools" / "unc_path.py").unlink(missing_ok=True)
+
         # Symlinks that stay inside their owning scan boundary are valid file aliases.
         # Escapes across the repository, module, and consumer roots must fail closed.
         with tempfile.TemporaryDirectory(prefix="tgf-deps-outside-") as outside:
