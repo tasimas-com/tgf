@@ -201,12 +201,13 @@ and fixed minimum/maximum CPU frequency policies. No successful nightly benchmar
 
 ## Local workflow checks
 
-These repository checks are registered in CTest whenever Python 3 is found:
+These repository checks are registered in CTest when `TGF_BUILD_TESTS=ON`; CMake requires Python 3.10+ rather than silently omitting policy tests:
 
 - `ci_workflow_contract`: verifies the workflow matrix, toolchain labels, Windows MSVC/Ninja
   steps, build cache, artifact upload, and benchmark safety gate.
 - `benchmark_host_policy`: eleven controlled scenarios cover CPU-frequency policy validation and fail-closed x86-64/bare-metal detection, including explicit container rejection.
 - `benchmark_host_inventory`: six controlled scenarios validate CPU/memory/OS/frequency/thermal/DMI collection, VM/container metadata, and runner-metadata allowlisting.
+- `community_governance_policy`: verifies the contributor guide, Code of Conduct, GitHub issue/PR templates, ADR template/index, and their repository-specific contracts.
 
 ## Official references
 

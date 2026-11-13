@@ -51,3 +51,5 @@ add_test(NAME source_quality_workflow
          COMMAND ${Python3_EXECUTABLE} ${PROJECT_SOURCE_DIR}/tools/check_source_quality_workflow.py ${PROJECT_SOURCE_DIR})
 add_test(NAME format_checker_discovery
          COMMAND ${Python3_EXECUTABLE} ${PROJECT_SOURCE_DIR}/tools/test_check_format.py)
+add_test(NAME community_governance_policy
+         COMMAND ${Python3_EXECUTABLE} ${PROJECT_SOURCE_DIR}/tools/check_community_files.py ${PROJECT_SOURCE_DIR})
