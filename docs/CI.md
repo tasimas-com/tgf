@@ -1,6 +1,6 @@
 # Continuous integration and benchmark infrastructure
 
-**P0.1.3 verified complete:** 17 October 2026 — the latest Tier-1 compiler matrix [run #193](https://github.com/tasimas-com/tgf/actions/runs/39056856383) passed 14/14 jobs and the required source-quality [run #119](https://github.com/tasimas-com/tgf/actions/runs/39056856378) passed both LLVM 22/23 analysis jobs. See the evidence below.
+**P0.1.4 hosted verification:** 13 November 2026 — [TGF CI run #378](https://github.com/tasimas-com/tgf/actions/runs/43399403368) passed all 14 compiler/platform/configuration jobs; all 14 CTest artifacts were downloaded, ZIP-integrity checked, and inspected, with 11/11 tests in every log (154/154 successful test executions). [Source Quality run #304](https://github.com/tasimas-com/tgf/actions/runs/43399402789) passed both LLVM 22/23 jobs. The dedicated physical benchmark host remains waived for the current project stage and the nightly workflow remains gated. Full per-artifact evidence: [P0.1.4 CI evidence report](audit/2026-11-13/P0_1_4_CI_EVIDENCE.md).
 
 TGF uses three GitHub Actions workflows:
 
@@ -10,6 +10,12 @@ TGF uses three GitHub Actions workflows:
 - [`.github/workflows/nightly-benchmarks.yml`](../.github/workflows/nightly-benchmarks.yml)
   runs the core showcase benchmarks only on a dedicated Linux host after its CPU-frequency
   preflight passes.
+
+## Current P0.1.4 verification — 13 November 2026
+
+The current-head full compiler matrix and every CTest artifact are recorded in [the P0.1.4 evidence report](audit/2026-11-13/P0_1_4_CI_EVIDENCE.md). The matrix covers GCC 15/16, Clang 22/23, MSVC 14.50/14.51 and AppleClang 17, each in Debug and Release. All 14 jobs passed; all 14 ZIPs passed integrity checks and contain an 11-test passing log. The current source-quality run passed both LLVM lanes and checked all 29 repository-owned C/C++ sources with clang-format, with complete clang-tidy and strict IWYU builds.
+
+**Benchmark-host boundary:** the owner-approved 2026-10-17 waiver for physical-host provisioning and runner registration remains active. No physical pinned-frequency runner or dedicated-host benchmark result is claimed. The nightly job must remain gated until the waiver is reversed and the runbook's real-host acceptance process is completed.
 
 ## Earlier hosted Tier-1 matrix baseline (run #30)
 
@@ -104,7 +110,7 @@ Run #14: <https://github.com/tasimas-com/tgf/actions/runs/38738723466> (commit `
 
 ## Caching and artifacts
 
-The current workflow uses `actions/cache@v4` to cache the CMake build directory per runner,
+The current workflow uses `actions/cache@v6` to cache the CMake build directory per runner,
 compiler, configuration, and relevant source/configuration hash. This is **incremental build
 caching**, not an sccache compiler cache. The CTest log is uploaded per job with
 `actions/upload-artifact@v7` and retained for 14 days.
@@ -142,13 +148,11 @@ The dedicated source-quality workflow runs on pushes, pull requests, and manual 
 
 `source_quality_workflow` CTest protects the presence of this CI lane, its LLVM/IWYU compatibility pairs, and strict analyzer configuration. `format_checker_discovery` verifies that the formatter discovers source files in future module directories while excluding generated and vendored trees.
 
-## Latest completion evidence (P0.1.3)
+## Latest source-quality completion evidence (P0.1.3) — 13 November 2026
 
-The full Tier-1 matrix [run #193](https://github.com/tasimas-com/tgf/actions/runs/39056856383) passed all 14 compiler/configuration jobs across MSVC 14.50/14.51, Clang 22/23, GCC 15/16, and AppleClang 17 in Debug and Release. All 14 CTest artifacts were downloaded, ZIP-integrity checked, and inspected: each contained 11/11 passing CTest cases and the showcase reported 26 checks with zero failures (154/154 CTest executions).
+The current LLVM 22/23 source-quality workflow [run #304](https://github.com/tasimas-com/tgf/actions/runs/43399402789) passed both jobs. clang-format checked all 29 repository-owned C/C++ files. Complete TGF Debug builds passed clang-tidy with warnings-as-errors, and strict IWYU passed using LLVM 22.1.8/IWYU 0.26 and LLVM 23.1.6/IWYU 0.27. The generated duplicate-include header self-containment harness is intentionally excluded from IWYU only; implementation and showcase translation units remain checked.
 
-The dedicated source-quality workflow [run #119](https://github.com/tasimas-com/tgf/actions/runs/39056856378) passed both LLVM jobs. clang-format checked all 29 repository-owned C/C++ source files; complete TGF Debug builds passed clang-tidy with warnings-as-errors; strict IWYU passed on LLVM 22.1.8/IWYU 0.26 and LLVM 23.1.4/IWYU 0.27. The generated duplicate-include header self-containment harness is intentionally excluded from IWYU only; implementation and showcase translation units remain checked.
-
-Together these runs satisfy P0.1.3. They do not provision or enable the dedicated pinned-frequency benchmark runner, prove Tier-A competitor benchmarks, close the remaining ADR/research-spike work, or satisfy the overall Phase 0 exit criteria. The earlier run #30 evidence and artifact inventory above are retained as historical baseline records.
+This is current evidence for P0.1.3. Full P0.1.4 matrix and CTest-artifact evidence is documented above and in [P0_1_4_CI_EVIDENCE.md](audit/2026-11-13/P0_1_4_CI_EVIDENCE.md). These results do not provision or enable the dedicated pinned-frequency benchmark runner, prove Tier-A competitor benchmarks, close the remaining ADR/research-spike work, or satisfy the overall Phase 0 exit criteria. Earlier run #193 and run #119 records are retained in GitHub Actions as historical evidence; the run #30 artifact inventory above is a historical baseline.
 
 ## Second-run artifact evidence
 
@@ -167,7 +171,7 @@ CPUFreq policy, thermal-zone/hwmon readings, OS/kernel and selected build-tool v
 allowlisted runner metadata. It is uploaded with the benchmark report. The collector is
 read-only; host frequency changes remain an administrator-controlled provisioning step.
 
-The nightly workflow remains intentionally gated. It requires a self-hosted Linux x64 runner with
+The nightly workflow remains intentionally gated under the active owner-approved scope waiver. Its latest scheduled execution [run #28](https://github.com/tasimas-com/tgf/actions/runs/43211725951) was skipped by the readiness gate. It requires a self-hosted Linux x64 runner with
 all labels:
 
 ```text
