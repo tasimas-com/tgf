@@ -1,6 +1,6 @@
 # TGF implementation status
 
-**Status date:** 13 November 2026 — Revision 23  
+**Status date:** 13 November 2026 — Revision 25  
 **Audited input:** `tasimas-com/tgf` on GitHub; task completion and current CI evidence are maintained in the root `TODO.md`  
 **Canonical task checklist:** [`../TODO.md`](../TODO.md)  
 **Full source-audit evidence:** [`audit/2026-10-14/`](audit/2026-10-14/)
@@ -24,7 +24,7 @@ explicit status markers. Final artifact entries are included in the counts below
 
 | Area | Done | Partial | Not started | Not delivered | Total |
 |---|---:|---:|---:|---:|---:|
-| P0 — foundations | 6 | 7 | 19 | 0 | 32 |
+| P0 — foundations | 7 | 7 | 18 | 0 | 32 |
 | P1 — core | 1 | 18 | 11 | 0 | 30 |
 | P2 — platform | 0 | 0 | 21 | 0 | 21 |
 | P3 — RHI and renderer | 0 | 0 | 24 | 0 | 24 |
@@ -178,8 +178,8 @@ Details and exact verification are in `docs/audit/2026-10-14/TGF_CORE_REMEDIATIO
 
 ## Recommended next sequence
 
-1. P0.1.4 is now closed for the current owner-approved scope; continue **P0.1.6** next and close its remaining regression-fixture gaps.
-2. Complete remaining P0.1.7–P0.1.9 governance, licensing/SBOM, and build/header-hygiene requirements.
+1. P0.1.4, P0.1.6, and P0.1.7 are closed for their documented scopes. The next foundation task is **P0.1.8**: formal license publication, SBOM tooling, and the third-party policy (ADR-0016).
+2. Complete **P0.1.9**: clean/incremental build-time budgets and per-header cost reporting.
 3. Complete P0.2: inventory existing assets, decide keep/rewrite/delete, and record the result in ADR-0018.
 4. Complete P0.3: implement the benchmark harness and publish fair Tier-A baselines and measurable targets.
 5. Complete P0.4 and P0.5: document research spikes, accept ADRs, and finalize estimates/reference application.
@@ -346,3 +346,32 @@ for 154/154 successful executions. [Source Quality run #314](https://github.com/
 
 This task closure does not close the remaining Phase 0 research, ADR, benchmark, or release
 criteria. Phase 0 remains open and Phase 1 remains blocked.
+
+
+## Revision 24 — P0.1.7 contributor and governance workflow completed (2026-11-13)
+
+P0.1.7 is complete. The repository now has a contributor guide, Code of Conduct, bug and
+feature issue forms, PR template, ADR template and updated ADR index, README policy links,
+and a mandatory `community_governance_policy` CTest guard. The guard checks required
+policy sections and project-specific contracts, including honest license status, report
+routes, issue-form types/IDs, PR review evidence, and ADR lifecycle/allocation. Issue-form
+YAML was independently parsed with PyYAML 6.0.3.
+
+On implementation commit `852d724fae3e74f33b78e05ab20cc72de19e0f53`, [TGF CI run #392]
+(https://github.com/tasimas-com/tgf/actions/runs/43429879957) passed 14/14 matrix jobs.
+All 14 CTest artifacts were integrity-checked and inspected: each had 12/12 passing tests,
+including `community_governance_policy`, for 168/168 successful executions. [Source Quality
+run #318](https://github.com/tasimas-com/tgf/actions/runs/43429879999) passed 2/2 LLVM jobs.
+See [the P0.1.7 evidence report](audit/2026-11-13/P0_1_7_COMMUNITY_GOVERNANCE_EVIDENCE.md)
+for artifact IDs and the verification register.
+
+P0.1.7 closure does not complete the license/SBOM work in P0.1.8 or the remaining Phase 0
+research, ADR, benchmark, and release criteria. Phase 0 remains open; Phase 1 remains blocked.
+
+
+## Revision 25 — current Phase 0 next-task sequence (2026-11-13)
+
+Updated the recommended sequence to reflect the verified closures of P0.1.6 and P0.1.7.
+The next foundation task is P0.1.8 (license/SBOM/third-party policy), followed by P0.1.9
+(build-time and header-hygiene budgets). This is a documentation correction only; it does
+not change task status or authorize Phase 1.

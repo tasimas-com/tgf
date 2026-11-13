@@ -110,6 +110,20 @@ def read_cmake_cache(build_dir: Path) -> dict[str, str]:
     return values
 
 
+def read_compiler_identity(build_dir: Path) -> tuple[str, str]:
+    """Read compiler identity from CMake's generated compiler metadata."""
+    candidates = sorted((build_dir / "CMakeFiles").glob("*/CMakeCXXCompiler.cmake"))
+    if not candidates:
+        raise ValueError("CMake compiler metadata file was not found under CMakeFiles")
+    for path in candidates:
+        content = path.read_text(encoding="utf-8", errors="replace")
+        compiler_id = re.search(r'^set\\(CMAKE_CXX_COMPILER_ID "([^"]+)"\\)', content, re.MULTILINE)
+        compiler_version = re.search(r'^set\\(CMAKE_CXX_COMPILER_VERSION "([^"]+)"\\)', content, re.MULTILINE)
+        if compiler_id and compiler_version:
+            return compiler_id.group(1), compiler_version.group(1)
+    raise ValueError("CMake compiler metadata does not contain compiler ID and version")
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--source-root", type=Path, default=Path(__file__).resolve().parents[1])
@@ -131,11 +145,11 @@ def main() -> int:
             raise ValueError(
                 f"expected generator {data['generator']}, found {cache.get('CMAKE_GENERATOR')}"
             )
-        if cache.get("CMAKE_CXX_COMPILER_ID") != data["compiler_id"]:
+        compiler_id, compiler_version = read_compiler_identity(build_dir)
+        if compiler_id != data["compiler_id"]:
             raise ValueError(
-                f"expected compiler {data['compiler_id']}, found {cache.get('CMAKE_CXX_COMPILER_ID')}"
+                f"expected compiler {data['compiler_id']}, found {compiler_id}"
             )
-        compiler_version = cache.get("CMAKE_CXX_COMPILER_VERSION", "")
         if not compiler_version.startswith(f'{data["compiler_major"]}.'):
             raise ValueError(
                 f"expected compiler major {data['compiler_major']}, found {compiler_version or 'unknown'}"
@@ -191,7 +205,7 @@ def main() -> int:
         "configuration": data["configuration"],
         "generator": data["generator"],
         "compiler": {
-            "id": cache.get("CMAKE_CXX_COMPILER_ID"),
+            "id": compiler_id,
             "version": compiler_version,
             "path": cache.get("CMAKE_CXX_COMPILER"),
         },

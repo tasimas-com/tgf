@@ -49,6 +49,21 @@ class BuildMeasurementTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 measure_build.validate_configuration(data, root)
 
+    def test_reads_compiler_identity_from_generated_cmake_metadata(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            build = Path(temp)
+            metadata = build / "CMakeFiles" / "4.4.5"
+            metadata.mkdir(parents=True)
+            (metadata / "CMakeCXXCompiler.cmake").write_text(
+                'set(CMAKE_CXX_COMPILER_ID "Clang")\\n'
+                'set(CMAKE_CXX_COMPILER_VERSION "23.1.6")\\n',
+                encoding="utf-8",
+            )
+            self.assertEqual(
+                measure_build.read_compiler_identity(build),
+                ("Clang", "23.1.6"),
+            )
+
     def test_incremental_build_restores_source_timestamp(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)
