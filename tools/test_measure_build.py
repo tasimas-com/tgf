@@ -55,8 +55,9 @@ class BuildMeasurementTests(unittest.TestCase):
             metadata = build / "CMakeFiles" / "4.4.5"
             metadata.mkdir(parents=True)
             (metadata / "CMakeCXXCompiler.cmake").write_text(
-                'set(CMAKE_CXX_COMPILER_ID "Clang")\\n'
-                'set(CMAKE_CXX_COMPILER_VERSION "23.1.6")\\n',
+                """set(CMAKE_CXX_COMPILER_ID "Clang")
+set(CMAKE_CXX_COMPILER_VERSION "23.1.6")
+""",
                 encoding="utf-8",
             )
             self.assertEqual(
