@@ -81,3 +81,31 @@ Consequently:
 P0.1.4's repository implementation and hosted verification are complete. Its physical benchmark-host operation is **explicitly waived for the current project stage** under the recorded owner decision. Therefore P0.1.4 can be closed only with that limitation attached; it must not be described as having a live dedicated benchmark runner or measured dedicated-host baselines.
 
 This decision closes P0.1.4 for the approved scope and does not satisfy the other Phase 0 exit criteria or authorize Phase 1.
+
+
+## 7. Final code re-verification — container-safe host preflight (2026-11-13)
+
+After the initial full matrix, the host acceptance probe was tightened. The preflight and inventory collector now invoke `systemd-detect-virt` without `--vm`: the default mode detects both full-machine and container virtualization, whereas `--vm` limits detection to hardware virtualization. The operator runbook now states the same contract. Regression coverage explicitly rejects a Docker-reported container in both the fail-closed preflight and the inventory collector. This is important because the GitHub execution environment itself reports `container-other` with the default probe, while `--vm` reports the underlying KVM layer.
+
+The final source revision is `f49fd53a673be7c4589e24b7adfb9a01f327da06`. [TGF CI run #383](https://github.com/tasimas-com/tgf/actions/runs/43413133994) completed **14/14 jobs successfully**. All 14 artifacts were downloaded and inspected; each ZIP passed integrity validation, contained exactly one `LastTest.log`, had 11/11 CTest entries, 11 `Test Passed.` markers and zero `Test Failed.` markers. Each log also recorded `Ran 11 tests` for `test_check_benchmark_host.py` and `Ran 6 tests` for `test_collect_benchmark_host_inventory.py`. Total: **154/154 CTest executions**.
+
+| Artifact | Artifact ID |
+|---|---:|
+| `ctest-msvc-14.50-debug-Windows` | 14031495060 |
+| `ctest-clang-23-debug-Linux` | 14031025583 |
+| `ctest-gcc-15-debug-Linux` | 14031000774 |
+| `ctest-gcc-16-release-Linux` | 14030995591 |
+| `ctest-appleclang-debug-macOS` | 14030965787 |
+| `ctest-msvc-14.50-release-Windows` | 14030907003 |
+| `ctest-msvc-14.51-release-Windows` | 14030896050 |
+| `ctest-clang-22-release-Linux` | 14030811115 |
+| `ctest-gcc-15-release-Linux` | 14030766117 |
+| `ctest-appleclang-release-macOS` | 14030586713 |
+| `ctest-msvc-14.51-debug-Windows` | 14030411781 |
+| `ctest-gcc-16-debug-Linux` | 14029943890 |
+| `ctest-clang-22-debug-Linux` | 14029928877 |
+| `ctest-clang-23-release-Linux` | 14029844438 |
+
+The workflow asserted GCC 15/16, Clang 22/23, MSVC 19.50.x/toolset 14.50.35717 and 19.51.x/toolset 14.51.36231, and AppleClang 17.0.0 on arm64 macOS. [Source Quality run #309](https://github.com/tasimas-com/tgf/actions/runs/43413133983) passed both LLVM lanes (LLVM 22/IWYU 0.26 and LLVM 23/IWYU 0.27), including clang-format, full clang-tidy and strict IWYU.
+
+The 2026-10-17 owner-approved scope waiver remains active. This re-verification does not claim physical-host provisioning, thermal acceptance, a registered self-hosted runner, or a dedicated-host benchmark result. The nightly workflow remains gated.

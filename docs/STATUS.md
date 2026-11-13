@@ -1,6 +1,6 @@
 # TGF implementation status
 
-**Status date:** 13 November 2026 — Revision 21  
+**Status date:** 13 November 2026 — Revision 22  
 **Audited input:** `tasimas-com/tgf` on GitHub; task completion and current CI evidence are maintained in the root `TODO.md`  
 **Canonical task checklist:** [`../TODO.md`](../TODO.md)  
 **Full source-audit evidence:** [`audit/2026-10-14/`](audit/2026-10-14/)
@@ -316,3 +316,12 @@ P0.1.4 is closed for the current owner-approved project scope. The current hoste
 The dedicated nightly benchmark workflow, fail-closed preflight, inventory collector, acceptance tests, artifact capture, and operator runbook are delivered. **The 2026-10-17 project-owner waiver for physical benchmark-host provisioning and self-hosted runner registration/first-run acceptance remains active.** No physical pinned-frequency host, thermal validation, registered runner, first benchmark artifact, or dedicated-host performance result is claimed. Scheduled nightly run [#28](https://github.com/tasimas-com/tgf/actions/runs/43211725951) was skipped by the readiness gate; keep `TGF_BENCHMARK_RUNNER_READY` unset.
 
 Exact compiler/job evidence and all 14 artifact IDs are recorded in [`audit/2026-11-13/P0_1_4_CI_EVIDENCE.md`](audit/2026-11-13/P0_1_4_CI_EVIDENCE.md). This closes P0.1.4 only within the approved scope and does not change the overall Phase 0 gate. Phase 1 remains blocked.
+
+
+## Revision 22 — P0.1.4 re-verification after container-detection hardening (2026-11-13)
+
+Follow-up commit `f49fd53a673be7c4589e24b7adfb9a01f327da06` corrected the benchmark-host preflight and inventory collector to use the default `systemd-detect-virt` mode, ensuring container virtualization (Docker/Podman/LXC/systemd-nspawn) is rejected as well as VM virtualization. Added explicit Docker-negative tests; the preflight suite now has 11 cases and inventory suite has 6.
+
+The final code revision passed [TGF CI run #383](https://github.com/tasimas-com/tgf/actions/runs/43413133994) with 14/14 successful jobs. All 14 ZIP artifacts were inspected and passed integrity; each contains 11/11 passing CTest tests (154/154 executions) and the 11-/6-case Python suites. [Source Quality run #309](https://github.com/tasimas-com/tgf/actions/runs/43413133983) passed 2/2 jobs. The detailed per-artifact IDs and toolchain results are in `docs/audit/2026-11-13/P0_1_4_CI_EVIDENCE.md`.
+
+The existing owner-approved physical benchmark-host waiver is unchanged: no dedicated physical host or registered runner is claimed, and `TGF_BENCHMARK_RUNNER_READY` remains unset. P0.1.4 is closed for that approved scope only. Phase 0 remains open overall and Phase 1 remains blocked.

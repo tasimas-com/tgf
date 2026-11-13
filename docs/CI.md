@@ -1,6 +1,6 @@
 # Continuous integration and benchmark infrastructure
 
-**P0.1.4 hosted verification:** 13 November 2026 — [TGF CI run #378](https://github.com/tasimas-com/tgf/actions/runs/43399403368) passed all 14 compiler/platform/configuration jobs; all 14 CTest artifacts were downloaded, ZIP-integrity checked, and inspected, with 11/11 tests in every log (154/154 successful test executions). [Source Quality run #304](https://github.com/tasimas-com/tgf/actions/runs/43399402789) passed both LLVM 22/23 jobs. The dedicated physical benchmark host remains waived for the current project stage and the nightly workflow remains gated. Full per-artifact evidence: [P0.1.4 CI evidence report](audit/2026-11-13/P0_1_4_CI_EVIDENCE.md).
+**P0.1.4 hosted verification:** 13 November 2026 — [TGF CI run #383](https://github.com/tasimas-com/tgf/actions/runs/43413133994) passed all 14 compiler/platform/configuration jobs; all 14 CTest artifacts were downloaded, ZIP-integrity checked, and inspected, with 11/11 tests in every log (154/154 successful test executions). The preflight and inventory Python suites passed 11 and 6 cases respectively, including container rejection. [Source Quality run #309](https://github.com/tasimas-com/tgf/actions/runs/43413133983) passed both LLVM 22/23 jobs. The dedicated physical benchmark host remains waived for the current project stage and the nightly workflow remains gated. Full per-artifact evidence: [P0.1.4 CI evidence report](audit/2026-11-13/P0_1_4_CI_EVIDENCE.md).
 
 TGF uses three GitHub Actions workflows:
 
@@ -13,7 +13,7 @@ TGF uses three GitHub Actions workflows:
 
 ## Current P0.1.4 verification — 13 November 2026
 
-The current-head full compiler matrix and every CTest artifact are recorded in [the P0.1.4 evidence report](audit/2026-11-13/P0_1_4_CI_EVIDENCE.md). The matrix covers GCC 15/16, Clang 22/23, MSVC 14.50/14.51 and AppleClang 17, each in Debug and Release. All 14 jobs passed; all 14 ZIPs passed integrity checks and contain an 11-test passing log. The current source-quality run passed both LLVM lanes and checked all 29 repository-owned C/C++ sources with clang-format, with complete clang-tidy and strict IWYU builds.
+The final hosted compiler matrix [run #383](https://github.com/tasimas-com/tgf/actions/runs/43413133994) and all CTest artifacts are recorded in [the P0.1.4 evidence report](audit/2026-11-13/P0_1_4_CI_EVIDENCE.md). The matrix covers GCC 15/16, Clang 22/23, MSVC 14.50/14.51 and AppleClang 17, each in Debug and Release. All 14 jobs passed; all 14 ZIPs passed integrity checks and contain an 11-test passing log. The host preflight and inventory tests now explicitly reject container virtualization. Source-quality run [#309](https://github.com/tasimas-com/tgf/actions/runs/43413133983) passed both LLVM lanes; clang-format checked all 29 repository-owned C/C++ sources, with complete clang-tidy and strict IWYU builds.
 
 **Benchmark-host boundary:** the owner-approved 2026-10-17 waiver for physical-host provisioning and runner registration remains active. No physical pinned-frequency runner or dedicated-host benchmark result is claimed. The nightly job must remain gated until the waiver is reversed and the runbook's real-host acceptance process is completed.
 
