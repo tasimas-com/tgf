@@ -600,6 +600,7 @@ def main() -> int:
             # Top-level scan roots may never be aliases, even when the target
             # remains somewhere inside the repository.
             platform = root / "platform"
+            shutil.rmtree(platform)
             platform.symlink_to(root / "core", target_is_directory=True)
             expect(checker.check(root), "top-level directory 'platform/' must not be a symlink", "top-level in-repository directory symlink")
             platform.unlink()
