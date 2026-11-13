@@ -59,7 +59,7 @@ REQUIRED_SECTIONS = {
     ),
 }
 
-ISSUE_FORM_TYPES = {"markdown", "input", "textarea", "dropdown", "checkbox"}
+ISSUE_FORM_TYPES = {"markdown", "input", "textarea", "dropdown", "checkboxes", "upload"}
 
 
 def fail(message: str) -> int:
