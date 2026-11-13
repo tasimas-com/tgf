@@ -1,6 +1,6 @@
 # TGF implementation status
 
-**Status date:** 13 November 2026 — Revision 22  
+**Status date:** 13 November 2026 — Revision 23  
 **Audited input:** `tasimas-com/tgf` on GitHub; task completion and current CI evidence are maintained in the root `TODO.md`  
 **Canonical task checklist:** [`../TODO.md`](../TODO.md)  
 **Full source-audit evidence:** [`audit/2026-10-14/`](audit/2026-10-14/)
@@ -24,7 +24,7 @@ explicit status markers. Final artifact entries are included in the counts below
 
 | Area | Done | Partial | Not started | Not delivered | Total |
 |---|---:|---:|---:|---:|---:|
-| P0 — foundations | 2 | 11 | 19 | 0 | 32 |
+| P0 — foundations | 6 | 7 | 19 | 0 | 32 |
 | P1 — core | 1 | 18 | 11 | 0 | 30 |
 | P2 — platform | 0 | 0 | 21 | 0 | 21 |
 | P3 — RHI and renderer | 0 | 0 | 24 | 0 | 24 |
@@ -325,3 +325,24 @@ Follow-up commit `f49fd53a673be7c4589e24b7adfb9a01f327da06` corrected the benchm
 The final code revision passed [TGF CI run #383](https://github.com/tasimas-com/tgf/actions/runs/43413133994) with 14/14 successful jobs. All 14 ZIP artifacts were inspected and passed integrity; each contains 11/11 passing CTest tests (154/154 executions) and the 11-/6-case Python suites. [Source Quality run #309](https://github.com/tasimas-com/tgf/actions/runs/43413133983) passed 2/2 jobs. The detailed per-artifact IDs and toolchain results are in `docs/audit/2026-11-13/P0_1_4_CI_EVIDENCE.md`.
 
 The existing owner-approved physical benchmark-host waiver is unchanged: no dedicated physical host or registered runner is claimed, and `TGF_BENCHMARK_RUNNER_READY` remains unset. P0.1.4 is closed for that approved scope only. Phase 0 remains open overall and Phase 1 remains blocked.
+
+
+## Revision 23 — P0.1.6 dependency-DAG enforcement completed (2026-11-13)
+
+P0.1.6 is now complete. The dependency checker is kept in lockstep with the normative §4
+module-dependency table and its mandatory CTest coverage includes all 38 permitted and 94
+forbidden directed module edges, positive/negative include-path cases, ordinary
+string/character-literal lookalikes, and symlink-boundary fixtures. Safe source-file links
+within one module/consumer are accepted; source-file links crossing the repository or owning
+module/consumer boundary are rejected; directory symlinks and symlinked top-level scan roots
+are rejected. Unresolvable source links fail closed.
+
+The verified code commit is `597887791105638b7b7202ace314bf1af0141596`.
+[TGF CI run #388](https://github.com/tasimas-com/tgf/actions/runs/43416718257) passed 14/14
+jobs across GCC 15/16, Clang 22/23, MSVC 14.50/14.51, and AppleClang in Debug and Release.
+All 14 CTest artifacts were integrity-checked and inspected: 11/11 tests passed in each,
+for 154/154 successful executions. [Source Quality run #314](https://github.com/tasimas-com/tgf/actions/runs/43416718274) passed 2/2 jobs. Detailed artifact IDs and the fixture-by-fixture evidence are recorded in
+[`audit/2026-11-13/P0_1_6_DEPENDENCY_DAG_EVIDENCE.md`](audit/2026-11-13/P0_1_6_DEPENDENCY_DAG_EVIDENCE.md).
+
+This task closure does not close the remaining Phase 0 research, ADR, benchmark, or release
+criteria. Phase 0 remains open and Phase 1 remains blocked.

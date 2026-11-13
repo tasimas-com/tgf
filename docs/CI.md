@@ -133,14 +133,30 @@ The checker parses the normative table and fails when its executable policy drif
 `TODO.md`. Its black-box regression suite exercises all **38 allowed** and **94 forbidden**
 directed module edges, along with relative-include bypasses, private/missing public headers,
 SDK leaks, RHI cross-backend includes, uppercase/unknown module names, path traversal,
-non-literal includes, policy drift, and path hygiene.
+non-literal includes, policy drift, and path hygiene. It also verifies that ordinary string
+and character literals containing `#include`, named-module imports, Objective-C imports,
+and comment-looking text are not mistaken for dependency directives.
 
-When `TGF_BUILD_TESTS=ON`, CMake now requires a Python interpreter instead of silently
-omitting policy tests. CTest runs both `dependency_dag` (the real repository) and
+Symlink handling is fail-closed: source-file links are strictly resolved and may not escape
+the repository or their owning module/consumer scan boundary; directory links are rejected
+inside scanned source trees; and required top-level scan roots cannot be symlink aliases.
+Regression fixtures include accepted same-module and same-consumer file links, plus rejected
+file and directory escapes across repository/module/consumer boundaries and top-level
+in-repository/out-of-repository aliases.
+
+When `TGF_BUILD_TESTS=ON`, CMake requires Python 3.10+ instead of silently omitting policy
+tests. CTest runs both `dependency_dag` (the real repository) and
 `dependency_dag_policy_regressions` (the positive/negative fixture suite). Every hosted
 compiler/OS matrix job explicitly installs Python 3.13 with `actions/setup-python@v7`
 before configure/build/test, so the dependency gate cannot disappear on a runner missing
 a system Python installation.
+
+Hosted verification on commit `597887791105638b7b7202ace314bf1af0141596` passed
+[TGF CI run #388](https://github.com/tasimas-com/tgf/actions/runs/43416718257) with 14/14
+jobs and [Source Quality run #314](https://github.com/tasimas-com/tgf/actions/runs/43416718274)
+with 2/2 jobs. All 14 CTest artifacts were inspected: 11/11 tests passed in each artifact
+(154/154 executions, zero failures). The per-artifact evidence is in
+[`P0_1_6_DEPENDENCY_DAG_EVIDENCE.md`](audit/2026-11-13/P0_1_6_DEPENDENCY_DAG_EVIDENCE.md).
 
 ## Source-quality enforcement (P0.1.3.c–e)
 
