@@ -56,7 +56,7 @@ class BenchmarkHostPolicyTests(unittest.TestCase):
         self.assertFalse(ok)
         self.assertTrue(any("No CPU frequency policy" in message for message in messages))
 
-    def test_accepts_x86_64_when_systemd_reports_no_vm(self) -> None:
+    def test_accepts_x86_64_when_systemd_reports_no_virtualization(self) -> None:
         cpuinfo = self.root / "cpuinfo"
         cpuinfo.write_text("flags : fpu sse sse2 avx2\n", encoding="utf-8")
         ok, messages = verify_bare_metal(
@@ -65,7 +65,7 @@ class BenchmarkHostPolicyTests(unittest.TestCase):
             detector=lambda: (1, ""),
         )
         self.assertTrue(ok, messages)
-        self.assertTrue(any("no VM" in message for message in messages))
+        self.assertTrue(any("no VM or container" in message for message in messages))
 
     def test_rejects_virtual_machine_reported_by_systemd(self) -> None:
         cpuinfo = self.root / "cpuinfo"
@@ -76,7 +76,18 @@ class BenchmarkHostPolicyTests(unittest.TestCase):
             detector=lambda: (0, "kvm"),
         )
         self.assertFalse(ok)
-        self.assertTrue(any("virtual machine: kvm" in message for message in messages))
+        self.assertTrue(any("virtualization or containerization: kvm" in message for message in messages))
+
+    def test_rejects_container_reported_by_systemd(self) -> None:
+        cpuinfo = self.root / "cpuinfo"
+        cpuinfo.write_text("flags : fpu sse sse2\n", encoding="utf-8")
+        ok, messages = verify_bare_metal(
+            machine="x86_64",
+            cpuinfo_path=cpuinfo,
+            detector=lambda: (0, "docker"),
+        )
+        self.assertFalse(ok)
+        self.assertTrue(any("virtualization or containerization: docker" in message for message in messages))
 
     def test_rejects_hypervisor_cpu_flag_even_if_detector_says_none(self) -> None:
         cpuinfo = self.root / "cpuinfo"

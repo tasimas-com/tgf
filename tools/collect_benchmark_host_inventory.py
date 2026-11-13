@@ -277,7 +277,7 @@ def collect_inventory(
     thermal_zones = collect_thermal_zones(thermal_sysfs_root)
     hwmon_sensors = collect_hwmon(hwmon_sysfs_root)
     flags = set(cpu.get("cpu_flags") or [])
-    virtualization_command = command_runner(["systemd-detect-virt", "--vm"])
+    virtualization_command = command_runner(["systemd-detect-virt"])
     virt_rc = virtualization_command.get("returncode")
     virt_output = virtualization_command.get("output") or []
     if virt_rc == 0:

@@ -38,10 +38,10 @@ Check the architecture and virtualization status:
 
 ~~~sh
 uname -m
-systemd-detect-virt --vm
+systemd-detect-virt
 ~~~
 
-The first command must report x86_64 (or the equivalent amd64). The second must return its documented “no virtualization detected” status. An error, missing command, or unknown virtualization result is not acceptance evidence.
+The first command must report x86_64 (or the equivalent amd64). The second must return its documented “no virtualization detected” status. Use the default detector mode, not `--vm`: it must reject both virtual machines and containers such as Docker, Podman, LXC, and systemd-nspawn. An error, missing command, or unknown virtualization result is not acceptance evidence.
 
 Inspect the actual CPU and firmware, without publishing serial numbers:
 
@@ -90,7 +90,7 @@ The preflight is read-only:
 python3 tools/check_benchmark_host.py --require-bare-metal
 ~~~
 
-It must exit with code 0. It checks x86-64, rejects virtualization indicators or an unprovable VM status, and checks every discovered CPUFreq policy for performance plus equal positive min/max limits. It does not change settings.
+It must exit with code 0. It checks x86-64, rejects both VM and container indicators (or an unprovable virtualization status), and checks every discovered CPUFreq policy for performance plus equal positive min/max limits. It does not change settings.
 
 ## 4. Validate thermal stability and capture the inventory
 

@@ -94,7 +94,7 @@ class BenchmarkHostInventoryTests(unittest.TestCase):
 
     @staticmethod
     def _command_runner(command: list[str]) -> dict:
-        if command[:2] == ["systemd-detect-virt", "--vm"]:
+        if command == ["systemd-detect-virt"]:
             return {"available": True, "returncode": 1, "output": []}
         return {
             "available": True,
@@ -102,7 +102,21 @@ class BenchmarkHostInventoryTests(unittest.TestCase):
             "output": [f"{command[0]} test-version"],
         }
 
-    def _collect(self, *, cpuinfo: Path | None = None) -> dict:
+    def _collect(
+        self,
+        *,
+        cpuinfo: Path | None = None,
+        virtualization: tuple[int, str] = (1, ""),
+    ) -> dict:
+        def command_runner(command: list[str]) -> dict:
+            if command == ["systemd-detect-virt"]:
+                return {
+                    "available": True,
+                    "returncode": virtualization[0],
+                    "output": [virtualization[1]] if virtualization[1] else [],
+                }
+            return self._command_runner(command)
+
         return collect_inventory(
             cpu_sysfs_root=self.cpu_root,
             thermal_sysfs_root=self.thermal_root,
@@ -111,7 +125,7 @@ class BenchmarkHostInventoryTests(unittest.TestCase):
             cpuinfo_path=cpuinfo or self.cpuinfo,
             meminfo_path=self.meminfo,
             os_release_path=self.os_release,
-            command_runner=self._command_runner,
+            command_runner=command_runner,
             environment={
                 "GITHUB_ACTIONS": "true",
                 "RUNNER_ARCH": "X64",
@@ -142,6 +156,11 @@ class BenchmarkHostInventoryTests(unittest.TestCase):
         report = self._collect()
         self.assertEqual(report["host"]["runner"]["GITHUB_RUN_ID"], "12345")
         self.assertNotIn("GITHUB_TOKEN", report["host"]["runner"])
+
+    def test_records_container_virtualization(self) -> None:
+        report = self._collect(virtualization=(0, "docker"))
+        self.assertTrue(report["host"]["virtualization"]["detected"])
+        self.assertEqual(report["host"]["virtualization"]["type"], "docker")
 
     def test_records_virtualization_cpu_flag(self) -> None:
         self.cpuinfo.write_text(

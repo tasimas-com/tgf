@@ -2,7 +2,7 @@
 """Fail closed unless a Linux x86-64 benchmark host is explicitly frequency-pinned.
 
 Use --require-bare-metal in the dedicated-runner workflow. That mode requires
-systemd-detect-virt to positively establish that no VM is detected.
+systemd-detect-virt to positively establish that neither a VM nor a container is detected.
 """
 
 from __future__ import annotations
@@ -102,7 +102,7 @@ def verify_bare_metal(
     try:
         if detector is None:
             result = subprocess.run(
-                ["systemd-detect-virt", "--vm"],
+                ["systemd-detect-virt"],
                 check=False,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.STDOUT,
@@ -118,7 +118,7 @@ def verify_bare_metal(
         ]
 
     if returncode == 0:
-        problems.append(f"systemd-detect-virt identified a virtual machine: {output or 'unknown'}")
+        problems.append(f"systemd-detect-virt identified virtualization or containerization: {output or 'unknown'}")
     elif returncode != 1:
         problems.append(
             f"systemd-detect-virt returned {returncode}; bare-metal status is unknown"
@@ -126,7 +126,7 @@ def verify_bare_metal(
 
     if problems:
         return False, problems
-    return True, ["x86_64 architecture verified; systemd-detect-virt reports no VM"]
+    return True, ["x86_64 architecture verified; systemd-detect-virt reports no VM or container"]
 
 
 def main() -> int:
@@ -140,7 +140,7 @@ def main() -> int:
     parser.add_argument(
         "--require-bare-metal",
         action="store_true",
-        help="also require x86-64 and positive systemd evidence that this is not a VM",
+        help="also require x86-64 and positive systemd evidence that the host is not virtualized or containerized",
     )
     args = parser.parse_args()
 

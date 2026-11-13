@@ -189,8 +189,8 @@ These repository checks are registered in CTest whenever Python 3 is found:
 
 - `ci_workflow_contract`: verifies the workflow matrix, toolchain labels, Windows MSVC/Ninja
   steps, build cache, artifact upload, and benchmark safety gate.
-- `benchmark_host_policy`: ten controlled scenarios cover CPU-frequency policy validation and fail-closed x86-64/bare-metal detection.
-- `benchmark_host_inventory`: five controlled scenarios validate CPU/memory/OS/frequency/thermal/DMI collection, virtualization metadata, and runner-metadata allowlisting.
+- `benchmark_host_policy`: eleven controlled scenarios cover CPU-frequency policy validation and fail-closed x86-64/bare-metal detection, including explicit container rejection.
+- `benchmark_host_inventory`: six controlled scenarios validate CPU/memory/OS/frequency/thermal/DMI collection, VM/container metadata, and runner-metadata allowlisting.
 
 ## Official references
 
