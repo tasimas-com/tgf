@@ -116,13 +116,16 @@ def read_compiler_identity(build_dir: Path) -> tuple[str, str]:
     if not candidates:
         raise ValueError("CMake compiler metadata file was not found under CMakeFiles")
     for path in candidates:
-        content = path.read_text(encoding="utf-8", errors="replace")
-        compiler_id = re.search(r'^set\\(CMAKE_CXX_COMPILER_ID "([^"]+)"\\)', content, re.MULTILINE)
-        compiler_version = re.search(r'^set\\(CMAKE_CXX_COMPILER_VERSION "([^"]+)"\\)', content, re.MULTILINE)
-        if compiler_id and compiler_version:
-            return compiler_id.group(1), compiler_version.group(1)
+        values: dict[str, str] = {}
+        for raw_line in path.read_text(encoding="utf-8", errors="replace").splitlines():
+            line = raw_line.strip()
+            for key in ("CMAKE_CXX_COMPILER_ID", "CMAKE_CXX_COMPILER_VERSION"):
+                prefix = f'set({key} "'
+                if line.startswith(prefix) and line.endswith('")'):
+                    values[key] = line[len(prefix):-2]
+        if "CMAKE_CXX_COMPILER_ID" in values and "CMAKE_CXX_COMPILER_VERSION" in values:
+            return values["CMAKE_CXX_COMPILER_ID"], values["CMAKE_CXX_COMPILER_VERSION"]
     raise ValueError("CMake compiler metadata does not contain compiler ID and version")
-
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
