@@ -1,6 +1,6 @@
 # TGF implementation status
 
-**Status date:** 13 November 2026 — Revision 24  
+**Status date:** 13 November 2026 — Revision 25  
 **Audited input:** `tasimas-com/tgf` on GitHub; task completion and current CI evidence are maintained in the root `TODO.md`  
 **Canonical task checklist:** [`../TODO.md`](../TODO.md)  
 **Full source-audit evidence:** [`audit/2026-10-14/`](audit/2026-10-14/)
@@ -178,8 +178,8 @@ Details and exact verification are in `docs/audit/2026-10-14/TGF_CORE_REMEDIATIO
 
 ## Recommended next sequence
 
-1. P0.1.4 is now closed for the current owner-approved scope; continue **P0.1.6** next and close its remaining regression-fixture gaps.
-2. Complete remaining P0.1.7–P0.1.9 governance, licensing/SBOM, and build/header-hygiene requirements.
+1. P0.1.4, P0.1.6, and P0.1.7 are closed for their documented scopes. The next foundation task is **P0.1.8**: formal license publication, SBOM tooling, and the third-party policy (ADR-0016).
+2. Complete **P0.1.9**: clean/incremental build-time budgets and per-header cost reporting.
 3. Complete P0.2: inventory existing assets, decide keep/rewrite/delete, and record the result in ADR-0018.
 4. Complete P0.3: implement the benchmark harness and publish fair Tier-A baselines and measurable targets.
 5. Complete P0.4 and P0.5: document research spikes, accept ADRs, and finalize estimates/reference application.
@@ -367,3 +367,11 @@ for artifact IDs and the verification register.
 
 P0.1.7 closure does not complete the license/SBOM work in P0.1.8 or the remaining Phase 0
 research, ADR, benchmark, and release criteria. Phase 0 remains open; Phase 1 remains blocked.
+
+
+## Revision 25 — current Phase 0 next-task sequence (2026-11-13)
+
+Updated the recommended sequence to reflect the verified closures of P0.1.6 and P0.1.7.
+The next foundation task is P0.1.8 (license/SBOM/third-party policy), followed by P0.1.9
+(build-time and header-hygiene budgets). This is a documentation correction only; it does
+not change task status or authorize Phase 1.
