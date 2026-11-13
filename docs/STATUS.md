@@ -1,6 +1,6 @@
 # TGF implementation status
 
-**Status date:** 13 November 2026 — Revision 23  
+**Status date:** 13 November 2026 — Revision 24  
 **Audited input:** `tasimas-com/tgf` on GitHub; task completion and current CI evidence are maintained in the root `TODO.md`  
 **Canonical task checklist:** [`../TODO.md`](../TODO.md)  
 **Full source-audit evidence:** [`audit/2026-10-14/`](audit/2026-10-14/)
@@ -24,7 +24,7 @@ explicit status markers. Final artifact entries are included in the counts below
 
 | Area | Done | Partial | Not started | Not delivered | Total |
 |---|---:|---:|---:|---:|---:|
-| P0 — foundations | 6 | 7 | 19 | 0 | 32 |
+| P0 — foundations | 7 | 7 | 18 | 0 | 32 |
 | P1 — core | 1 | 18 | 11 | 0 | 30 |
 | P2 — platform | 0 | 0 | 21 | 0 | 21 |
 | P3 — RHI and renderer | 0 | 0 | 24 | 0 | 24 |
@@ -346,3 +346,24 @@ for 154/154 successful executions. [Source Quality run #314](https://github.com/
 
 This task closure does not close the remaining Phase 0 research, ADR, benchmark, or release
 criteria. Phase 0 remains open and Phase 1 remains blocked.
+
+
+## Revision 24 — P0.1.7 contributor and governance workflow completed (2026-11-13)
+
+P0.1.7 is complete. The repository now has a contributor guide, Code of Conduct, bug and
+feature issue forms, PR template, ADR template and updated ADR index, README policy links,
+and a mandatory `community_governance_policy` CTest guard. The guard checks required
+policy sections and project-specific contracts, including honest license status, report
+routes, issue-form types/IDs, PR review evidence, and ADR lifecycle/allocation. Issue-form
+YAML was independently parsed with PyYAML 6.0.3.
+
+On implementation commit `852d724fae3e74f33b78e05ab20cc72de19e0f53`, [TGF CI run #392]
+(https://github.com/tasimas-com/tgf/actions/runs/43429879957) passed 14/14 matrix jobs.
+All 14 CTest artifacts were integrity-checked and inspected: each had 12/12 passing tests,
+including `community_governance_policy`, for 168/168 successful executions. [Source Quality
+run #318](https://github.com/tasimas-com/tgf/actions/runs/43429879999) passed 2/2 LLVM jobs.
+See [the P0.1.7 evidence report](audit/2026-11-13/P0_1_7_COMMUNITY_GOVERNANCE_EVIDENCE.md)
+for artifact IDs and the verification register.
+
+P0.1.7 closure does not complete the license/SBOM work in P0.1.8 or the remaining Phase 0
+research, ADR, benchmark, and release criteria. Phase 0 remains open; Phase 1 remains blocked.

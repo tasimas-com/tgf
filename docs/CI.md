@@ -232,3 +232,33 @@ The `coding_standard_policy` CTest entry runs
 `tools/check_coding_standard.py`. It protects the required policy sections and key
 architectural commitments from accidental deletion or drift. It is a documentation-contract
 check, not a substitute for code review, clang-format, clang-tidy, or ABI analysis.
+
+
+## Contributor and governance policy (P0.1.7)
+
+The repository's contributor workflow is documented in [`CONTRIBUTING.md`](../CONTRIBUTING.md).
+The community behavior and reporting policy is [`CODE_OF_CONDUCT.md`](../CODE_OF_CONDUCT.md).
+GitHub issue forms are in `.github/ISSUE_TEMPLATE/`; the pull-request checklist is
+`.github/PULL_REQUEST_TEMPLATE.md`; and new decision records use
+[`docs/adr/TEMPLATE.md`](adr/TEMPLATE.md), with ID and status rules in the ADR index.
+
+The `community_governance_policy` CTest invokes `tools/check_community_files.py`. It
+verifies that the policy files and required sections exist, the contributor guide reflects
+TGF's actual build/test/licensing state, the Code of Conduct contains reporting and
+anti-retaliation provisions, issue forms use known field types and unique IDs, the PR
+template requests validation/compatibility/ADR evidence, the ADR template includes decision
+metadata and lifecycle sections, and the README links contributor policies. It is a
+repository contract check rather than a replacement for maintainer judgment or GitHub's
+server-side form validation.
+
+When PyYAML is installed, the checker also parses each issue form. The hosted workflow does
+not install PyYAML, so that CTest lane uses the stdlib static-contract path. The committed
+bug and feature forms were independently parsed with PyYAML 6.0.3 during the P0.1.7 audit.
+
+**P0.1.7 hosted verification:** implementation commit
+`852d724fae3e74f33b78e05ab20cc72de19e0f53` passed [TGF CI run #392]
+(https://github.com/tasimas-com/tgf/actions/runs/43429879957) with 14/14 matrix jobs.
+All 14 CTest artifacts passed ZIP integrity checks and contained 12/12 passing tests,
+including `community_governance_policy` (168/168 CTest executions). [Source Quality run #318]
+(https://github.com/tasimas-com/tgf/actions/runs/43429879999) passed both LLVM jobs. See
+[`P0_1_7_COMMUNITY_GOVERNANCE_EVIDENCE.md`](audit/2026-11-13/P0_1_7_COMMUNITY_GOVERNANCE_EVIDENCE.md).
