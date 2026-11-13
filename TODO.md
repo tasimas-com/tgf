@@ -1,11 +1,11 @@
 # TGF — TASIMAS GUI Framework
-## Master Plan & Complete TODO  (Revision 28 — P0.1.7 contributor and governance workflow completed)
+## Master Plan & Complete TODO  (Revision 29 — P0.1.9 build-time and header-cost tracking completed)
 
 > Goal: the fastest, leanest GUI framework for **large professional software and games** — Photoshop, Blender, After Effects, Cubase, Dorico, FL Studio, Cinema 4D, Unreal/Unity-class editors, and in-game UI for 2D/3D games — written in C++, minimal CPU / GPU / RAM / disk, with an architecture future engineers can extend for decades.
 > License intent: free and open source (TASIMAS policy).
 > Final deliverable of this plan: **TGF 1.0.0**, a professional, API-stable, documented, accessible, cross-platform release (criteria in §10).
 
-Legend: `★` marks a task, decision or section added or materially changed during the audit. Revision 3 added the project-specific implementation contract; Revision 5 recorded core-safety remediation; Revision 6 records tagged memory diagnostics; Revisions 7–9 record lifecycle diagnostics, module allocator ownership, and mapped-file verification; Revision 10 completes the Phase 0 CMake preset matrix; Revision 11 adds the compiler-support policy, warnings-as-errors verification, and optional quality-tool workflows; Revision 12 adds cross-platform CI workflows, compiler caching, and a gated pinned-frequency benchmark job; Revision 13 hardens the hosted workflow and makes the MSVC sccache path effective through Ninja; Revision 14 records the connected GitHub account check and confirms that no TGF repository currently exists under that account; Revision 15 records the repository-creation blocker and initial-repository runbook. Revision 16 records creation of `tasimas-com/tgf`; Revision 17 records the published source and first hosted eight-job baseline; Revision 18 records the second successful eight-job run after the workflow-label/cache documentation corrections. Revision 21 records the project-owner-approved waiver of physical benchmark-host provisioning and runner registration; the workflow remains gated and no physical benchmark evidence is claimed. Revision 22 establishes the normative TGF coding standard and its CTest regression guard. Revision 24 records an independent Phase 0 code/evidence audit and corrects the P0.1.6 regression-coverage status. Revision 25 closes P0.1.4 for the currently approved scope after full 14-job matrix and artifact verification; it preserves the explicit physical benchmark-runner waiver and does not claim a live runner. Revision 26 re-verifies P0.1.4 after closing the benchmark preflight's container-detection gap, with a new successful 14-job run and 14 inspected CTest artifacts. Revision 27 closes P0.1.6 after adding symlink-boundary and ordinary-literal regression fixtures, then verifying all 14 compiler/platform/configuration jobs, all 14 CTest artifacts, and both source-quality jobs. Revision 28 delivers the contributor guide, Code of Conduct, GitHub issue and pull-request templates, ADR template/index workflow, README links, and a mandatory CTest governance-policy regression check, verified on the complete hosted matrix. Existing P0–P13 task IDs and ADR-0001–ADR-0027 are preserved wherever possible. Original task IDs are preserved so existing commits/issues still resolve; new tasks use new IDs.
+Legend: `★` marks a task, decision or section added or materially changed during the audit. Revision 3 added the project-specific implementation contract; Revision 5 recorded core-safety remediation; Revision 6 records tagged memory diagnostics; Revisions 7–9 record lifecycle diagnostics, module allocator ownership, and mapped-file verification; Revision 10 completes the Phase 0 CMake preset matrix; Revision 11 adds the compiler-support policy, warnings-as-errors verification, and optional quality-tool workflows; Revision 12 adds cross-platform CI workflows, compiler caching, and a gated pinned-frequency benchmark job; Revision 13 hardens the hosted workflow and makes the MSVC sccache path effective through Ninja; Revision 14 records the connected GitHub account check and confirms that no TGF repository currently exists under that account; Revision 15 records the repository-creation blocker and initial-repository runbook. Revision 16 records creation of `tasimas-com/tgf`; Revision 17 records the published source and first hosted eight-job baseline; Revision 18 records the second successful eight-job run after the workflow-label/cache documentation corrections. Revision 21 records the project-owner-approved waiver of physical benchmark-host provisioning and runner registration; the workflow remains gated and no physical benchmark evidence is claimed. Revision 22 establishes the normative TGF coding standard and its CTest regression guard. Revision 24 records an independent Phase 0 code/evidence audit and corrects the P0.1.6 regression-coverage status. Revision 25 closes P0.1.4 for the currently approved scope after full 14-job matrix and artifact verification; it preserves the explicit physical benchmark-runner waiver and does not claim a live runner. Revision 26 re-verifies P0.1.4 after closing the benchmark preflight's container-detection gap, with a new successful 14-job run and 14 inspected CTest artifacts. Revision 27 closes P0.1.6 after adding symlink-boundary and ordinary-literal regression fixtures, then verifying all 14 compiler/platform/configuration jobs, all 14 CTest artifacts, and both source-quality jobs. Revision 28 delivers the contributor guide, Code of Conduct, GitHub issue and pull-request templates, ADR template/index workflow, README links, and a mandatory CTest governance-policy regression check, verified on the complete hosted matrix. Revision 29 establishes clean/incremental build-time budgets, Clang per-header cost reports, and full hosted regression evidence. Existing P0–P13 task IDs and ADR-0001–ADR-0027 are preserved wherever possible. Original task IDs are preserved so existing commits/issues still resolve; new tasks use new IDs.
 
  
 
@@ -365,7 +365,8 @@ Each becomes a file `docs/adr/NNNN-title.md` in Phase 0. Recommended decision an
   - **Scope/operations note:** the Code of Conduct uses GitHub's repository-admin reporting route when the repository's reported-content feature makes it available, with GitHub Support as fallback. The feature is a GitHub repository setting, not a version-controlled file. The repository owner should keep that setting enabled; no unverified report email address or response-time promise is published. The contribution guide accurately states that Apache-2.0 is currently an intent only: P0.1.8's formal license/SBOM/third-party policy remains open, and no CLA/DCO process is asserted.
   - **Hosted proof:** on implementation commit `852d724fae3e74f33b78e05ab20cc72de19e0f53`, [TGF CI run #392](https://github.com/tasimas-com/tgf/actions/runs/43429879957) passed **14/14** jobs across GCC 15/16, Clang 22/23, MSVC 14.50/14.51, and AppleClang in Debug and Release. All 14 CTest ZIP artifacts were downloaded, ZIP-integrity checked, and inspected; each contains 12/12 passing tests, including `community_governance_policy`, with zero failures (**168/168** executions). The issue-form YAML files also parsed successfully with PyYAML 6.0.3 and have unique field IDs. [Source Quality run #318](https://github.com/tasimas-com/tgf/actions/runs/43429879999) passed both LLVM 22/23 jobs. Artifact IDs and checks are recorded in `docs/audit/2026-11-13/P0_1_7_COMMUNITY_GOVERNANCE_EVIDENCE.md`.
 - [ ] ★ P0.1.8 License/SBOM tooling and third-party policy file (ADR-0016)
-- [p] ★ P0.1.9 Build-time and header-hygiene tracking (clean + incremental build time budgets, per-header cost report)
+- [x] ★ P0.1.9 Build-time and header-hygiene tracking (clean + incremental build time budgets, per-header cost report)
+  - Evidence: docs/audit/2026-11-13/P0_1_9_BUILD_PERFORMANCE_EVIDENCE.md records the measurement contract, Clang 23 per-header report, budgets, 14/14 CI jobs, 14 inspected CTest artifacts (210/210 passing executions), and source-quality verification.
 
 **P0.2 Audit of existing TGF assets**
 - [ ] P0.2.1 Inventory the existing scaffold and the ImGui-derived fork: what is reusable (platform glue, RHI sketches, shaders, tests)?
@@ -1284,11 +1285,11 @@ The Phase 0 checklist was re-evaluated against the repository code, build config
 
 **Verified complete:** P0.1.1 (required repository layout), P0.1.2 (configure/build/test preset matrix and preset-graph regression check), P0.1.3 (compiler policy and LLVM source-quality enforcement), P0.1.5 (normative coding standard and CTest contract), and P0.1.4.a–g (workflow, cache/artifact publication, gated benchmark workflow, host-preflight/inventory tooling, hosted runs, owner-approved runner waiver, and two-generation compiler matrix). The current `main` commit `5d26c26c41dfb84ee104cf6210a56a7aa59a04d2` passed 14/14 CI jobs in run [#43170760845](https://github.com/tasimas-com/tgf/actions/runs/43170760845) and 2/2 source-quality jobs in run [#43170760680](https://github.com/tasimas-com/tgf/actions/runs/43170760680). The dedicated nightly benchmark job was skipped by its readiness gate, as required by the owner-approved scope waiver; no physical-host benchmark result is claimed. P0.1.4 remains partial as a whole because the nightly benchmark path is not operational.
 
-**Downgraded:** P0.1.6 from complete to partial. The scanner contains symlink-boundary checks, but its regression test file has no symlink fixtures despite the prior completion note claiming such coverage. A dedicated ordinary string/character-literal lookalike test is also absent. See the P0.1.6 audit finding above. This is a test-evidence gap, not a claim that the checker currently accepts a known symlink escape.
+**Historical downgrade (superseded by Revision 27):** P0.1.6 was temporarily downgraded because symlink-boundary fixtures were missing from the regression suite. The subsequent implementation added accepted and rejected symlink fixtures plus ordinary string/character-literal lookalikes, and the final 14-job hosted matrix passed. See Revision 27 and docs/audit/2026-11-13/P0_1_6_DEPENDENCY_DAG_EVIDENCE.md.
 
-**Confirmed partial/not complete:** P0.1.9 has public-header self-containment compilation but no clean/incremental build-time budgets or per-header cost report. P0.2.1–P0.2.3 remain open: the historical source audit is not a keep/rewrite/delete inventory of the earlier ImGui-derived prototype, ADR-0018 is absent, and `docs/lessons.md` is absent. P0.3.1–P0.3.2 contain hardware/scenario planning but no reproducible hardware-tier definitions or identical runnable cross-framework scenarios. P0.3.4–P0.3.5 contain competitor-tier planning and local showcase JSON export, but no measured Tier-A baselines, automated result history, dashboard, or statistical regression gate. P0.4.11 has one 100-hour/192-kHz camera-relative precision check, but does not test the 10^6-zoom node canvas or gigapixel canvas/seam requirements. P0.5 remains partial: `docs/adr/README.md` lists standalone ADR-0012 and ADR-0028–0030, while ADR-0001–0027 are still specified in this master plan rather than delivered as individual accepted ADR files.
+**Confirmed partial/not complete:** P0.2.1–P0.2.3 remain open: the historical source audit is not a keep/rewrite/delete inventory of the earlier ImGui-derived prototype, ADR-0018 is absent, and `docs/lessons.md` is absent. P0.3.1–P0.3.2 contain hardware/scenario planning but no reproducible hardware-tier definitions or identical runnable cross-framework scenarios. P0.3.4–P0.3.5 contain competitor-tier planning and local showcase JSON export, but no measured Tier-A baselines, automated result history, dashboard, or statistical regression gate. P0.4.11 has one 100-hour/192-kHz camera-relative precision check, but does not test the 10^6-zoom node canvas or gigapixel canvas/seam requirements. P0.5 remains partial: `docs/adr/README.md` lists standalone ADR-0012 and ADR-0028–0030, while ADR-0001–0027 are still specified in this master plan rather than delivered as individual accepted ADR files.
 
-**Not started:** P0.1.7 (contribution/governance templates), P0.1.8 (license/SBOM/third-party policy tooling), P0.3.3 (complete benchmark metrics and statistical methodology), P0.3.6 (published fair baseline report), and P0.4.1–P0.4.10 plus P0.4.12–P0.4.13 (research spikes).
+**Not started:** P0.1.8 (license/SBOM/third-party policy tooling), P0.3.3 (complete benchmark metrics and statistical methodology), P0.3.6 (published fair baseline report), and P0.4.1–P0.4.10 plus P0.4.12–P0.4.13 (research spikes).
 
 No Phase 1 task is authorized by this audit. Phase 0 remains open until every exit criterion is satisfied with implementation and evidence.
 
@@ -1356,3 +1357,43 @@ Conduct describes the repository-admin route when available and GitHub Support a
 The guide does not claim that Apache-2.0 has been formally published: P0.1.8 remains open,
 and no CLA/DCO requirement is invented. P0.1.7 closes only this governance task. Phase 0
 remains open and Phase 1 remains blocked by the remaining Phase 0 tasks and exit criteria.
+
+
+## Revision 29 — P0.1.9 build-time and header-cost tracking completed (2026-11-13)
+
+P0.1.9 is complete. The repository now defines reproducible clean and incremental build-time ceilings in
+cmake/build-performance-budgets.json, measures them with tools/measure_build.py, and generates
+sorted JSON/Markdown per-public-header compile-cost reports with tools/report_header_costs.py.
+The dedicated build-performance.yml workflow uses a no-build-cache Ubuntu 26.04 / Ninja /
+Clang 23.1.6 Release baseline with two parallel jobs. The configured hard ceilings are 180 seconds
+for a clean build and 45 seconds for the one-source incremental rebuild. The tool verifies the
+generator, compiler metadata, configuration, and incremental probe; it confirms the probe was
+recompiled and restores its original timestamp.
+
+The required public-header self-containment target now discovers headers beneath every first-party
+module include/tgf/ root, writes a header manifest, and compiles each header in its own
+translation unit twice. Clang time tracing is enabled only for that target in the dedicated
+measurement lane. The report's primary metric is Total ExecuteCompiler duration for the
+isolated translation unit. This includes compiler/front-end overhead and transitive includes;
+it is a within-run comparison proxy, not pure header-only CPU time. The report contains all
+15 discovered public headers.
+
+Final hosted evidence on commit d444003c5c839294f1c31e79d6a4c7d5f95f5f18:
+- [TGF CI run #398](https://github.com/tasimas-com/tgf/actions/runs/43458777497) passed 14/14
+  GCC 15/16, Clang 22/23, MSVC 14.50/14.51, and AppleClang Debug/Release jobs. All 14 CTest ZIPs
+  were downloaded and ZIP-integrity checked; every LastTest.log contains 15/15 passing tests,
+  including build_measurement_tool, header_cost_reporter, and build_performance_policy
+  (210/210 executions).
+- [Source Quality run #324](https://github.com/tasimas-com/tgf/actions/runs/43458777647) passed
+  2/2 LLVM 22/23 formatting, tidy, and IWYU jobs.
+- [Build Performance run #4](https://github.com/tasimas-com/tgf/actions/runs/43458777543) passed.
+  Its [report artifact](https://github.com/tasimas-com/tgf/actions/runs/43458777543/artifacts/14055341519)
+  records a 3.441 s clean build against the 180 s ceiling, a 1.194 s incremental rebuild
+  against the 45 s ceiling, and compile-cost data for all 15 public headers. The heaviest isolated
+  translation units in this run were tgf/core/hash.hpp (118.198 ms), tgf/core/spsc.hpp
+  (86.975 ms), and tgf/core/slot_map.hpp (59.499 ms).
+
+The per-job CTest artifact IDs and verification register are in
+docs/audit/2026-11-13/P0_1_9_BUILD_PERFORMANCE_EVIDENCE.md. P0.1.9 closure does not close
+P0.1.8 (license/SBOM/third-party policy), the remaining Phase 0 research/ADR/benchmark work, or
+the Phase 0 exit criteria. Phase 0 remains open and Phase 1 remains blocked.

@@ -1,6 +1,6 @@
 # TGF implementation status
 
-**Status date:** 13 November 2026 — Revision 25  
+**Status date:** 13 November 2026 — Revision 26  
 **Audited input:** `tasimas-com/tgf` on GitHub; task completion and current CI evidence are maintained in the root `TODO.md`  
 **Canonical task checklist:** [`../TODO.md`](../TODO.md)  
 **Full source-audit evidence:** [`audit/2026-10-14/`](audit/2026-10-14/)
@@ -24,7 +24,7 @@ explicit status markers. Final artifact entries are included in the counts below
 
 | Area | Done | Partial | Not started | Not delivered | Total |
 |---|---:|---:|---:|---:|---:|
-| P0 — foundations | 7 | 7 | 18 | 0 | 32 |
+| P0 — foundations | 8 | 6 | 18 | 0 | 32 |
 | P1 — core | 1 | 18 | 11 | 0 | 30 |
 | P2 — platform | 0 | 0 | 21 | 0 | 21 |
 | P3 — RHI and renderer | 0 | 0 | 24 | 0 | 24 |
@@ -178,12 +178,11 @@ Details and exact verification are in `docs/audit/2026-10-14/TGF_CORE_REMEDIATIO
 
 ## Recommended next sequence
 
-1. P0.1.4, P0.1.6, and P0.1.7 are closed for their documented scopes. The next foundation task is **P0.1.8**: formal license publication, SBOM tooling, and the third-party policy (ADR-0016).
-2. Complete **P0.1.9**: clean/incremental build-time budgets and per-header cost reporting.
-3. Complete P0.2: inventory existing assets, decide keep/rewrite/delete, and record the result in ADR-0018.
-4. Complete P0.3: implement the benchmark harness and publish fair Tier-A baselines and measurable targets.
-5. Complete P0.4 and P0.5: document research spikes, accept ADRs, and finalize estimates/reference application.
-6. Keep Phase 1 blocked until the complete Phase 0 exit criteria are met.
+1. P0.1.4, P0.1.6, P0.1.7, and P0.1.9 are closed for their documented scopes. The next unclosed foundation task is **P0.1.8**: formal license publication, SBOM tooling, and the third-party policy (ADR-0016).
+2. Complete P0.2: inventory existing assets, decide keep/rewrite/delete, and record the result in ADR-0018.
+3. Complete P0.3: implement the benchmark harness and publish fair Tier-A baselines and measurable targets.
+4. Complete P0.4 and P0.5: document research spikes, accept ADRs, and finalize estimates/reference application.
+5. Keep Phase 1 blocked until the complete Phase 0 exit criteria are met.
 
 ## Revision 12 — CI workflow foundation
 
@@ -375,3 +374,26 @@ Updated the recommended sequence to reflect the verified closures of P0.1.6 and 
 The next foundation task is P0.1.8 (license/SBOM/third-party policy), followed by P0.1.9
 (build-time and header-hygiene budgets). This is a documentation correction only; it does
 not change task status or authorize Phase 1.
+
+
+## Revision 26 — P0.1.9 build-time and header-cost tracking completed (2026-11-13)
+
+P0.1.9 is complete. A standardised no-cache Clang 23.1.6 / Ninja / Release workflow now measures
+clean and one-source incremental builds against checked-in hard ceilings (180 s and 45 s) and
+publishes JSON/Markdown timing plus per-public-header cost reports. The final hosted run measured
+3.441 s clean and 1.194 s incremental, and reported all 15 public headers. The isolated
+translation-unit metric includes fixed compiler/front-end overhead and transitive includes;
+it is a comparison proxy, not pure header-only CPU time.
+
+[TGF CI run #398](https://github.com/tasimas-com/tgf/actions/runs/43458777497) passed 14/14
+compiler/platform/configuration jobs. All 14 CTest artifacts were ZIP-integrity checked and
+inspected; each contained 15/15 passing tests, including the three new build-measurement,
+header-reporting, and performance-policy checks (210/210 executions). [Source Quality run
+#324](https://github.com/tasimas-com/tgf/actions/runs/43458777647) passed 2/2 jobs.
+[Build Performance run #4](https://github.com/tasimas-com/tgf/actions/runs/43458777543) passed;
+its report artifact is [available here](https://github.com/tasimas-com/tgf/actions/runs/43458777543/artifacts/14055341519).
+Per-artifact CTest IDs and the full evidence register are in
+[audit/2026-11-13/P0_1_9_BUILD_PERFORMANCE_EVIDENCE.md](audit/2026-11-13/P0_1_9_BUILD_PERFORMANCE_EVIDENCE.md).
+
+P0.1.8 (license/SBOM/third-party policy) remains the next unclosed foundation task. P0.1.9
+closure does not authorize Phase 1; Phase 0 remains open and Phase 1 remains blocked.
