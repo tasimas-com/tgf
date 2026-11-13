@@ -1,6 +1,6 @@
 # TGF implementation status
 
-**Status date:** 17 October 2026 — Revision 20  
+**Status date:** 13 November 2026 — Revision 21  
 **Audited input:** `tasimas-com/tgf` on GitHub; task completion and current CI evidence are maintained in the root `TODO.md`  
 **Canonical task checklist:** [`../TODO.md`](../TODO.md)  
 **Full source-audit evidence:** [`audit/2026-10-14/`](audit/2026-10-14/)
@@ -178,7 +178,7 @@ Details and exact verification are in `docs/audit/2026-10-14/TGF_CORE_REMEDIATIO
 
 ## Recommended next sequence
 
-1. Continue **P0.1.6** next: finish dependency-DAG enforcement and verify its negative/positive CI cases.
+1. P0.1.4 is now closed for the current owner-approved scope; continue **P0.1.6** next and close its remaining regression-fixture gaps.
 2. Complete remaining P0.1.7–P0.1.9 governance, licensing/SBOM, and build/header-hygiene requirements.
 3. Complete P0.2: inventory existing assets, decide keep/rewrite/delete, and record the result in ADR-0018.
 4. Complete P0.3: implement the benchmark harness and publish fair Tier-A baselines and measurable targets.
@@ -307,3 +307,12 @@ in this section and in the root `TODO.md`. P0.1.3 is no longer partial: PR #4 is
 the two-version source-quality workflow passed, and the full 14-job Tier-1 compiler matrix and
 all 154 CTest executions passed. P0.1.3 closure does not change the separate benchmark-host
 waiver or satisfy the overall Phase 0 exit criteria.
+
+
+## Revision 21 — P0.1.4 hosted CI closure for the approved scope (2026-11-13)
+
+P0.1.4 is closed for the current owner-approved project scope. The current hosted CI run [#378](https://github.com/tasimas-com/tgf/actions/runs/43399403368) completed 14/14 jobs across GCC 15/16, Clang 22/23, MSVC 14.50/14.51, and AppleClang 17, each in Debug and Release. All 14 CTest artifacts were downloaded and inspected: each ZIP passed integrity validation and each `LastTest.log` contained 11/11 passing tests (154/154 successful CTest executions). The paired source-quality run [#304](https://github.com/tasimas-com/tgf/actions/runs/43399402789) passed both LLVM jobs.
+
+The dedicated nightly benchmark workflow, fail-closed preflight, inventory collector, acceptance tests, artifact capture, and operator runbook are delivered. **The 2026-10-17 project-owner waiver for physical benchmark-host provisioning and self-hosted runner registration/first-run acceptance remains active.** No physical pinned-frequency host, thermal validation, registered runner, first benchmark artifact, or dedicated-host performance result is claimed. Scheduled nightly run [#28](https://github.com/tasimas-com/tgf/actions/runs/43211725951) was skipped by the readiness gate; keep `TGF_BENCHMARK_RUNNER_READY` unset.
+
+Exact compiler/job evidence and all 14 artifact IDs are recorded in [`audit/2026-11-13/P0_1_4_CI_EVIDENCE.md`](audit/2026-11-13/P0_1_4_CI_EVIDENCE.md). This closes P0.1.4 only within the approved scope and does not change the overall Phase 0 gate. Phase 1 remains blocked.
