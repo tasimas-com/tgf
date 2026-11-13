@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "generator": "Ninja",
+  "compiler_id": "Clang",
+  "compiler_major": 23,
+  "configuration": "Release",
+  "parallel_jobs": 2,
+  "incremental_probe": "core/src/profiler.cpp",
+  "budgets_seconds": {
+    "clean": 180,
+    "incremental": 45
+  }
+}

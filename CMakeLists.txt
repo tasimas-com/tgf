@@ -10,6 +10,7 @@ option(TGF_BUILD_TESTS      "Register CTest tests (showcase checks, dependency D
 option(TGF_WARNINGS_AS_ERRORS "Treat warnings as errors"                                                  ON)
 option(TGF_ENABLE_LTO       "Enable link-time optimisation in Release builds"                             ON)
 option(TGF_PROFILE          "Compile TGF_ZONE instrumentation (default: on outside Release)"              OFF)
+option(TGF_ENABLE_HEADER_TIME_TRACE "Emit Clang -ftime-trace data for isolated public-header checks" OFF)
 set(TGF_SANITIZER "None" CACHE STRING "Sanitizer: None, Address, Undefined, Thread, Memory, or AddressUndefined")
 set_property(CACHE TGF_SANITIZER PROPERTY STRINGS None Address Undefined Thread Memory AddressUndefined)
 if(NOT TGF_SANITIZER MATCHES "^(None|Address|Undefined|Thread|Memory|AddressUndefined)$")

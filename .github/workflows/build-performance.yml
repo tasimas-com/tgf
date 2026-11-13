@@ -1,0 +1,92 @@
+name: TGF Build Performance
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: tgf-build-performance-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-performance:
+    name: Clang 23 / clean + incremental + header costs
+    runs-on: ubuntu-26.04
+    timeout-minutes: 30
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v7
+
+      - name: Set up Python 3.13
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.13"
+
+      - name: Install LLVM Clang 23
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install --yes wget lsb-release software-properties-common ninja-build
+          wget -qO llvm.sh https://apt.llvm.org/llvm.sh
+          chmod +x llvm.sh
+          sudo ./llvm.sh 23
+          sudo apt-get install --yes clang-23
+
+      - name: Verify Clang 23
+        shell: bash
+        run: |
+          set -euo pipefail
+          clang++-23 --version
+          clang++-23 --version | head -n 1 | grep -Eq "version 23([.[:space:]]|$)"
+          cmake --version
+          ninja --version
+
+      - name: Configure trace-enabled Release build
+        shell: bash
+        env:
+          CC: clang-23
+          CXX: clang++-23
+        run: |
+          set -euo pipefail
+          cmake -S . -B build/performance -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
+            -DTGF_ENABLE_LTO=OFF \
+            -DTGF_WARNINGS_AS_ERRORS=ON \
+            -DTGF_ENABLE_HEADER_TIME_TRACE=ON
+
+      - name: Enforce clean and incremental build-time budgets
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 tools/measure_build.py \
+            --source-root . \
+            --build-dir build/performance \
+            --budget-file cmake/build-performance-budgets.json \
+            --report-dir build/performance-reports
+
+      - name: Generate per-header compile-cost report
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 tools/report_header_costs.py \
+            --build-dir build/performance \
+            --manifest build/performance/tests/header-check-manifest.tsv \
+            --output-dir build/performance-reports \
+            --compiler "Clang 23" \
+            --configuration Release
+
+      - name: Upload build performance reports
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: build-performance-reports-clang23
+          path: build/performance-reports/
+          if-no-files-found: warn
+          retention-days: 30

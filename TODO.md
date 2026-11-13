@@ -1,11 +1,11 @@
 # TGF — TASIMAS GUI Framework
-## Master Plan & Complete TODO  (Revision 28 — P0.1.7 contributor and governance workflow completed)
+## Master Plan & Complete TODO  (Revision 27 — P0.1.6 dependency checker completed)
 
 > Goal: the fastest, leanest GUI framework for **large professional software and games** — Photoshop, Blender, After Effects, Cubase, Dorico, FL Studio, Cinema 4D, Unreal/Unity-class editors, and in-game UI for 2D/3D games — written in C++, minimal CPU / GPU / RAM / disk, with an architecture future engineers can extend for decades.
 > License intent: free and open source (TASIMAS policy).
 > Final deliverable of this plan: **TGF 1.0.0**, a professional, API-stable, documented, accessible, cross-platform release (criteria in §10).
 
-Legend: `★` marks a task, decision or section added or materially changed during the audit. Revision 3 added the project-specific implementation contract; Revision 5 recorded core-safety remediation; Revision 6 records tagged memory diagnostics; Revisions 7–9 record lifecycle diagnostics, module allocator ownership, and mapped-file verification; Revision 10 completes the Phase 0 CMake preset matrix; Revision 11 adds the compiler-support policy, warnings-as-errors verification, and optional quality-tool workflows; Revision 12 adds cross-platform CI workflows, compiler caching, and a gated pinned-frequency benchmark job; Revision 13 hardens the hosted workflow and makes the MSVC sccache path effective through Ninja; Revision 14 records the connected GitHub account check and confirms that no TGF repository currently exists under that account; Revision 15 records the repository-creation blocker and initial-repository runbook. Revision 16 records creation of `tasimas-com/tgf`; Revision 17 records the published source and first hosted eight-job baseline; Revision 18 records the second successful eight-job run after the workflow-label/cache documentation corrections. Revision 21 records the project-owner-approved waiver of physical benchmark-host provisioning and runner registration; the workflow remains gated and no physical benchmark evidence is claimed. Revision 22 establishes the normative TGF coding standard and its CTest regression guard. Revision 24 records an independent Phase 0 code/evidence audit and corrects the P0.1.6 regression-coverage status. Revision 25 closes P0.1.4 for the currently approved scope after full 14-job matrix and artifact verification; it preserves the explicit physical benchmark-runner waiver and does not claim a live runner. Revision 26 re-verifies P0.1.4 after closing the benchmark preflight's container-detection gap, with a new successful 14-job run and 14 inspected CTest artifacts. Revision 27 closes P0.1.6 after adding symlink-boundary and ordinary-literal regression fixtures, then verifying all 14 compiler/platform/configuration jobs, all 14 CTest artifacts, and both source-quality jobs. Revision 28 delivers the contributor guide, Code of Conduct, GitHub issue and pull-request templates, ADR template/index workflow, README links, and a mandatory CTest governance-policy regression check, verified on the complete hosted matrix. Existing P0–P13 task IDs and ADR-0001–ADR-0027 are preserved wherever possible. Original task IDs are preserved so existing commits/issues still resolve; new tasks use new IDs.
+Legend: `★` marks a task, decision or section added or materially changed during the audit. Revision 3 added the project-specific implementation contract; Revision 5 recorded core-safety remediation; Revision 6 records tagged memory diagnostics; Revisions 7–9 record lifecycle diagnostics, module allocator ownership, and mapped-file verification; Revision 10 completes the Phase 0 CMake preset matrix; Revision 11 adds the compiler-support policy, warnings-as-errors verification, and optional quality-tool workflows; Revision 12 adds cross-platform CI workflows, compiler caching, and a gated pinned-frequency benchmark job; Revision 13 hardens the hosted workflow and makes the MSVC sccache path effective through Ninja; Revision 14 records the connected GitHub account check and confirms that no TGF repository currently exists under that account; Revision 15 records the repository-creation blocker and initial-repository runbook. Revision 16 records creation of `tasimas-com/tgf`; Revision 17 records the published source and first hosted eight-job baseline; Revision 18 records the second successful eight-job run after the workflow-label/cache documentation corrections. Revision 21 records the project-owner-approved waiver of physical benchmark-host provisioning and runner registration; the workflow remains gated and no physical benchmark evidence is claimed. Revision 22 establishes the normative TGF coding standard and its CTest regression guard. Revision 24 records an independent Phase 0 code/evidence audit and corrects the P0.1.6 regression-coverage status. Revision 25 closes P0.1.4 for the currently approved scope after full 14-job matrix and artifact verification; it preserves the explicit physical benchmark-runner waiver and does not claim a live runner. Revision 26 re-verifies P0.1.4 after closing the benchmark preflight's container-detection gap, with a new successful 14-job run and 14 inspected CTest artifacts. Revision 27 closes P0.1.6 after adding symlink-boundary and ordinary-literal regression fixtures, then verifying all 14 compiler/platform/configuration jobs, all 14 CTest artifacts, and both source-quality jobs. Existing P0–P13 task IDs and ADR-0001–ADR-0027 are preserved wherever possible. Original task IDs are preserved so existing commits/issues still resolve; new tasks use new IDs.
 
  
 
@@ -355,15 +355,7 @@ Each becomes a file `docs/adr/NNNN-title.md` in Phase 0. Recommended decision an
   - [x] Add exhaustive positive/negative dependency fixtures and make the checker a mandatory CTest/CI gate on every matrix runner.
   - **Completion evidence (2026-11-13):** the scanner now strictly resolves source symlinks and fails closed when they cannot be resolved; source-file symlinks must stay within the same repository module/consumer scan boundary, directory symlinks are rejected, and required top-level scan roots cannot be symlinks. The regression suite accepts same-module and same-consumer file symlinks and rejects file and directory escapes across the repository, module, and consumer boundaries, plus top-level in-repository and out-of-repository symlinks. It also tests ordinary string and character literals containing directive-, comment-, and import-looking text. These fixtures close the independent audit finding in Revision 24.
   - **Hosted proof:** [TGF CI run #388](https://github.com/tasimas-com/tgf/actions/runs/43416718257) on commit `597887791105638b7b7202ace314bf1af0141596` passed **14/14** jobs across GCC 15/16, Clang 22/23, MSVC 14.50/14.51, and AppleClang, each in Debug and Release. All 14 uploaded CTest ZIP artifacts were integrity-checked and inspected; each contains 11/11 passing tests, including `dependency_dag_policy_regressions`, with zero failures (154/154 CTest executions). [Source Quality run #314](https://github.com/tasimas-com/tgf/actions/runs/43416718274) passed both LLVM jobs. Per-artifact IDs and results are recorded in `docs/audit/2026-11-13/P0_1_6_DEPENDENCY_DAG_EVIDENCE.md`.
-- [x] P0.1.7 Contribution guide, code of conduct, issue/PR templates, ADR template
-  - [x] Publish `CONTRIBUTING.md` with project status, CMake/Python setup, test/format commands, coding rules, review expectations, dependency/licensing guidance, and ADR process.
-  - [x] Publish `CODE_OF_CONDUCT.md` with expected/unacceptable behavior, scope, reporting route, privacy, anti-retaliation, and proportionate enforcement.
-  - [x] Add GitHub issue-form configuration, a reproducible bug-report form, and a feature-request form under `.github/ISSUE_TEMPLATE/`.
-  - [x] Add `.github/PULL_REQUEST_TEMPLATE.md` covering scope, linked issues/tasks, design and compatibility, validation evidence, ADR impact, review checklist, and remaining risks.
-  - [x] Add `docs/adr/TEMPLATE.md`; update the ADR index with ID allocation, status lifecycle, and superseding rules without claiming planned ADR files exist.
-  - [x] Link contribution and conduct policy from `README.md`; add `tools/check_community_files.py` and register `community_governance_policy` as a required CTest entry.
-  - **Scope/operations note:** the Code of Conduct uses GitHub's repository-admin reporting route when the repository's reported-content feature makes it available, with GitHub Support as fallback. The feature is a GitHub repository setting, not a version-controlled file. The repository owner should keep that setting enabled; no unverified report email address or response-time promise is published. The contribution guide accurately states that Apache-2.0 is currently an intent only: P0.1.8's formal license/SBOM/third-party policy remains open, and no CLA/DCO process is asserted.
-  - **Hosted proof:** on implementation commit `852d724fae3e74f33b78e05ab20cc72de19e0f53`, [TGF CI run #392](https://github.com/tasimas-com/tgf/actions/runs/43429879957) passed **14/14** jobs across GCC 15/16, Clang 22/23, MSVC 14.50/14.51, and AppleClang in Debug and Release. All 14 CTest ZIP artifacts were downloaded, ZIP-integrity checked, and inspected; each contains 12/12 passing tests, including `community_governance_policy`, with zero failures (**168/168** executions). The issue-form YAML files also parsed successfully with PyYAML 6.0.3 and have unique field IDs. [Source Quality run #318](https://github.com/tasimas-com/tgf/actions/runs/43429879999) passed both LLVM 22/23 jobs. Artifact IDs and checks are recorded in `docs/audit/2026-11-13/P0_1_7_COMMUNITY_GOVERNANCE_EVIDENCE.md`.
+- [ ] P0.1.7 Contribution guide, code of conduct, issue/PR templates, ADR template
 - [ ] ★ P0.1.8 License/SBOM tooling and third-party policy file (ADR-0016)
 - [p] ★ P0.1.9 Build-time and header-hygiene tracking (clean + incremental build time budgets, per-header cost report)
 
@@ -1322,37 +1314,3 @@ The existing dependency policy remains sourced from the normative §4 table and 
 **Final hosted evidence:** [TGF CI run #388](https://github.com/tasimas-com/tgf/actions/runs/43416718257) on `597887791105638b7b7202ace314bf1af0141596` passed 14/14 jobs across the complete seven-target, two-configuration matrix. All 14 uploaded ZIP artifacts were downloaded, ZIP-integrity checked, and inspected; each contains exactly one `LastTest.log` with all 11 CTest cases passing and zero failures (154/154 executions). Each log includes the dependency-DAG policy regression success line covering the new symlink and literal cases. [Source Quality run #314](https://github.com/tasimas-com/tgf/actions/runs/43416718274) passed 2/2 LLVM jobs. The complete artifact-ID register and verification method are in `docs/audit/2026-11-13/P0_1_6_DEPENDENCY_DAG_EVIDENCE.md`.
 
 This supersedes Revision 24's interim P0.1.6 partial classification. It closes P0.1.6 only; other Phase 0 tasks and exit criteria remain open. Phase 1 remains blocked.
-
-
-## Revision 28 — P0.1.7 contributor and governance workflow completed (2026-11-13)
-
-P0.1.7 is complete. The repository now provides a contributor guide (`CONTRIBUTING.md`),
-a project Code of Conduct (`CODE_OF_CONDUCT.md`), GitHub bug-report and feature-request
-issue forms with blank issues disabled, a pull-request template, and an ADR template. The
-ADR index now explains record allocation (0031 is the next new ID), proposed/accepted/
-rejected/deprecated/superseded states, and the rule to supersede rather than rewrite an
-accepted decision. The README links the contribution and conduct policies.
-
-A stdlib-only policy guard, `tools/check_community_files.py`, is registered as the
-`community_governance_policy` CTest. It protects required files and sections, repository-
-specific development/licensing guidance, issue-form field types/unique IDs, PR checklist
-sections, ADR metadata/lifecycle and README links. The hosted runner did not have PyYAML,
-so the CTest exercised its static schema-contract path; the committed issue-form YAML was
-also independently parsed using PyYAML 6.0.3, with all field IDs unique.
-
-**Final hosted evidence:** implementation commit
-`852d724fae3e74f33b78e05ab20cc72de19e0f53` passed [TGF CI run #392]
-(https://github.com/tasimas-com/tgf/actions/runs/43429879957) with **14/14 jobs**
-across GCC 15/16, Clang 22/23, MSVC 14.50/14.51, and AppleClang, each Debug and Release.
-All 14 CTest ZIP artifacts were downloaded, ZIP-integrity checked, and inspected; each
-contains 12/12 passing CTest cases including the new governance contract, with zero
-failures (**168/168 executions**). [Source Quality run #318]
-(https://github.com/tasimas-com/tgf/actions/runs/43429879999) passed **2/2** LLVM jobs.
-The complete artifact-ID register and verification details are in
-`docs/audit/2026-11-13/P0_1_7_COMMUNITY_GOVERNANCE_EVIDENCE.md`.
-
-The GitHub reported-content setting is administered outside repository files; the Code of
-Conduct describes the repository-admin route when available and GitHub Support as fallback.
-The guide does not claim that Apache-2.0 has been formally published: P0.1.8 remains open,
-and no CLA/DCO requirement is invented. P0.1.7 closes only this governance task. Phase 0
-remains open and Phase 1 remains blocked by the remaining Phase 0 tasks and exit criteria.

@@ -115,3 +115,12 @@ The hosted Windows/Linux/macOS build-and-test matrix, compiler cache, test-log a
 and guarded dedicated-runner benchmark workflow are documented in [`CI.md`](CI.md).
 The workflows live in `.github/workflows/`. Local CTest also validates their required
 contract and the pinned-frequency host check.
+
+
+## Build-time and public-header performance tracking
+
+See [BUILD_PERFORMANCE.md](BUILD_PERFORMANCE.md) for the clean and incremental build
+budgets, the Clang per-header time-trace report, and how to interpret the measurements.
+The dedicated GitHub Actions lane produces a downloadable report artifact on each push and
+pull request. These measurements are separate from the pinned-frequency runtime benchmark
+suite.
