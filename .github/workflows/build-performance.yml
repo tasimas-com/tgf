@@ -31,6 +31,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          LLVM_VERSION=23
           sudo apt-get update
           sudo apt-get install --yes wget gnupg lsb-release
           key_file="$(mktemp)"

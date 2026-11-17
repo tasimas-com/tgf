@@ -88,6 +88,16 @@ class LicenseSbomTests(unittest.TestCase):
         self.assertEqual(project["licenseDeclared"],"Apache-2.0")
         self.assertEqual(project["primaryPackagePurpose"],"FRAMEWORK")
 
+    def test_package_spdx_ids_are_unique_and_relationships_resolve(self):
+        doc=generate_sbom.build_document(ROOT,self.manifest,"2026-11-17T00:00:00Z")
+        ids={"SPDXRef-DOCUMENT"}|{x["SPDXID"] for x in doc["packages"]}
+        self.assertEqual(len(ids),len(doc["packages"])+1)
+        for rel in doc["relationships"]:
+            self.assertIn(rel["spdxElementId"],ids)
+            self.assertIn(rel["relatedSpdxElement"],ids)
+        iwyu_ids={x["SPDXID"] for x in doc["packages"] if x["name"].startswith("include-what-you-use")}
+        self.assertEqual(len(iwyu_ids),2)
+
     def test_every_dependency_is_in_sbom_with_license_version_and_purl(self):
         doc=generate_sbom.build_document(ROOT,self.manifest,"2026-11-17T00:00:00Z")
         packages={x["name"]:x for x in doc["packages"]}

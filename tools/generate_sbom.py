@@ -47,22 +47,32 @@ def build_document(root: Path, manifest: dict[str, Any], created: str | None = N
                          "referenceLocator":f"pkg:github/tasimas-com/tgf@{version}"}]
     }]
     relationships=[{"spdxElementId":"SPDXRef-DOCUMENT","relationshipType":"DESCRIBES","relatedSpdxElement":"SPDXRef-TGF"}]
-    for dep in sorted(manifest["dependencies"],key=lambda x:x["repository"].casefold()):
+    for dep in sorted(manifest["dependencies"],key=lambda x:(x["repository"].casefold(),x["version"])):
+        source_info = (
+            f"scope={dep['scope']}; kind={dep['kind']}; immutable commit={dep['commit']}; "
+            "not asserted to be linked into TGF runtime binaries."
+        )
+        if dep.get("bundledComponents"):
+            source_info += " Bundled components: " + "; ".join(dep["bundledComponents"])
         packages.append({
-            "SPDXID":spdx_id(dep["repository"],dep["version"]),"name":dep["name"],"versionInfo":dep["version"],
+            "SPDXID":spdx_id(dep["repository"],dep["version"]),
+            "name":dep["name"],"versionInfo":dep["version"],
             "downloadLocation":dep["sourceUrl"],"filesAnalyzed":False,
             "licenseConcluded":dep["license"],"licenseDeclared":dep["license"],
             "copyrightText":"NOASSERTION","primaryPackagePurpose":"OTHER",
-            "sourceInfo":f"scope={dep['scope']}; kind={dep['kind']}; immutable commit={dep['commit']}; not asserted to be linked into TGF runtime binaries.",
+            "sourceInfo":source_info,
             "externalRefs":[{"referenceCategory":"PACKAGE-MANAGER","referenceType":"purl","referenceLocator":dep["purl"]}]
         })
         relationships.append({"spdxElementId":spdx_id(dep["repository"],dep["version"]),
                                "relationshipType":"BUILD_TOOL_OF" if dep["kind"]=="tool" else "DEV_TOOL_OF",
                                "relatedSpdxElement":"SPDXRef-TGF"})
-    by_repo={d["repository"]:spdx_id(d["repository"]) for d in manifest["dependencies"]}
-    if "mozilla-actions/sccache-action" in by_repo and "mozilla/sccache" in by_repo:
-        relationships.append({"spdxElementId":by_repo["mozilla-actions/sccache-action"],
-                               "relationshipType":"DEPENDS_ON","relatedSpdxElement":by_repo["mozilla/sccache"]})
+    by_repo={(d["repository"],d["version"]):spdx_id(d["repository"],d["version"])
+             for d in manifest["dependencies"]}
+    action_id=by_repo.get(("mozilla-actions/sccache-action","v0.0.11"))
+    sccache_id=by_repo.get(("mozilla/sccache","v0.16.0"))
+    if action_id and sccache_id:
+        relationships.append({"spdxElementId":action_id,
+                              "relationshipType":"DEPENDS_ON","relatedSpdxElement":sccache_id})
     packages.sort(key=lambda x:x["SPDXID"])
     relationships.sort(key=lambda x:(x["spdxElementId"],x["relationshipType"],x["relatedSpdxElement"]))
     return {
