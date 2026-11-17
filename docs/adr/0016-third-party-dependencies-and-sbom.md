@@ -12,8 +12,11 @@ TGF's master plan records Apache-2.0 as its intended license, subject to this au
 The repository needs an explicit grant, reviewed third-party intake rules, provenance
 records, and a machine-readable SBOM. The current CMake graph has no third-party C++
 library dependency and the source tree has no vendored third-party implementation files.
-GitHub Actions and the sccache executable used in CI are still external components and
-must be inventoried, although they are not linked into TGF runtime binaries.
+GitHub Actions, the sccache executable, and Include-What-You-Use (IWYU) source builds
+used in CI are external components and must be inventoried, although they are not
+linked into TGF runtime binaries. The IWYU source archives also contain a GoogleTest
+copy; the source-quality workflow builds only the IWYU executable target, not IWYU's
+test target.
 
 ## Decision drivers
 

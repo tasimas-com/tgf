@@ -329,7 +329,7 @@ def main() -> int:
         for error in errors:
             print(f"FAIL: {error}", file=sys.stderr)
         return 1
-    print("PASS: project license, dependency registry, immutable Actions, CMake declarations, vendored hashes")
+    print("PASS: project license, third-party registry, immutable Actions/tools, CMake declarations, and all vendored-file hashes")
     return 0
 
 

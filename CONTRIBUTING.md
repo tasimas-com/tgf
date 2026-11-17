@@ -162,10 +162,19 @@ any upstream notice, attribution, or license condition.
 The authoritative third-party intake rules are in
 [third_party/POLICY.md](third_party/POLICY.md), and the machine-readable direct-dependency
 registry is [third_party/dependencies.json](third_party/dependencies.json). Every
-external component must be recorded there before it is used. The automatic allowlist is
-limited to MIT and Apache-2.0; any other license, exception, or dual-license choice needs
-a recorded maintainer decision before inclusion. Vendored source also requires a pinned
-upstream revision, recorded SHA-256 hashes, and retained license/notice files.
+external component must be recorded there before it is used. The automatic project
+allowlist is Apache-2.0, MIT, FTL, and BSD-3-Clause for the specific future candidates
+HarfBuzz, FreeType (FTL option only), Vulkan Memory Allocator, and zstd (BSD option
+only). NCSA is reserved solely for the pinned Include-What-You-Use 0.26/0.27 CI tools;
+it is not a general dependency approval. FreeType's alternate GPL option and zstd's
+GPL option are not approved. Other licenses, exceptions, dual-license expressions, or
+unresolved provenance questions require a recorded maintainer decision before use.
+
+Vendored material means every file, not just source code: assets, fonts, test data,
+generated tables, and upstream license/notice files must all be registered by
+repository-relative path and SHA-256. Symlinks under `third_party/` are prohibited.
+All GitHub Actions use immutable commit SHAs, and source-quality CI fetches IWYU using
+explicit commit IDs rather than movable tags.
 
 The repository-level SBOM is SPDX 2.3 JSON. Generate it with:
 
@@ -175,10 +184,13 @@ python tools/generate_sbom.py --root . --output build/sbom/tgf.spdx.json
 ```
 
 The hosted **TGF SBOM** workflow publishes the generated document as an artifact. The
-SBOM covers the project and direct dependencies declared by the registry, including
-pinned CI actions and sccache. It does not claim to recursively enumerate dependencies
-bundled inside upstream GitHub Actions, hosted-runner images, or OS/compiler/Python
-toolchain packages.
+SBOM includes TGF and the nine direct CI/tool components in the current registry:
+GitHub Actions, sccache, and IWYU 0.26/0.27. No third-party C++ runtime library or
+vendored source is currently used. The IWYU upstream archive contains GoogleTest under
+its own MIT license, but TGF CI builds the IWYU executable target only, not its test
+target; the nested source is disclosed in SBOM package metadata and is not claimed as
+an integrated TGF dependency. The SBOM does not recursively enumerate packages bundled
+inside upstream Actions, hosted-runner images, or OS/compiler/Python toolchain packages.
 
 Only submit material you created or are authorized to contribute. Do not copy code,
 assets, fonts, test data, or documentation from another project unless its license,
