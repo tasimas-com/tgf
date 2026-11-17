@@ -11,9 +11,9 @@ Actions, CI helpers, assets, fonts, test data, and documentation obtained extern
 CI actions/tools are recorded with `ci` scope and are distinguished from runtime
 dependencies. `dependencies.json` is the machine-readable inventory.
 
-Audited baseline: zero vendored third-party source files, zero direct third-party C++
-runtime/library dependencies in the CMake graph, and the explicitly inventoried CI
-actions plus the pinned sccache executable.
+Audited baseline: zero vendored third-party files (source, assets, fonts, or notices),
+zero direct third-party C++ runtime/library dependencies in the CMake graph, and the
+explicitly inventoried CI actions, sccache executable, and pinned IWYU 0.26/0.27 tools.
 
 ## 2. License approval
 
@@ -69,6 +69,12 @@ references when relevant.
 GitHub Actions must use the pinned commit SHA in `uses:` and keep the release tag in a
 comment. Never use a moving tag or branch. Pin action inputs that download tools; do not
 request an unspecified latest release.
+
+Every file under `third_party/` other than the three policy metadata files (`README.md`,
+`POLICY.md`, and `dependencies.json`) is treated as vendored material and must have a
+registry record. This includes source, binary assets, fonts, upstream LICENSE/COPYING/
+NOTICE files, generated tables, and test data. Symlinks are forbidden. The checker
+verifies the SHA-256 of every registered file and fails on unregistered files.
 
 Vendored material additionally requires each repository-relative path and SHA-256,
 exact upstream revision, retained upstream license/copyright/patent/attribution/NOTICE

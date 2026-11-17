@@ -79,6 +79,35 @@ class LicenseSbomTests(unittest.TestCase):
             self.assertEqual(len(errors),1,errors)
             self.assertIn("UnregisteredThirdParty",errors[0])
 
+    def test_vendored_policy_covers_non_source_assets_and_notices(self):
+        import hashlib, tempfile
+        with tempfile.TemporaryDirectory() as temporary:
+            root=Path(temporary)
+            third=root/"third_party"
+            third.mkdir()
+            for name in ("README.md","POLICY.md","dependencies.json"):
+                (third/name).write_text("policy metadata",encoding="utf-8")
+            asset=third/"assets"/"font.ttf"
+            asset.parent.mkdir()
+            asset.write_bytes(b"font fixture")
+            self.assertTrue(any("not registered" in x for x in check_third_party.validate_vendored_files(root,self.manifest)))
+            changed=copy.deepcopy(self.manifest)
+            changed["dependencies"].append({
+                "kind":"vendored",
+                "files":[{"path":"third_party/assets/font.ttf","sha256":hashlib.sha256(asset.read_bytes()).hexdigest()}]
+            })
+            self.assertEqual(check_third_party.validate_vendored_files(root,changed),[])
+            changed["dependencies"][-1]["files"][0]["sha256"]="0"*64
+            self.assertTrue(any("SHA-256 mismatch" in x for x in check_third_party.validate_vendored_files(root,changed)))
+
+    def test_vendored_policy_rejects_path_traversal(self):
+        changed=copy.deepcopy(self.manifest)
+        changed["dependencies"].append({
+            "kind":"vendored",
+            "files":[{"path":"third_party/../outside.bin","sha256":"0"*64}]
+        })
+        self.assertTrue(any("safe third_party-relative" in x for x in check_third_party.validate_vendored_files(ROOT,changed)))
+
     def test_spdx_document_and_project_package(self):
         doc=generate_sbom.build_document(ROOT,self.manifest,"2026-11-17T00:00:00Z")
         self.assertEqual(doc["spdxVersion"],"SPDX-2.3")

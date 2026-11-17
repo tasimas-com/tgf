@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 from __future__ import annotations
 import hashlib, json, re, sys
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from typing import Any
 
 APPROVED_LICENSES = frozenset({"Apache-2.0", "BSD-3-Clause", "FTL", "MIT", "NCSA"})
@@ -15,7 +15,6 @@ CMAKE_BUILTIN_PACKAGES = frozenset({"Python3", "Threads"})
 COMMIT_RE = re.compile(r"^[0-9a-f]{40}$")
 PURL_RE = re.compile(r"^pkg:github/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+@[A-Za-z0-9.+_-]+$")
 USES_RE = re.compile(r"^\s*uses:\s*([A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+)@([^\s#]+)(?:\s+#\s*(\S+))?\s*$")
-SOURCE_SUFFIXES = frozenset({".c", ".cc", ".cpp", ".cxx", ".h", ".hh", ".hpp", ".hxx", ".mm", ".m"})
 
 
 def validate_manifest(value: Any) -> list[str]:
@@ -241,24 +240,60 @@ def validate_iwyu_checkout(root: Path, manifest: dict[str, Any]) -> list[str]:
 
 def validate_vendored_files(root: Path, manifest: dict[str, Any]) -> list[str]:
     errors: list[str] = []
+    metadata = {
+        "third_party/README.md",
+        "third_party/POLICY.md",
+        "third_party/dependencies.json",
+    }
     declared: dict[str, str] = {}
-    for dep in manifest.get("dependencies", []):
-        if isinstance(dep, dict) and dep.get("kind") == "vendored":
-            for item in dep.get("files", []):
-                if isinstance(item, dict) and isinstance(item.get("path"), str):
-                    declared[item["path"]] = item.get("sha256", "")
-    for path in (root / "third_party").rglob("*"):
-        if path.is_file() and path.suffix.lower() in SOURCE_SUFFIXES:
-            relative = path.relative_to(root).as_posix()
-            expected = declared.get(relative)
-            if expected is None:
-                errors.append(f"{relative}: vendored source is not registered")
-            elif hashlib.sha256(path.read_bytes()).hexdigest() != expected:
-                errors.append(f"{relative}: vendored SHA-256 mismatch")
+    for dep_index, dep in enumerate(manifest.get("dependencies", [])):
+        if not isinstance(dep, dict) or dep.get("kind") != "vendored":
+            continue
+        for file_index, item in enumerate(dep.get("files", [])):
+            if not isinstance(item, dict):
+                continue
+            relative = item.get("path")
+            digest = item.get("sha256", "")
+            if not isinstance(relative, str) or not relative:
+                continue
+            pure = PurePosixPath(relative)
+            if (pure.is_absolute() or "\\" in relative
+                    or any(part in {"", ".", ".."} for part in pure.parts)
+                    or not relative.startswith("third_party/")):
+                errors.append(f"dependencies[{dep_index}].files[{file_index}]: vendored path must be a safe third_party-relative POSIX path: {relative!r}")
+                continue
+            if relative in metadata:
+                errors.append(f"{relative}: repository policy metadata must not be registered as vendored material")
+                continue
+            if relative in declared:
+                errors.append(f"{relative}: vendored path is declared more than once")
+                continue
+            declared[relative] = digest
+
+    third_party = root / "third_party"
+    if not third_party.is_dir():
+        return errors + ["missing third_party directory"]
+    for path in sorted(third_party.rglob("*")):
+        if not path.is_file() and not path.is_symlink():
+            continue
+        relative = path.relative_to(root).as_posix()
+        if relative in metadata:
+            continue
+        if path.is_symlink():
+            errors.append(f"{relative}: symlinks are forbidden in third_party; vendor a regular file with provenance and SHA-256")
+            continue
+        expected = declared.get(relative)
+        if expected is None:
+            errors.append(f"{relative}: vendored file (including assets/notices) is not registered in dependencies.json")
+            continue
+        actual = hashlib.sha256(path.read_bytes()).hexdigest()
+        if actual != expected:
+            errors.append(f"{relative}: vendored SHA-256 mismatch")
+
     for relative in declared:
-        path = root / relative
-        if not path.is_file() or not path.resolve().is_relative_to(root.resolve()):
-            errors.append(f"declared vendored file missing or escapes repository: {relative}")
+        path = root / PurePosixPath(relative)
+        if not path.is_file() or path.is_symlink() or not path.resolve().is_relative_to(root.resolve()):
+            errors.append(f"declared vendored file is missing, a symlink, or escapes repository: {relative}")
     return errors
 
 
