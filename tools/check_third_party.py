@@ -34,7 +34,7 @@ def validate_manifest(value: Any) -> list[str]:
         errors.append("approvedSpdxLicenses must be a non-empty list")
         approved = []
     if any(not isinstance(item, str) or item not in APPROVED_LICENSES for item in approved):
-        errors.append("approvedSpdxLicenses may contain only Apache-2.0, MIT, FTL, BSD-3-Clause, and the NCSA exception reserved for IWYU CI")
+        errors.append("approvedSpdxLicenses may contain only the policy-coded allowlist: Apache-2.0, MIT, FTL, BSD-3-Clause, and NCSA reserved for IWYU CI")
     if "Apache-2.0" not in approved:
         errors.append("approvedSpdxLicenses must include Apache-2.0")
     deps = value.get("dependencies")
