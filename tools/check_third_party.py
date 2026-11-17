@@ -225,14 +225,15 @@ def validate_iwyu_checkout(root: Path, manifest: dict[str, Any]) -> list[str]:
         )
         if not pair.search(text):
             errors.append(f"source-quality.yml must map IWYU {version} to commit {commit}")
-    for required in (
-        'git fetch --depth 1 origin "$IWYU_COMMIT"',
-        'git checkout --detach FETCH_HEAD',
-        'git rev-parse HEAD',
-        'if [[ "$actual_commit" != "$IWYU_COMMIT" ]]',
-    ):
-        if required not in text:
-            errors.append(f"source-quality.yml is missing immutable IWYU checkout verification: {required}")
+    required_patterns = (
+        r'git -C "\$RUNNER_TEMP/iwyu-source" fetch --depth 1 origin "\$IWYU_COMMIT"',
+        r'git -C "\$RUNNER_TEMP/iwyu-source" checkout --detach FETCH_HEAD',
+        r'git -C "\$RUNNER_TEMP/iwyu-source" rev-parse HEAD',
+        r'if \[\[ "\$actual_commit" != "\$IWYU_COMMIT" \]\]',
+    )
+    for pattern in required_patterns:
+        if not re.search(pattern, text):
+            errors.append(f"source-quality.yml is missing immutable IWYU checkout verification matching: {pattern}")
     if "git clone --depth 1 --branch" in text:
         errors.append("source-quality.yml must not fetch IWYU by mutable release tag")
     return errors
