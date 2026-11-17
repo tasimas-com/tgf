@@ -53,12 +53,12 @@ def main() -> int:
                 "MSVC 14.50",
                 "AppleClang",
                 "configuration: [debug, release]",
-                "actions/checkout@v7",
-                "actions/setup-python@v7",
+                "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7",
+                "actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7",
                 "Set up Python 3.13",
                 'python-version: "3.13"',
-                "actions/cache@v6",
-                "ilammy/msvc-dev-cmd@v1.13.0",
+                "actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6",
+                "ilammy/msvc-dev-cmd@0b201ec74fa43914dc39ae48a89fd1d8cb592756 # v1.13.0",
                 "Install GCC 16 on Ubuntu 26.04",
                 "sudo apt-get install --yes gcc-16 g++-16",
                 "Install LLVM Clang 23 on Ubuntu 26.04",
@@ -83,7 +83,7 @@ def main() -> int:
                 "Run CTest (MSVC)",
                 "DTGF_ENABLE_LTO=OFF",
                 "DTGF_WARNINGS_AS_ERRORS=ON",
-                "actions/upload-artifact@v7",
+                "actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7",
             ),
             "ci.yml",
         )
@@ -96,7 +96,7 @@ def main() -> int:
                 "self-hosted",
                 "tgf-benchmark-pinned",
                 "TGF_BENCHMARK_RUNNER_READY",
-                "actions/checkout@v7",
+                "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7",
                 "tools/check_benchmark_host.py --require-bare-metal",
                 "tools/collect_benchmark_host_inventory.py",
                 "benchmark-artifacts/host-inventory.json",
@@ -105,7 +105,7 @@ def main() -> int:
                 "benchmark-results.json",
                 "DTGF_ENABLE_LTO=OFF",
                 "DTGF_WARNINGS_AS_ERRORS=ON",
-                "actions/upload-artifact@v7",
+                "actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7",
             ),
             "nightly-benchmarks.yml",
         )
@@ -199,7 +199,7 @@ def main() -> int:
             steps_by_name = {step.get("name"): step for step in steps if isinstance(step, dict)}
             python_setup = steps_by_name.get("Set up Python 3.13", {})
             if (
-                python_setup.get("uses") != "actions/setup-python@v7"
+                python_setup.get("uses") != "actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7"
                 or python_setup.get("with", {}).get("python-version") != "3.13"
             ):
                 errors.append("ci.yml: Python 3.13 must be explicitly installed for required policy tests")
@@ -214,7 +214,7 @@ def main() -> int:
                 errors.append("ci.yml: MSVC 14.50 installation must be scoped to the MSVC 14.50 target")
 
             msvc_setup = steps_by_name.get("Set up MSVC developer environment", {})
-            if msvc_setup.get("uses") != "ilammy/msvc-dev-cmd@v1.13.0":
+            if msvc_setup.get("uses") != "ilammy/msvc-dev-cmd@0b201ec74fa43914dc39ae48a89fd1d8cb592756 # v1.13.0":
                 errors.append("ci.yml: Windows job must initialize the MSVC developer environment")
             if msvc_setup.get("with", {}).get("toolset") != "${{ matrix.target.toolset }}":
                 errors.append("ci.yml: Windows jobs must pass their pinned MSVC toolset to vcvarsall")

@@ -59,7 +59,7 @@ def main() -> int:
                 "TGF_ENABLE_HEADER_TIME_TRACE=ON",
                 "tools/measure_build.py",
                 "tools/report_header_costs.py",
-                "actions/upload-artifact@v7",
+                "actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7",
                 "build-performance-reports",
             ),
             "build-performance.yml",

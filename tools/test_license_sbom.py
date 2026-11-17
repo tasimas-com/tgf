@@ -38,8 +38,8 @@ class LicenseSbomTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             root=Path(temporary)
             (root/"CMakeLists.txt").write_text(
-                "find_package(Threads REQUIRED)\\nfind_package(Python3 3.10 REQUIRED)\\n"
-                "find_package(UnregisteredThirdParty REQUIRED)\\n",
+                "find_package(Threads REQUIRED)\nfind_package(Python3 3.10 REQUIRED)\n"
+                "find_package(UnregisteredThirdParty REQUIRED)\n",
                 encoding="utf-8"
             )
             errors=check_third_party.validate_cmake(root,self.manifest)

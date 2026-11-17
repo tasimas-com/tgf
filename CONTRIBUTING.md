@@ -152,6 +152,8 @@ exception.
 
 ## 7. Dependencies and licensing
 
+The dependency and licensing controls in this section implement the P0.1.8 acceptance work recorded in [ADR-0016](docs/adr/0016-third-party-dependencies-and-sbom.md).
+
 TGF is licensed under the Apache License, Version 2.0; see the repository-root
 [LICENSE](LICENSE) and [NOTICE](NOTICE). This grant applies to TGF project material that
 TASIMAS is authorized to license. It does not relicense third-party material or waive
