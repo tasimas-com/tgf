@@ -1,0 +1,12 @@
+TASIMAS GUI Framework (TGF)
+
+Copyright 2026 TASIMAS
+
+TGF project material that TASIMAS is authorized to license is distributed under the
+Apache License, Version 2.0. A copy is provided in the repository-root LICENSE file.
+
+No third-party source code is vendored in this repository at this revision. Direct
+repository-level development and CI components are listed in third_party/dependencies.json;
+their upstream license terms apply. No separate upstream NOTICE text is currently
+required for the TGF source distribution based on the review recorded in
+docs/adr/0016-third-party-dependencies-and-sbom.md.

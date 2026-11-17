@@ -152,21 +152,40 @@ exception.
 
 ## 7. Dependencies and licensing
 
-The project intends to use Apache-2.0, but the formal license, SBOM tooling, and third-party
-policy are still tracked by P0.1.8 and have not yet been delivered in this repository.
-That stated intent is not a substitute for a published license grant. Until the license
-and third-party policy are present, do not assume that the source is already licensed
-under Apache-2.0.
+TGF is licensed under the Apache License, Version 2.0; see the repository-root
+[LICENSE](LICENSE) and [NOTICE](NOTICE). This grant applies to TGF project material that
+TASIMAS is authorized to license. It does not relicense third-party material or waive
+any upstream notice, attribution, or license condition.
+
+The authoritative third-party intake rules are in
+[third_party/POLICY.md](third_party/POLICY.md), and the machine-readable direct-dependency
+registry is [third_party/dependencies.json](third_party/dependencies.json). Every
+external component must be recorded there before it is used. The automatic allowlist is
+limited to MIT and Apache-2.0; any other license, exception, or dual-license choice needs
+a recorded maintainer decision before inclusion. Vendored source also requires a pinned
+upstream revision, recorded SHA-256 hashes, and retained license/notice files.
+
+The repository-level SBOM is SPDX 2.3 JSON. Generate it with:
+
+```sh
+python tools/check_third_party.py .
+python tools/generate_sbom.py --root . --output build/sbom/tgf.spdx.json
+```
+
+The hosted **TGF SBOM** workflow publishes the generated document as an artifact. The
+SBOM covers the project and direct dependencies declared by the registry, including
+pinned CI actions and sccache. It does not claim to recursively enumerate dependencies
+bundled inside upstream GitHub Actions, hosted-runner images, or OS/compiler/Python
+toolchain packages.
 
 Only submit material you created or are authorized to contribute. Do not copy code,
-assets, fonts, test data, or documentation from another project unless its license and
-attribution requirements have been checked and its use approved by the maintainers.
-Do not add dependencies without describing their purpose, version/source, license,
-runtime/build impact, maintenance status, and security implications. The P0.1.8
-license/SBOM work must be completed before third-party intake is treated as finalized.
+assets, fonts, test data, or documentation from another project unless its license,
+provenance, and attribution requirements have been checked and its use approved by
+maintainers. Do not add dependencies without recording their purpose, version/source,
+license, runtime/build impact, maintenance status, and security implications.
 
-No Contributor License Agreement (CLA) or Developer Certificate of Origin (DCO) process is
-currently defined. Do not claim that either has been signed or is required.
+No Contributor License Agreement (CLA) or Developer Certificate of Origin (DCO) process
+is currently defined. Do not claim that either has been signed or is required.
 
 ## 8. Community expectations
 

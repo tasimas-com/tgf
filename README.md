@@ -3,8 +3,9 @@
 Repository: <https://github.com/tasimas-com/tgf> · Master checklist: [`TODO.md`](TODO.md)
 
 Retained-mode, data-oriented, damage-driven C++20 GUI framework for large professional
-applications and games. License intent: Apache-2.0; formal license publication remains P0.1.8.
+applications and games. TGF is licensed under [Apache-2.0](LICENSE); third-party intake is governed by [the dependency policy](third_party/POLICY.md), and the repository SBOM is generated in SPDX 2.3 format.
 
+* License: [`LICENSE`](LICENSE) · Notices: [`NOTICE`](NOTICE) · Third-party policy and dependency inventory: [`third_party/POLICY.md`](third_party/POLICY.md) · SBOM generation: [`docs/THIRD_PARTY.md`](docs/THIRD_PARTY.md)
 * Contributing: [`CONTRIBUTING.md`](CONTRIBUTING.md) · Code of conduct: [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md) · Build matrix and commands: [`docs/BUILDING.md`](docs/BUILDING.md) · Coding standard: [`docs/CODING_STANDARD.md`](docs/CODING_STANDARD.md) · Master plan: [`TODO.md`](TODO.md) · Design baseline: [`docs/DESIGN.md`](docs/DESIGN.md) ·
   Status ledger: [`docs/STATUS.md`](docs/STATUS.md) · CI policy: [`docs/CI.md`](docs/CI.md) · Compiler policy: [`docs/COMPILER_SUPPORT.md`](docs/COMPILER_SUPPORT.md) · ADRs: [`docs/adr/`](docs/adr/)
 * Build performance and header costs: [docs/BUILD_PERFORMANCE.md](docs/BUILD_PERFORMANCE.md) · Snapshot audit (2026-10-14): [`docs/audit/`](docs/audit/) · The current implementation is an early `tgf::core` foundation, not yet a GUI framework 1.0.0.

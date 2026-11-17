@@ -15,6 +15,7 @@ The standalone records currently present are:
 
 | ADR | Title | Status |
 |---|---|---|
+| [0016](0016-third-party-dependencies-and-sbom.md) | Project license, third-party intake, and SPDX SBOM | Accepted |
 | [0012](0012-allocator-ownership-across-modules.md) | Allocator ownership across modules and mapped files | Accepted for the current C++ core implementation; stable cross-toolchain C ABI remains future work |
 | [0028](0028-library-linkage-and-artifacts.md) | Library linkage and build artifacts | Accepted |
 | [0029](0029-compiler-flags-and-floating-point.md) | Compiler policy, optimisation flags, floating-point determinism | Accepted |

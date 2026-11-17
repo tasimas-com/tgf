@@ -92,6 +92,10 @@ add_test(NAME format_checker_discovery
          COMMAND ${Python3_EXECUTABLE} ${PROJECT_SOURCE_DIR}/tools/test_check_format.py)
 add_test(NAME community_governance_policy
          COMMAND ${Python3_EXECUTABLE} ${PROJECT_SOURCE_DIR}/tools/check_community_files.py ${PROJECT_SOURCE_DIR})
+add_test(NAME third_party_policy
+         COMMAND ${Python3_EXECUTABLE} ${PROJECT_SOURCE_DIR}/tools/check_third_party.py ${PROJECT_SOURCE_DIR})
+add_test(NAME license_sbom_tooling
+         COMMAND ${Python3_EXECUTABLE} ${PROJECT_SOURCE_DIR}/tools/test_license_sbom.py)
 add_test(NAME build_measurement_tool
          COMMAND ${Python3_EXECUTABLE} ${PROJECT_SOURCE_DIR}/tools/test_measure_build.py)
 add_test(NAME header_cost_reporter

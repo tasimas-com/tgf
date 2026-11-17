@@ -1,10 +1,17 @@
-# third_party
+# Third-party components
 
-**Job:** Vendored third-party code. Every entry needs a licence check and a line in the third-party policy file (ADR-0016). Nothing is vendored yet.
+This directory is the authoritative home for TGF's third-party intake records.
 
-**May depend on:** n/a  (table enforced by `tools/check_deps.py`)
+- [POLICY.md](POLICY.md) defines the allowlist, review process, pinning, provenance,
+  attribution, and SBOM requirements.
+- [dependencies.json](dependencies.json) is the machine-readable registry used by the
+  fail-closed policy checker and SPDX generator.
+- [../docs/THIRD_PARTY.md](../docs/THIRD_PARTY.md) explains the SBOM scope and commands.
 
-**Status:** not started - arrives in P0.1.8. This folder exists now so the repository layout matches
-the master plan (P0.1.1). When work starts, copy the shape of `core/`:
-`include/tgf/third_party/` for public headers, `src/` for private code, a `CMakeLists.txt`, and one CMake
-target exported as `TGF::...`.
+At the P0.1.8 baseline there are **no vendored third-party source files and no direct
+third-party C++ runtime/library dependencies** in the TGF CMake graph. The registry
+records GitHub Actions and the sccache binary used by CI; these are development tools,
+not libraries linked into TGF distributable binaries.
+
+Do not place downloaded code here until its origin, immutable revision, license, notices,
+checksums, purpose, and approval have been registered.

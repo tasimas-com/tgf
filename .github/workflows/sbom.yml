@@ -1,0 +1,41 @@
+name: TGF SBOM
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: tgf-sbom-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  generate-sbom:
+    name: SPDX 2.3 dependency inventory
+    runs-on: ubuntu-26.04
+    timeout-minutes: 10
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - name: Set up Python 3.13
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7
+        with:
+          python-version: "3.13"
+      - name: Enforce third-party policy
+        run: python tools/check_third_party.py .
+      - name: Generate SPDX 2.3 SBOM
+        shell: bash
+        run: |
+          set -euo pipefail
+          export SOURCE_DATE_EPOCH="$(git log -1 --format=%ct)"
+          python tools/generate_sbom.py --root . --output build/sbom/tgf.spdx.json
+      - name: Upload SPDX SBOM
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: tgf-spdx-sbom-${{ github.sha }}
+          path: build/sbom/tgf.spdx.json
+          if-no-files-found: error
+          retention-days: 90
