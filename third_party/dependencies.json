@@ -7,6 +7,8 @@
   },
   "approvedSpdxLicenses": [
     "Apache-2.0",
+    "BSD-3-Clause",
+    "FTL",
     "MIT"
   ],
   "dependencies": [
@@ -120,6 +122,36 @@
       "sourceUrl": "https://github.com/mozilla/sccache",
       "purl": "pkg:github/mozilla/sccache@v0.16.0",
       "purpose": "Pinned compiler-cache executable installed by sccache-action."
+    }
+  ],
+  "approvedProjectCandidates": [
+    {
+      "name": "HarfBuzz",
+      "repository": "harfbuzz/harfbuzz",
+      "license": "MIT",
+      "integration": "vendored-wrapped",
+      "note": "Upstream COPYING states Old MIT; inspect per-directory COPYING files at the selected pinned revision."
+    },
+    {
+      "name": "FreeType",
+      "repository": "freetype/freetype",
+      "license": "FTL",
+      "integration": "vendored-wrapped",
+      "note": "Select FTL only, not the alternate GPL-2.0-or-later choice; satisfy the FTL credit/documentation clause and review bundled components."
+    },
+    {
+      "name": "Vulkan Memory Allocator",
+      "repository": "GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator",
+      "license": "MIT",
+      "integration": "vendored-wrapped",
+      "note": "Review the upstream MIT license and all bundled material at the selected pinned revision."
+    },
+    {
+      "name": "zstd",
+      "repository": "facebook/zstd",
+      "license": "BSD-3-Clause",
+      "integration": "vendored-wrapped",
+      "note": "Select the BSD-3-Clause option only; do not include GPL-2.0-or-later-licensed material. Verify per-file licensing at the selected pinned revision."
     }
   ]
 }

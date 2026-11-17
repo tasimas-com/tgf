@@ -49,9 +49,15 @@ be included under this grant. Third-party terms remain in force.
 
 - Every direct external component must be registered in
   `third_party/dependencies.json` and comply with `third_party/POLICY.md`.
-- Automatically approved SPDX identifiers are limited to `Apache-2.0` and `MIT`.
-  Any other license/expression requires an accepted maintainer decision and policy/ADR
-  change before introduction.
+- The narrow SPDX allowlist is `Apache-2.0`, `MIT`, `FTL`, and `BSD-3-Clause`.
+  This implements the master plan's future dependency candidates: HarfBuzz (MIT),
+  FreeType (FTL option only), Vulkan Memory Allocator (MIT), and zstd (BSD-3-Clause
+  option only). These are approved candidates, not current dependencies; they enter the
+  SBOM only after a specific revision is selected and the component is integrated.
+  FreeType's alternate GPL choice and zstd's GPL choice are not approved. The FTL credit
+  and product-documentation clause, and all upstream subcomponent notices, must be
+  reviewed and satisfied. Any other license/expression requires an accepted maintainer
+  decision and policy/ADR change before introduction.
 - Records contain upstream source, version/tag, immutable commit, PURL, license, scope,
   purpose, and workflow references where applicable.
 - Workflow actions use full 40-character commit SHAs with human-readable release tags in
@@ -101,6 +107,10 @@ workflow before closing P0.1.8.
 - [Apache applying the license guidance](https://www.apache.org/legal/apply-license)
 - [SPDX 2.3](https://spdx.org/rdf/ontology/spdx-2-3/)
 - [SPDX License List](https://spdx.org/licenses/)
+- [FreeType license selection](https://freetype.org/license) and [SPDX FTL identifier](https://spdx.org/licenses/FTL.html)
+- [HarfBuzz upstream COPYING](https://github.com/harfbuzz/harfbuzz/blob/main/COPYING)
+- [Vulkan Memory Allocator upstream README](https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator)
+- [zstd upstream BSD license](https://github.com/facebook/zstd/blob/dev/LICENSE)
 - [Third-party policy](../../third_party/POLICY.md)
 - [Dependency registry](../../third_party/dependencies.json)
 - [SBOM documentation](../THIRD_PARTY.md)

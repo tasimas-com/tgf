@@ -1,7 +1,7 @@
 # Third-party components and SBOM
 
 TGF is licensed under [Apache-2.0](../LICENSE), with the project notice in [NOTICE](../NOTICE).
-The intake rules and reviewed direct-dependency inventory are in
+The intake rules, approved future candidates, and reviewed direct-dependency inventory are in
 [third_party/POLICY.md](../third_party/POLICY.md) and
 [third_party/dependencies.json](../third_party/dependencies.json).
 

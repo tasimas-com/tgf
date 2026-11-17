@@ -28,6 +28,26 @@ class LicenseSbomTests(unittest.TestCase):
         changed["approvedSpdxLicenses"].append("GPL-3.0-only")
         self.assertTrue(any("policy-coded" in x for x in check_third_party.validate_manifest(changed)))
 
+    def test_master_plan_candidate_licenses_are_approved(self):
+        self.assertEqual(
+            set(check_third_party.APPROVED_LICENSES),
+            {"Apache-2.0","MIT","FTL","BSD-3-Clause"}
+        )
+        expected={
+            "HarfBuzz":("harfbuzz/harfbuzz","MIT","vendored-wrapped"),
+            "FreeType":("freetype/freetype","FTL","vendored-wrapped"),
+            "Vulkan Memory Allocator":("GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator","MIT","vendored-wrapped"),
+            "zstd":("facebook/zstd","BSD-3-Clause","vendored-wrapped"),
+        }
+        actual={x["name"]:(x["repository"],x["license"],x["integration"])
+                for x in self.manifest["approvedProjectCandidates"]}
+        self.assertEqual(actual,expected)
+
+    def test_free_type_gpl_and_zstd_gpl_are_not_approved(self):
+        for license_id in ("GPL-2.0-only","GPL-2.0-or-later","GPL-3.0-only"):
+            with self.subTest(license=license_id):
+                self.assertNotIn(license_id,check_third_party.APPROVED_LICENSES)
+
     def test_commit_must_be_full_immutable_sha(self):
         changed=copy.deepcopy(self.manifest)
         changed["dependencies"][0]["commit"]="v7"

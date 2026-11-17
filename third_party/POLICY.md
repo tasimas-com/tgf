@@ -18,11 +18,28 @@ actions plus the pinned sccache executable.
 ## 2. License approval
 
 The automatic SPDX identifier allowlist is exactly:
-- `Apache-2.0`
-- `MIT`
+- `Apache-2.0` — TGF project material.
+- `MIT` — including HarfBuzz and Vulkan Memory Allocator.
+- `FTL` — FreeType License; for FreeType, use the FTL option only.
+- `BSD-3-Clause` — for the explicitly selected BSD option of zstd.
 
-This conservative intake rule is not a statement that every unlisted license is
-incompatible with Apache-2.0. Any unlisted license, SPDX exception, dual-license
+These four identifiers are the narrow, project-specific baseline, not a blanket approval
+for every upstream component that claims one of them. The master plan (section 9,
+third-party policy decision) specifically identifies HarfBuzz, FreeType (FTL), VMA,
+and zstd as future dependencies that may be used when required, vendored, wrapped behind
+TGF interfaces, pinned, and included in the SBOM. The candidate list is machine-readable
+in `approvedProjectCandidates` in `dependencies.json`; these candidates are **not current
+dependencies** and do not appear in today's SBOM until actually introduced.
+
+| Candidate | Approved SPDX choice | Required review |
+|---|---|---|
+| HarfBuzz | `MIT` | Review upstream COPYING and per-directory COPYING overrides at the pinned revision. |
+| FreeType | `FTL` only | Do not select the alternate GPL choice. The FTL contains a credit/documentation clause that must be satisfied in product documentation; review bundled subcomponents too. |
+| Vulkan Memory Allocator | `MIT` | Review the upstream license and all bundled material at the pinned revision. |
+| zstd | `BSD-3-Clause` only | Select the BSD option, not the GPL option; verify the selected source files and bundled material. |
+
+This conservative allowlist is not a statement that every unlisted license is
+incompatible with Apache-2.0. Any unlisted license, SPDX exception, different dual-license
 expression, custom license, or `NOASSERTION` requires documented maintainer review and
 an accepted ADR/policy change before use.
 

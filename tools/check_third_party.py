@@ -6,7 +6,7 @@ import hashlib, json, re, sys
 from pathlib import Path
 from typing import Any
 
-APPROVED_LICENSES = frozenset({"Apache-2.0", "MIT"})
+APPROVED_LICENSES = frozenset({"Apache-2.0", "BSD-3-Clause", "FTL", "MIT"})
 ALLOWED_SCOPES = frozenset({"runtime", "build", "test", "dev", "ci"})
 ALLOWED_KINDS = frozenset({"github-action", "tool", "cmake-package", "vendored"})
 # These are built-in CMake modules backed by the host interpreter/platform,
@@ -41,6 +41,39 @@ def validate_manifest(value: Any) -> list[str]:
     if not isinstance(deps, list):
         errors.append("dependencies must be a JSON array")
         deps = []
+
+    candidates = value.get("approvedProjectCandidates")
+    expected_candidates = {
+        "HarfBuzz": ("harfbuzz/harfbuzz", "MIT", "vendored-wrapped"),
+        "FreeType": ("freetype/freetype", "FTL", "vendored-wrapped"),
+        "Vulkan Memory Allocator": ("GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator", "MIT", "vendored-wrapped"),
+        "zstd": ("facebook/zstd", "BSD-3-Clause", "vendored-wrapped"),
+    }
+    if not isinstance(candidates, list):
+        errors.append("approvedProjectCandidates must be a list")
+    else:
+        actual: dict[str, tuple[str, str, str]] = {}
+        for index, candidate in enumerate(candidates):
+            if not isinstance(candidate, dict):
+                errors.append(f"approvedProjectCandidates[{index}] must be an object")
+                continue
+            name, repository = candidate.get("name"), candidate.get("repository")
+            license_id, integration, note = (
+                candidate.get("license"), candidate.get("integration"), candidate.get("note")
+            )
+            if not all(isinstance(item, str) and item.strip()
+                       for item in (name, repository, license_id, integration, note)):
+                errors.append(f"approvedProjectCandidates[{index}] is missing required metadata")
+                continue
+            actual[name] = (repository, license_id, integration)
+            if license_id not in approved or license_id not in APPROVED_LICENSES:
+                errors.append(f"approved project candidate {name!r} uses a license outside the allowlist")
+        if actual != expected_candidates:
+            errors.append(
+                "approvedProjectCandidates must preserve the master-plan set and license choices: "
+                "HarfBuzz/MIT, FreeType/FTL, Vulkan Memory Allocator/MIT, zstd/BSD-3-Clause"
+            )
+
     seen: set[str] = set()
     for index, dep in enumerate(deps):
         prefix = f"dependencies[{index}]"
