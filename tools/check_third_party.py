@@ -9,6 +9,9 @@ from typing import Any
 APPROVED_LICENSES = frozenset({"Apache-2.0", "MIT"})
 ALLOWED_SCOPES = frozenset({"runtime", "build", "test", "dev", "ci"})
 ALLOWED_KINDS = frozenset({"github-action", "tool", "cmake-package", "vendored"})
+# These are built-in CMake modules backed by the host interpreter/platform,
+# not third-party packages that need a registry license record.
+CMAKE_BUILTIN_PACKAGES = frozenset({"Python3", "Threads"})
 COMMIT_RE = re.compile(r"^[0-9a-f]{40}$")
 PURL_RE = re.compile(r"^pkg:github/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+@[A-Za-z0-9.+_-]+$")
 USES_RE = re.compile(r"^\s*uses:\s*([A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+)@([^\s#]+)(?:\s+#\s*(\S+))?\s*$")
@@ -141,7 +144,7 @@ def validate_cmake(root: Path, manifest: dict[str, Any]) -> list[str]:
         source = path.read_text(encoding="utf-8")
         relative = path.relative_to(root).as_posix()
         for package in re.findall(r"\bfind_package\s*\(\s*([A-Za-z0-9_]+)", source, re.I):
-            if package != "Python3" and package not in registered:
+            if package not in CMAKE_BUILTIN_PACKAGES and package not in registered:
                 errors.append(f"{relative}: unregistered find_package({package})")
         for expr in (r"\bFetchContent_Declare\s*\(\s*([A-Za-z0-9_.+-]+)",
                      r"\bExternalProject_Add\s*\(\s*([A-Za-z0-9_.+-]+)"):

@@ -33,6 +33,19 @@ class LicenseSbomTests(unittest.TestCase):
         changed["dependencies"][0]["commit"]="v7"
         self.assertTrue(any("40-character SHA" in x for x in check_third_party.validate_manifest(changed)))
 
+    def test_cmake_system_modules_are_not_external_dependencies(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as temporary:
+            root=Path(temporary)
+            (root/"CMakeLists.txt").write_text(
+                "find_package(Threads REQUIRED)\\nfind_package(Python3 3.10 REQUIRED)\\n"
+                "find_package(UnregisteredThirdParty REQUIRED)\\n",
+                encoding="utf-8"
+            )
+            errors=check_third_party.validate_cmake(root,self.manifest)
+            self.assertEqual(len(errors),1,errors)
+            self.assertIn("UnregisteredThirdParty",errors[0])
+
     def test_spdx_document_and_project_package(self):
         doc=generate_sbom.build_document(ROOT,self.manifest,"2026-11-17T00:00:00Z")
         self.assertEqual(doc["spdxVersion"],"SPDX-2.3")
