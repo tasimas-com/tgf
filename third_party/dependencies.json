@@ -9,7 +9,8 @@
     "Apache-2.0",
     "BSD-3-Clause",
     "FTL",
-    "MIT"
+    "MIT",
+    "NCSA"
   ],
   "dependencies": [
     {
@@ -122,6 +123,42 @@
       "sourceUrl": "https://github.com/mozilla/sccache",
       "purl": "pkg:github/mozilla/sccache@v0.16.0",
       "purpose": "Pinned compiler-cache executable installed by sccache-action."
+    },
+    {
+      "name": "include-what-you-use 0.26",
+      "repository": "include-what-you-use/include-what-you-use",
+      "version": "0.26",
+      "commit": "01a091d16b3dedb808db21f32ed3e761737a3691",
+      "kind": "tool",
+      "scope": "ci",
+      "license": "NCSA",
+      "sourceUrl": "https://github.com/include-what-you-use/include-what-you-use",
+      "purl": "pkg:github/include-what-you-use/include-what-you-use@0.26",
+      "purpose": "Pinned include-what-you-use source used to run the LLVM 22 source-quality lane.",
+      "workflows": [
+        ".github/workflows/source-quality.yml"
+      ],
+      "bundledComponents": [
+        "vendor/googletest (MIT; included in upstream source but not built by the IWYU executable target used in TGF CI)."
+      ]
+    },
+    {
+      "name": "include-what-you-use 0.27",
+      "repository": "include-what-you-use/include-what-you-use",
+      "version": "0.27",
+      "commit": "c9cbc836a1af631610266c53cf1671b1671a0fdc",
+      "kind": "tool",
+      "scope": "ci",
+      "license": "NCSA",
+      "sourceUrl": "https://github.com/include-what-you-use/include-what-you-use",
+      "purl": "pkg:github/include-what-you-use/include-what-you-use@0.27",
+      "purpose": "Pinned include-what-you-use source used to run the LLVM 23 source-quality lane.",
+      "workflows": [
+        ".github/workflows/source-quality.yml"
+      ],
+      "bundledComponents": [
+        "vendor/googletest (MIT; included in upstream source but not built by the IWYU executable target used in TGF CI)."
+      ]
     }
   ],
   "approvedProjectCandidates": [

@@ -29,8 +29,10 @@ def timestamp(override: str | None = None) -> str:
         raise ValueError("ISO-8601 creation timestamp must include a timezone")
     return parsed.astimezone(dt.timezone.utc).replace(microsecond=0).strftime("%Y-%m-%dT%H:%M:%SZ")
 
-def spdx_id(repository: str) -> str:
-    return "SPDXRef-" + re.sub(r"[^A-Za-z0-9.-]+","-",repository)
+def spdx_id(repository: str, version: str) -> str:
+    repository_part = re.sub(r"[^A-Za-z0-9.-]+","-",repository)
+    version_part = re.sub(r"[^A-Za-z0-9.-]+","-",version)
+    return f"SPDXRef-{repository_part}-{version_part}"
 
 def build_document(root: Path, manifest: dict[str, Any], created: str | None = None) -> dict[str, Any]:
     version = read_version(root)
@@ -47,14 +49,14 @@ def build_document(root: Path, manifest: dict[str, Any], created: str | None = N
     relationships=[{"spdxElementId":"SPDXRef-DOCUMENT","relationshipType":"DESCRIBES","relatedSpdxElement":"SPDXRef-TGF"}]
     for dep in sorted(manifest["dependencies"],key=lambda x:x["repository"].casefold()):
         packages.append({
-            "SPDXID":spdx_id(dep["repository"]),"name":dep["name"],"versionInfo":dep["version"],
+            "SPDXID":spdx_id(dep["repository"],dep["version"]),"name":dep["name"],"versionInfo":dep["version"],
             "downloadLocation":dep["sourceUrl"],"filesAnalyzed":False,
             "licenseConcluded":dep["license"],"licenseDeclared":dep["license"],
             "copyrightText":"NOASSERTION","primaryPackagePurpose":"OTHER",
             "sourceInfo":f"scope={dep['scope']}; kind={dep['kind']}; immutable commit={dep['commit']}; not asserted to be linked into TGF runtime binaries.",
             "externalRefs":[{"referenceCategory":"PACKAGE-MANAGER","referenceType":"purl","referenceLocator":dep["purl"]}]
         })
-        relationships.append({"spdxElementId":spdx_id(dep["repository"]),
+        relationships.append({"spdxElementId":spdx_id(dep["repository"],dep["version"]),
                                "relationshipType":"BUILD_TOOL_OF" if dep["kind"]=="tool" else "DEV_TOOL_OF",
                                "relatedSpdxElement":"SPDXRef-TGF"})
     by_repo={d["repository"]:spdx_id(d["repository"]) for d in manifest["dependencies"]}

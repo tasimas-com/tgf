@@ -6,7 +6,7 @@ import hashlib, json, re, sys
 from pathlib import Path
 from typing import Any
 
-APPROVED_LICENSES = frozenset({"Apache-2.0", "BSD-3-Clause", "FTL", "MIT"})
+APPROVED_LICENSES = frozenset({"Apache-2.0", "BSD-3-Clause", "FTL", "MIT", "NCSA"})
 ALLOWED_SCOPES = frozenset({"runtime", "build", "test", "dev", "ci"})
 ALLOWED_KINDS = frozenset({"github-action", "tool", "cmake-package", "vendored"})
 # These are built-in CMake modules backed by the host interpreter/platform,
@@ -74,7 +74,9 @@ def validate_manifest(value: Any) -> list[str]:
                 "HarfBuzz/MIT, FreeType/FTL, Vulkan Memory Allocator/MIT, zstd/BSD-3-Clause"
             )
 
-    seen: set[str] = set()
+    if set(approved) != APPROVED_LICENSES or len(approved) != len(APPROVED_LICENSES):
+        errors.append("approvedSpdxLicenses must exactly match the hard-coded project allowlist")
+    seen: set[tuple[str, str]] = set()
     for index, dep in enumerate(deps):
         prefix = f"dependencies[{index}]"
         if not isinstance(dep, dict):
@@ -86,13 +88,16 @@ def validate_manifest(value: Any) -> list[str]:
             errors.append(f"{prefix} missing fields: {', '.join(missing)}")
             continue
         repository = dep["repository"]
-        if repository in seen:
-            errors.append(f"{prefix}: duplicate repository {repository!r}")
-        seen.add(repository)
+        identity = (repository, dep["version"])
+        if identity in seen:
+            errors.append(f"{prefix}: duplicate repository/version {identity!r}")
+        seen.add(identity)
         if not re.fullmatch(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+", repository):
             errors.append(f"{prefix}.repository must be owner/name")
         if dep["license"] not in approved or dep["license"] not in APPROVED_LICENSES:
             errors.append(f"{prefix}: license {dep['license']!r} is not approved")
+        if dep["license"] == "NCSA" and repository != "include-what-you-use/include-what-you-use":
+            errors.append(f"{prefix}: NCSA is reserved for the pinned Include-What-You-Use CI tool only")
         if dep["kind"] not in ALLOWED_KINDS or dep["scope"] not in ALLOWED_SCOPES:
             errors.append(f"{prefix}: unsupported kind/scope")
         if not COMMIT_RE.fullmatch(dep["commit"]):
@@ -187,6 +192,47 @@ def validate_cmake(root: Path, manifest: dict[str, Any]) -> list[str]:
     return errors
 
 
+
+def validate_iwyu_checkout(root: Path, manifest: dict[str, Any]) -> list[str]:
+    expected = {
+        "0.26": "01a091d16b3dedb808db21f32ed3e761737a3691",
+        "0.27": "c9cbc836a1af631610266c53cf1671b1671a0fdc",
+    }
+    entries = {
+        item.get("version"): item.get("commit")
+        for item in manifest.get("dependencies", [])
+        if isinstance(item, dict)
+        and item.get("repository") == "include-what-you-use/include-what-you-use"
+        and item.get("kind") == "tool"
+    }
+    errors: list[str] = []
+    if entries != expected:
+        errors.append("IWYU registry must contain the exact 0.26 and 0.27 release commits")
+    workflow = root / ".github" / "workflows" / "source-quality.yml"
+    if not workflow.is_file():
+        return errors + ["missing source-quality.yml for IWYU pin validation"]
+    text = workflow.read_text(encoding="utf-8")
+    for version, commit in expected.items():
+        pair = re.compile(
+            r'iwyu-version:\s*["\']?' + re.escape(version) +
+            r'["\']?\s*\n\s*iwyu-commit:\s*["\']?' + re.escape(commit) +
+            r'["\']?'
+        )
+        if not pair.search(text):
+            errors.append(f"source-quality.yml must map IWYU {version} to commit {commit}")
+    for required in (
+        'git fetch --depth 1 origin "$IWYU_COMMIT"',
+        'git checkout --detach FETCH_HEAD',
+        'git rev-parse HEAD',
+        'if [[ "$actual_commit" != "$IWYU_COMMIT" ]]',
+    ):
+        if required not in text:
+            errors.append(f"source-quality.yml is missing immutable IWYU checkout verification: {required}")
+    if "git clone --depth 1 --branch" in text:
+        errors.append("source-quality.yml must not fetch IWYU by mutable release tag")
+    return errors
+
+
 def validate_vendored_files(root: Path, manifest: dict[str, Any]) -> list[str]:
     errors: list[str] = []
     declared: dict[str, str] = {}
@@ -226,6 +272,7 @@ def check_repository(root: Path) -> list[str]:
     errors.extend(validate_manifest(manifest))
     if isinstance(manifest, dict):
         errors.extend(validate_workflows(root, manifest))
+        errors.extend(validate_iwyu_checkout(root, manifest))
         errors.extend(validate_cmake(root, manifest))
         errors.extend(validate_vendored_files(root, manifest))
     return errors

@@ -31,7 +31,7 @@ class LicenseSbomTests(unittest.TestCase):
     def test_master_plan_candidate_licenses_are_approved(self):
         self.assertEqual(
             set(check_third_party.APPROVED_LICENSES),
-            {"Apache-2.0","MIT","FTL","BSD-3-Clause"}
+            {"Apache-2.0","MIT","FTL","BSD-3-Clause","NCSA"}
         )
         expected={
             "HarfBuzz":("harfbuzz/harfbuzz","MIT","vendored-wrapped"),
@@ -52,6 +52,19 @@ class LicenseSbomTests(unittest.TestCase):
         changed=copy.deepcopy(self.manifest)
         changed["dependencies"][0]["commit"]="v7"
         self.assertTrue(any("40-character SHA" in x for x in check_third_party.validate_manifest(changed)))
+
+
+    def test_ncsa_license_is_reserved_for_iwyu_ci_tool(self):
+        changed=copy.deepcopy(self.manifest)
+        changed["dependencies"][0]["license"]="NCSA"
+        self.assertTrue(any("reserved for the pinned" in x for x in check_third_party.validate_manifest(changed)))
+
+    def test_iwyu_versions_are_pinned_to_registry_commits(self):
+        self.assertEqual(check_third_party.validate_iwyu_checkout(ROOT,self.manifest),[])
+        changed=copy.deepcopy(self.manifest)
+        item=next(x for x in changed["dependencies"] if x["name"]=="include-what-you-use 0.26")
+        item["commit"]="0"*40
+        self.assertTrue(any("exact 0.26 and 0.27" in x for x in check_third_party.validate_iwyu_checkout(ROOT,changed)))
 
     def test_cmake_system_modules_are_not_external_dependencies(self):
         import tempfile
@@ -88,8 +101,8 @@ class LicenseSbomTests(unittest.TestCase):
     def test_sccache_action_depends_on_pinned_tool(self):
         doc=generate_sbom.build_document(ROOT,self.manifest,"2026-11-17T00:00:00Z")
         rel={(x["spdxElementId"],x["relationshipType"],x["relatedSpdxElement"]) for x in doc["relationships"]}
-        action=generate_sbom.spdx_id("mozilla-actions/sccache-action")
-        tool=generate_sbom.spdx_id("mozilla/sccache")
+        action=generate_sbom.spdx_id("mozilla-actions/sccache-action","v0.0.11")
+        tool=generate_sbom.spdx_id("mozilla/sccache","v0.16.0")
         self.assertIn((action,"DEPENDS_ON",tool),rel)
 
     def test_namespace_is_reproducible_and_registry_sensitive(self):
