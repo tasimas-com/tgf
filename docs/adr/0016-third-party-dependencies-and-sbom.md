@@ -49,12 +49,12 @@ be included under this grant. Third-party terms remain in force.
 
 - Every direct external component must be registered in
   `third_party/dependencies.json` and comply with `third_party/POLICY.md`.
-- The narrow SPDX allowlist is `Apache-2.0`, `MIT`, `FTL`, and `BSD-3-Clause`.
+- The narrow SPDX allowlist is `Apache-2.0`, `MIT`, `FTL`, and `BSD-3-Clause`, plus `NCSA` reserved exclusively for pinned IWYU CI tool releases.
   This implements the master plan's future dependency candidates: HarfBuzz (MIT),
   FreeType (FTL option only), Vulkan Memory Allocator (MIT), and zstd (BSD-3-Clause
   option only). These are approved candidates, not current dependencies; they enter the
   SBOM only after a specific revision is selected and the component is integrated.
-  FreeType's alternate GPL choice and zstd's GPL choice are not approved. The FTL credit
+  NCSA is not a general project dependency approval; it is restricted to upstream Include-What-You-Use releases 0.26 and 0.27 in source-quality CI. Both releases are pinned to full commit SHAs and declared in the SBOM. The upstream IWYU source tree includes GoogleTest under its own MIT license, but the workflow builds only the IWYU executable target and not the GoogleTest-backed unit-test target; that nested source is explicitly documented as outside the direct-component SBOM. FreeType's alternate GPL choice and zstd's GPL choice are not approved. The FTL credit
   and product-documentation clause, and all upstream subcomponent notices, must be
   reviewed and satisfied. Any other license/expression requires an accepted maintainer
   decision and policy/ADR change before introduction.

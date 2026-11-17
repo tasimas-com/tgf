@@ -37,6 +37,10 @@ def main() -> int:
         'TGF_WARNINGS_AS_ERRORS=ON',
         'cmake --build "$RUNNER_TEMP/iwyu-build" --target include-what-you-use',
         "https://github.com/include-what-you-use/include-what-you-use.git",
+        'git fetch --depth 1 origin "$IWYU_COMMIT"',
+        "git checkout --detach FETCH_HEAD",
+        'git rev-parse HEAD',
+        'if [[ "$actual_commit" != "$IWYU_COMMIT" ]]',
         'cmake --build "build/clang-tidy-$LLVM_VERSION"',
         'cmake --build "build/iwyu-$LLVM_VERSION"',
     )

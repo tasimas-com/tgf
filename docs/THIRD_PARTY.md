@@ -24,10 +24,12 @@ The **TGF SBOM** GitHub Actions workflow generates and uploads
 ## Scope and known exclusions
 
 The SBOM contains the framework and every direct component registered in the JSON
-inventory. Current external entries are CI-only GitHub Actions and sccache; no direct
+inventory. Current external entries are CI-only GitHub Actions, sccache, and pinned IWYU 0.26/0.27 source-quality tools; no direct
 third-party C++ runtime package or vendored source is used.
 
 It is not a recursive inventory of JavaScript packages bundled inside upstream Actions,
 hosted runner images, operating-system packages, compiler distributions, CMake, or
 Python itself. Those host/toolchain contents are not delivered as TGF dependencies and
-are not claimed as audited by this document.
+are not claimed as audited by this document. The IWYU source releases bundle GoogleTest
+under its own MIT license; TGF builds the IWYU executable only, not IWYU's test target.
+The nested GoogleTest files are not treated as independently integrated TGF dependencies.

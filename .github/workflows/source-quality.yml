@@ -23,8 +23,10 @@ jobs:
         include:
           - llvm-version: "22"
             iwyu-version: "0.26"
+            iwyu-commit: "01a091d16b3dedb808db21f32ed3e761737a3691"
           - llvm-version: "23"
             iwyu-version: "0.27"
+            iwyu-commit: "c9cbc836a1af631610266c53cf1671b1671a0fdc"
 
     steps:
       - name: Check out formatted pull request branch
@@ -74,11 +76,19 @@ jobs:
         env:
           LLVM_VERSION: ${{ matrix.llvm-version }}
           IWYU_VERSION: ${{ matrix.iwyu-version }}
+          IWYU_COMMIT: ${{ matrix.iwyu-commit }}
         run: |
           set -euo pipefail
-          git clone --depth 1 --branch "$IWYU_VERSION" \
-            https://github.com/include-what-you-use/include-what-you-use.git \
-            "$RUNNER_TEMP/iwyu-source"
+          git init "$RUNNER_TEMP/iwyu-source"
+          git -C "$RUNNER_TEMP/iwyu-source" remote add origin \
+            https://github.com/include-what-you-use/include-what-you-use.git
+          git -C "$RUNNER_TEMP/iwyu-source" fetch --depth 1 origin "$IWYU_COMMIT"
+          git -C "$RUNNER_TEMP/iwyu-source" checkout --detach FETCH_HEAD
+          actual_commit="$(git -C "$RUNNER_TEMP/iwyu-source" rev-parse HEAD)"
+          if [[ "$actual_commit" != "$IWYU_COMMIT" ]]; then
+            echo "Expected IWYU commit $IWYU_COMMIT, checked out $actual_commit" >&2
+            exit 1
+          fi
           CC="clang-$LLVM_VERSION" CXX="clang++-$LLVM_VERSION" \
             cmake -S "$RUNNER_TEMP/iwyu-source" \
               -B "$RUNNER_TEMP/iwyu-build" \

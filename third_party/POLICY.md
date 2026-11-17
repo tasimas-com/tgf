@@ -22,8 +22,9 @@ The automatic SPDX identifier allowlist is exactly:
 - `MIT` — including HarfBuzz and Vulkan Memory Allocator.
 - `FTL` — FreeType License; for FreeType, use the FTL option only.
 - `BSD-3-Clause` — for the explicitly selected BSD option of zstd.
+- `NCSA` — reserved solely for Include-What-You-Use 0.26/0.27 in source-quality CI, not a general dependency approval.
 
-These four identifiers are the narrow, project-specific baseline, not a blanket approval
+The four project-license identifiers plus the reserved NCSA CI-tool allowance form the narrow, project-specific baseline, not a blanket approval
 for every upstream component that claims one of them. The master plan (section 9,
 third-party policy decision) specifically identifies HarfBuzz, FreeType (FTL), VMA,
 and zstd as future dependencies that may be used when required, vendored, wrapped behind
@@ -37,6 +38,14 @@ dependencies** and do not appear in today's SBOM until actually introduced.
 | FreeType | `FTL` only | Do not select the alternate GPL choice. The FTL contains a credit/documentation clause that must be satisfied in product documentation; review bundled subcomponents too. |
 | Vulkan Memory Allocator | `MIT` | Review the upstream license and all bundled material at the pinned revision. |
 | zstd | `BSD-3-Clause` only | Select the BSD option, not the GPL option; verify the selected source files and bundled material. |
+
+The `NCSA` allowance is restricted by the checker to
+`include-what-you-use/include-what-you-use` versions `0.26` and `0.27`, used only in
+source-quality CI. Their upstream `LICENSE.TXT` is the University of Illinois/NCSA
+Open Source License. The upstream source tree also contains GoogleTest under
+`vendor/googletest` with its own MIT license; TGF CI builds only the IWYU executable
+target, not the GoogleTest-backed unit-test target. That nested source is documented as
+bundled-but-not-built, rather than misrepresented as a TGF runtime dependency.
 
 This conservative allowlist is not a statement that every unlisted license is
 incompatible with Apache-2.0. Any unlisted license, SPDX exception, different dual-license
