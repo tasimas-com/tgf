@@ -199,7 +199,7 @@ def main() -> int:
             steps_by_name = {step.get("name"): step for step in steps if isinstance(step, dict)}
             python_setup = steps_by_name.get("Set up Python 3.13", {})
             if (
-                python_setup.get("uses") != "actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7"
+                python_setup.get("uses") != "actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0"
                 or python_setup.get("with", {}).get("python-version") != "3.13"
             ):
                 errors.append("ci.yml: Python 3.13 must be explicitly installed for required policy tests")
@@ -214,7 +214,7 @@ def main() -> int:
                 errors.append("ci.yml: MSVC 14.50 installation must be scoped to the MSVC 14.50 target")
 
             msvc_setup = steps_by_name.get("Set up MSVC developer environment", {})
-            if msvc_setup.get("uses") != "ilammy/msvc-dev-cmd@0b201ec74fa43914dc39ae48a89fd1d8cb592756 # v1.13.0":
+            if msvc_setup.get("uses") != "ilammy/msvc-dev-cmd@0b201ec74fa43914dc39ae48a89fd1d8cb592756":
                 errors.append("ci.yml: Windows job must initialize the MSVC developer environment")
             if msvc_setup.get("with", {}).get("toolset") != "${{ matrix.target.toolset }}":
                 errors.append("ci.yml: Windows jobs must pass their pinned MSVC toolset to vcvarsall")
