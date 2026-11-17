@@ -102,10 +102,21 @@ jobs:
         run: |
           set -euo pipefail
           sudo apt-get update
-          sudo apt-get install --yes wget lsb-release software-properties-common
-          wget -qO llvm.sh https://apt.llvm.org/llvm.sh
-          chmod +x llvm.sh
-          sudo ./llvm.sh 23
+          sudo apt-get install --yes wget gnupg lsb-release
+          key_file="$(mktemp)"
+          trap 'rm -f "$key_file"' EXIT
+          wget -qO "$key_file" https://apt.llvm.org/llvm-snapshot.gpg.key
+          fingerprint="$(gpg --show-keys --with-colons "$key_file" | awk -F: '$1 == "fpr" { print $10; exit }')"
+          expected_fingerprint="6084F3CF814B57C1CF12EFD515CF4D18AF4F7421"
+          if [[ "$fingerprint" != "$expected_fingerprint" ]]; then
+            echo "Unexpected apt.llvm.org signing-key fingerprint: $fingerprint" >&2
+            exit 1
+          fi
+          sudo install -D -m 0644 "$key_file" /usr/share/keyrings/apt.llvm.org.asc
+          codename="$(lsb_release -cs)"
+          echo "deb [signed-by=/usr/share/keyrings/apt.llvm.org.asc] https://apt.llvm.org/$codename/ llvm-toolchain-$codename-$LLVM_VERSION main" | sudo tee /etc/apt/sources.list.d/llvm.list >/dev/null
+          sudo apt-get update
+          sudo apt-get install --yes clang-23
 
       - name: Install MSVC 14.50 if missing
         if: matrix.target.compiler-key == 'msvc-14.50'

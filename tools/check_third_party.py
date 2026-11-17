@@ -134,7 +134,12 @@ def validate_workflows(root: Path, manifest: dict[str, Any]) -> list[str]:
         return ["missing .github/workflows directory"]
     for path in sorted(directory.glob("*.yml")) + sorted(directory.glob("*.yaml")):
         relative = path.relative_to(root).as_posix()
-        for number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
+        workflow_text = path.read_text(encoding="utf-8")
+        if "apt.llvm.org/llvm.sh" in workflow_text or "sudo ./llvm.sh" in workflow_text:
+            errors.append(f"{relative}: mutable apt.llvm.org installer script execution is forbidden")
+        if "apt.llvm.org/llvm-snapshot.gpg.key" in workflow_text and "6084F3CF814B57C1CF12EFD515CF4D18AF4F7421" not in workflow_text:
+            errors.append(f"{relative}: apt.llvm.org signing-key fingerprint is not verified")
+        for number, line in enumerate(workflow_text.splitlines(), 1):
             if not re.match(r"^\s*uses:\s*", line):
                 continue
             match = USES_RE.fullmatch(line)

@@ -23,6 +23,9 @@ def main() -> int:
         'iwyu-version: "0.26"',
         'llvm-version: "23"',
         'iwyu-version: "0.27"',
+        "https://apt.llvm.org/llvm-snapshot.gpg.key",
+        'expected_fingerprint="6084F3CF814B57C1CF12EFD515CF4D18AF4F7421"',
+        "signed-by=/usr/share/keyrings/apt.llvm.org.asc",
         "clang-format-$LLVM_VERSION",
         "clang-tidy-$LLVM_VERSION",
         'grep -Eq "version ${LLVM_VERSION}([.[:space:]]|$)"',
@@ -53,6 +56,8 @@ def main() -> int:
         errors.append("CMake IWYU integration must fail the build on include diagnostics")
     if 'set_property(TARGET tgf_header_check PROPERTY CXX_INCLUDE_WHAT_YOU_USE "")' not in header_checks:
         errors.append("the intentional duplicate-include header harness must be excluded from IWYU")
+    if "apt.llvm.org/llvm.sh" in workflow or "sudo ./llvm.sh" in workflow:
+        errors.append("source-quality workflow must not execute the mutable LLVM installer script")
     if "continue-on-error:" in workflow:
         errors.append("source-quality checks may not be allowed to fail")
     if "permissions:\n  contents: read" not in workflow:
