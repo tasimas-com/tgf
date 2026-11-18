@@ -156,20 +156,23 @@ jobs:
 
             $componentId = "Microsoft.VisualStudio.Component.VC.Tools.x86.x64"
             $channelId = "VisualStudio.18.Release.LTSC.18.11"
-            $installerArguments = @(
-              "modify",
-              "--installPath", $vsPath,
-              "--channelId", $channelId,
-              "--add", $componentId,
-              "--quiet",
-              "--norestart",
-              "--wait"
-            )
+            # Start-Process joins ArgumentList array elements with spaces. Build one
+            # explicitly quoted command line so the install path is preserved as one argument.
+            $installerArguments = 'modify --installPath "{0}" --channelId "{1}" --add "{2}" --quiet --norestart --wait' -f $vsPath, $channelId, $componentId
             Write-Host "Installing $componentId from $channelId into $vsPath"
+            Write-Host "Visual Studio bootstrapper command: $installerArguments"
             $installerProcess = Start-Process -FilePath $bootstrapper -ArgumentList $installerArguments -Wait -PassThru
             $installExitCode = $installerProcess.ExitCode
             Write-Host "Visual Studio bootstrapper exit code: $installExitCode"
             if ($installExitCode -notin @(0, 3010)) {
+              Write-Host "Recent Visual Studio installer diagnostics:"
+              $recentLogs = Get-ChildItem -LiteralPath $env:TEMP -Filter "dd_*" -File -ErrorAction SilentlyContinue |
+                Sort-Object LastWriteTime -Descending |
+                Select-Object -First 6
+              foreach ($log in $recentLogs) {
+                Write-Host "===== $($log.FullName) ====="
+                Get-Content -LiteralPath $log.FullName -Tail 120
+              }
               throw "Visual Studio bootstrapper failed to add MSVC 14.52 (exit $installExitCode)."
             }
 
