@@ -144,8 +144,16 @@ def check_repository(root: Path) -> list[str]:
         errors.append("ci.yml CMake configure commands must pass TGF_WARNINGS_AS_ERRORS=ON")
     if "Install MSVC 14.52 if missing" not in (ci or ""):
         errors.append("ci.yml must install MSVC 14.52 when the hosted image does not provide it")
-    if "Microsoft.VisualStudio.Component.VC.14.52.18.11.x86.x64" not in (ci or ""):
-        errors.append("ci.yml must install the versioned MSVC 14.52/Visual Studio 18.11 x64/x86 component")
+    if "vs_Enterprise.exe" not in (ci or ""):
+        errors.append("ci.yml must use the Visual Studio 2026 LTSC Enterprise bootstrapper")
+    if "VisualStudio.18.Release.LTSC.18.11" not in (ci or ""):
+        errors.append("ci.yml MSVC 14.52 modify operation must set the Visual Studio 18.11 LTSC channel")
+    if "--wait" not in (ci or ""):
+        errors.append("ci.yml MSVC bootstrapper must wait for servicing to finish")
+    if "Microsoft.VisualStudio.Component.VC.Tools.x86.x64" not in (ci or ""):
+        errors.append("ci.yml must add the x64/x86 MSVC Build Tools component")
+    if "Get-AuthenticodeSignature" not in (ci or ""):
+        errors.append("ci.yml must verify the downloaded Microsoft bootstrapper signature")
     if 'Where-Object { $_.Name -like "14.52.*" }' not in (ci or ""):
         errors.append("ci.yml must verify the exact installed MSVC 14.52 toolset directory")
     if "Install MSVC 14.51 if missing" not in (ci or ""):
