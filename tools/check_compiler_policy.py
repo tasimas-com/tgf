@@ -144,8 +144,8 @@ def check_repository(root: Path) -> list[str]:
         errors.append("ci.yml CMake configure commands must pass TGF_WARNINGS_AS_ERRORS=ON")
     if "Install MSVC 14.52 if missing" not in (ci or ""):
         errors.append("ci.yml must install MSVC 14.52 when the hosted image does not provide it")
-    if "Microsoft.VisualStudio.Component.VC.14.52.18.0.x86.x64" not in (ci or ""):
-        errors.append("ci.yml must install the versioned MSVC 14.52 x64/x86 component")
+    if "Microsoft.VisualStudio.Component.VC.Tools.x86.x64" not in (ci or ""):
+        errors.append("ci.yml must use the current-channel latest x64/x86 MSVC component")
     if 'Where-Object { $_.Name -like "14.52.*" }' not in (ci or ""):
         errors.append("ci.yml must verify the exact installed MSVC 14.52 toolset directory")
     if "Install MSVC 14.51 if missing" not in (ci or ""):
