@@ -132,6 +132,12 @@ jobs:
           }
 
           $toolsetRoot = Join-Path $vsPath "VC\Tools\MSVC"
+          Write-Host "Selected Visual Studio instance: $vsPath"
+          Write-Host "MSVC toolsets before provisioning:"
+          Get-ChildItem -LiteralPath $toolsetRoot -Directory -ErrorAction Stop |
+            Sort-Object Name |
+            ForEach-Object { Write-Host "  $($_.Name)" }
+
           $toolset = Get-ChildItem -LiteralPath $toolsetRoot -Directory -ErrorAction SilentlyContinue |
             Where-Object { $_.Name -like "14.52.*" } |
             Sort-Object Name -Descending |
@@ -142,20 +148,18 @@ jobs:
             if (-not (Test-Path -LiteralPath $setup)) {
               throw "Visual Studio Installer was not found at $setup"
             }
-            # Use the Stable-channel "latest x64/x86 MSVC" component. The
-            # exact toolset is verified after installation; a preview/newer
-            # toolset is never accepted as a silent substitute.
-            $componentId = "Microsoft.VisualStudio.Component.VC.Tools.x86.x64"
-            $installerArguments = 'modify --installPath "{0}" --channelId VisualStudio.18.Stable --add {1} --passive --norestart' -f $vsPath, $componentId
+            # Install the GA toolset as a versioned side-by-side component.
+            # Do not change the VS channel or accept the mutable "Latest" alias.
+            $componentId = "Microsoft.VisualStudio.Component.VC.14.52.18.0.x86.x64"
+            Write-Host "Installing component: $componentId"
+            $installerArguments = 'modify --installPath "{0}" --add {1} --quiet --norestart' -f $vsPath, $componentId
             $installerProcess = Start-Process -FilePath $setup -ArgumentList $installerArguments -Wait -PassThru
             $installExitCode = $installerProcess.ExitCode
             Write-Host "Visual Studio Installer exit code: $installExitCode"
             if ($installExitCode -notin @(0, 3010)) {
-              throw "Visual Studio Installer failed to add the MSVC 14.52 x64/x86 toolset (exit $installExitCode)."
+              throw "Visual Studio Installer failed to add MSVC 14.52 (exit $installExitCode)."
             }
 
-            # The bootstrapper can finish before the component directory is visible.
-            # Wait for the exact GA toolset instead of accepting a different version.
             for ($attempt = 0; $attempt -lt 60; $attempt++) {
               $toolset = Get-ChildItem -LiteralPath $toolsetRoot -Directory -ErrorAction SilentlyContinue |
                 Where-Object { $_.Name -like "14.52.*" } |
@@ -167,6 +171,10 @@ jobs:
           }
 
           if (-not $toolset) {
+            Write-Host "MSVC toolsets after provisioning:"
+            Get-ChildItem -LiteralPath $toolsetRoot -Directory -ErrorAction SilentlyContinue |
+              Sort-Object Name |
+              ForEach-Object { Write-Host "  $($_.Name)" }
             throw "MSVC 14.52 was not installed; refusing to fall back to another toolset."
           }
           Write-Host "Selected MSVC toolset directory: $($toolset.FullName)"
