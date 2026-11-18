@@ -68,10 +68,9 @@ def main() -> int:
                 "sudo apt-get install --yes clang-23",
                 "Install MSVC 14.52 if missing",
                 "Install MSVC 14.51 if missing",
-                "Microsoft.VisualStudio.Component.VC.Tools.x86.x64",
+                "Microsoft.VisualStudio.Component.VC.14.52.18.0.x86.x64",
                 "Microsoft.VisualStudio.Component.VC.14.51.18.0.x86.x64",
-                "--channelId VisualStudio.18.Stable",
-                "Start-Process -FilePath $setup -ArgumentList $installerArguments -Wait -PassThru",
+                                "Start-Process -FilePath $setup -ArgumentList $installerArguments -Wait -PassThru",
                 "Start-Sleep -Seconds 5",
                 "toolset: ${{ matrix.target.toolset }}",
                 "EXPECTED_COMPILER_MAJOR",
@@ -216,8 +215,10 @@ def main() -> int:
             msvc_install = steps_by_name.get("Install MSVC 14.52 if missing", {})
             if msvc_install.get("if") != "matrix.target.compiler-key == 'msvc-14.52'":
                 errors.append("ci.yml: MSVC 14.52 installation must be scoped to the MSVC 14.52 target")
-            if "Microsoft.VisualStudio.Component.VC.Tools.x86.x64" not in msvc_install.get("run", ""):
-                errors.append("ci.yml: MSVC 14.52 must use the Stable-channel latest x64/x86 toolset component")
+            if "Microsoft.VisualStudio.Component.VC.14.52.18.0.x86.x64" not in msvc_install.get("run", ""):
+                errors.append("ci.yml: MSVC 14.52 must use its version-specific x64/x86 component")
+            if "--channelId VisualStudio.18.Stable" in msvc_install.get("run", ""):
+                errors.append("ci.yml: MSVC 14.52 provisioning must not change the selected Visual Studio channel")
             if 'Where-Object { $_.Name -like "14.52.*" }' not in msvc_install.get("run", ""):
                 errors.append("ci.yml: MSVC 14.52 installer must verify the exact GA toolset directory")
             previous_msvc_install = steps_by_name.get("Install MSVC 14.51 if missing", {})
