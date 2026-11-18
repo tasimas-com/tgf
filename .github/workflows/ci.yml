@@ -144,23 +144,36 @@ jobs:
             Select-Object -First 1
 
           if (-not $toolset) {
-            $setup = Join-Path $installerRoot "setup.exe"
-            if (-not (Test-Path -LiteralPath $setup)) {
-              throw "Visual Studio Installer was not found at $setup"
-            }
-            # Install the exact MSVC 14.52 x64/x86 component for the runner's VS 2026 LTSC 18.11 instance.
-            # Do not change the selected channel; verify the concrete 14.52 folder below.
-            $componentId = "Microsoft.VisualStudio.Component.VC.14.52.18.11.x86.x64"
-            Write-Host "Installing component: $componentId"
-            $installerArguments = 'modify --installPath "{0}" --add {1} --quiet --norestart' -f $vsPath, $componentId
-            $installerProcess = Start-Process -FilePath $setup -ArgumentList $installerArguments -Wait -PassThru
-            $installExitCode = $installerProcess.ExitCode
-            Write-Host "Visual Studio Installer exit code: $installExitCode"
-            if ($installExitCode -notin @(0, 3010)) {
-              throw "Visual Studio Installer failed to add MSVC 14.52 (exit $installExitCode)."
+            # A modify operation requires the channel ID. Use Microsoft's fixed 18.11 LTSC
+            # Enterprise bootstrapper; --wait is supported here (not by setup.exe).
+            $bootstrapper = Join-Path $env:RUNNER_TEMP "vs_enterprise_18.11.4_ltsc.exe"
+            $bootstrapperUri = "https://download.visualstudio.microsoft.com/download/pr/2d4073f5-2775-4a70-8c1d-b50ae62795a7/d95f7e7eb4ede7b559d3bff79b496d1797d989cae5b96d494beb6b9ebffe61d0/vs_Enterprise.exe"
+            Invoke-WebRequest -Uri $bootstrapperUri -OutFile $bootstrapper
+            $signature = Get-AuthenticodeSignature -FilePath $bootstrapper
+            if ($signature.Status -ne "Valid" -or $signature.SignerCertificate.Subject -notmatch "Microsoft Corporation") {
+              throw "Downloaded Visual Studio LTSC bootstrapper does not have a valid Microsoft signature."
             }
 
-            for ($attempt = 0; $attempt -lt 60; $attempt++) {
+            $componentId = "Microsoft.VisualStudio.Component.VC.Tools.x86.x64"
+            $channelId = "VisualStudio.18.Release.LTSC.18.11"
+            $installerArguments = @(
+              "modify",
+              "--installPath", $vsPath,
+              "--channelId", $channelId,
+              "--add", $componentId,
+              "--quiet",
+              "--norestart",
+              "--wait"
+            )
+            Write-Host "Installing $componentId from $channelId into $vsPath"
+            $installerProcess = Start-Process -FilePath $bootstrapper -ArgumentList $installerArguments -Wait -PassThru
+            $installExitCode = $installerProcess.ExitCode
+            Write-Host "Visual Studio bootstrapper exit code: $installExitCode"
+            if ($installExitCode -notin @(0, 3010)) {
+              throw "Visual Studio bootstrapper failed to add MSVC 14.52 (exit $installExitCode)."
+            }
+
+            for ($attempt = 0; $attempt -lt 24; $attempt++) {
               $toolset = Get-ChildItem -LiteralPath $toolsetRoot -Directory -ErrorAction SilentlyContinue |
                 Where-Object { $_.Name -like "14.52.*" } |
                 Sort-Object Name -Descending |
