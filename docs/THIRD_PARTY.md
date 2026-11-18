@@ -33,3 +33,14 @@ Python itself. Those host/toolchain contents are not delivered as TGF dependenci
 are not claimed as audited by this document. The IWYU source releases bundle GoogleTest
 under its own MIT license; TGF builds the IWYU executable only, not IWYU's test target.
 The nested GoogleTest files are not treated as independently integrated TGF dependencies.
+
+
+## Current verification (2026-11-17)
+
+The policy and SBOM workflow [run #13](https://github.com/tasimas-com/tgf/actions/runs/44089512739)
+passed on current `main` commit `7e9dad1581be59e1df6adf9caa7572a1129d518e` and uploaded the
+SPDX 2.3 JSON artifact. The same commit's current compiler/OS CI matrix [run #412](https://github.com/tasimas-com/tgf/actions/runs/44089512975)
+passed all 14 configured jobs. The registry describes TGF's direct repository dependencies and
+vendored material; it is not a recursive inventory of transitive components inside GitHub Actions,
+hosted runner images, operating-system packages, or compiler/Python installations. The accepted
+decision record is [ADR-0016](adr/0016-third-party-dependencies-and-sbom.md).
