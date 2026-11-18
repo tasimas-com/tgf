@@ -1,6 +1,6 @@
 # TGF — Design (implementation baseline, Rev 1)
 
-This document turns the master plan (`TODO.md`, Revision 6) into concrete engineering
+This document records the current implementation baseline against the master plan (`TODO.md`).
 decisions and shows how each performance rule is enforced in code. Where this document and
 the TODO disagree, the TODO's ADRs win until a superseding ADR is accepted.
 
@@ -23,10 +23,11 @@ CMakeLists.txt, CMakePresets.json, cmake/     policy, options, install/export
 core/                                          tgf::core  (include/tgf/core, src)
 samples/showcase/                              tgf_showcase executable
 tests/                                         header self-containment, CTest wiring
-tools/check_deps.py                            dependency-DAG + hygiene checker
-docs/                                          DESIGN.md, STATUS.md, adr/
-platform/ rhi/ render/ text/ ui/ widgets/ pro/ host/ c/ bindings/   placeholders (README only) until their phase
-benchmarks/ third_party/                       placeholders until P0.3 / P0.1.8
+tools/                                         dependency, compiler, license, SBOM, benchmark-host, build-cost and quality gates
+docs/                                          design/status/policy/ADR and dated audit records
+platform/ rhi/ render/ text/ ui/ widgets/ pro/ host/ c/ bindings/   architecture placeholders (README only) until their phase
+benchmarks/                                     P0.3 harness not started; README only
+third_party/                                   live policy and direct-dependency registry; no third-party source currently vendored
 ```
 Each future module follows the same shape as `core/`: `include/tgf/<module>/` public headers,
 `src/` private code, one CMake target `tgf_<module>` exported as `TGF::<Module>`.
@@ -46,7 +47,7 @@ Adding a module = adding its row to the script and the CMake target in the same 
 | 0 heap allocations in steady state (DoD #4) | `ScopedAllocationCheck` measures the calling thread; TGF and `tracked_external_alloc_bytes()` record `MemoryTag`, live/cumulative/peak bytes, enforce per-tag budgets, and feed snapshot leak deltas. `ScopedMemoryLeakReport` emits per-tag outstanding deltas at a controlled host/plugin shutdown boundary. | Showcase verifies zero allocations for SlotMap, Arena, Pool, Profiler, SPSC and triple-buffer data paths, paired external allocator accounting, scoped shutdown reporting, and 1,000 warmed steady-state iterations with zero allocations. Hosts must route their own allocator through the adapter for visibility. |
 | Growth only at boundaries, always visible | `SlotMap::reserve`, `GrowPolicy::Fixed`, `growth_events()`; arena/pool are fixed-capacity and report failure | Growth/Fixed-policy check |
 | Handles, not pointers (rule 3) | `Handle<Tag>` = 8 B, generation 0 = invalid; `SlotMap` swap-removes into a dense array | Stale-handle, double-erase, reuse and growth-stability checks |
-| Cache-friendly hot data | Dense value array + separate owner/slot arrays; queue indices on separate cache lines with cached remote index | Benchmarks (get 8–9 ns at 100k random, insert+erase ≈2 ns) |
+| Cache-friendly hot data | Dense value array + separate owner/slot arrays; queue indices on separate cache lines with cached remote index | Local console smoke measurements only; not validated competitor baselines |
 | Real-time threads are sacred (ADR-0022) | `SpscQueue`, `TripleBuffer`: no allocation, no mutexes, trivially-copyable payloads, and compile-time always-lock-free atomic requirements. No portable formal wait-free or hard-deadline claim is made. | Bounded/full/empty checks, no-allocation checks, 2-thread stress, torn-read detector, and TSan on tested x86-64 target; each supported platform still needs its own timing/code-generation validation. |
 | No float for domain coordinates (ADR-0017) | `SampleTime{i64}` with overflow-checked arithmetic; `to_camera_relative(Vec2d→Vec2f)` | Check shows naive f32 jitters (≈4.5 px) at 100 h @192 kHz vs 3e-6 px camera-relative |
 | No exceptions inside the library (ADR-0001) | `Result<T>`/`Status`, `[[nodiscard]]`, `-fno-exceptions` for compiled core; template APIs use truthful conditional `noexcept` and explicit type constraints | `build_info()` flags + headers compiled standalone with exceptions on |
@@ -82,28 +83,30 @@ enabled) in `build/<preset>/bin`. `cmake --install` produces headers, the librar
 
 ## 7. Known limits of this slice (be aware before relying on it)
 
-* Verified on **Linux x86-64 with GCC 13 and Clang** in Release, Debug, ASan+UBSan, TSan, static
-  and shared. **MSVC / Windows and macOS have not been built yet** — the code and presets are
-  written for them (export macros, `_aligned_malloc`, `/W4` flags), but nothing counts as done
-  on those platforms until the CI matrix runs (TODO §11.1).
+* The current hosted matrix has built and tested native Linux, Windows, and macOS jobs. On
+  2026-11-17, [CI run #412](https://github.com/tasimas-com/tgf/actions/runs/44089512975)
+  passed 14/14 configured jobs across GCC 15/16, Clang 22/23, MSVC 14.50/14.51, and
+  AppleClang 17 in Debug and Release. The MSVC pair is no longer the latest two: 14.52 became
+  generally available on 2026-11-16 and remains absent from the checked-in matrix. See
+  [COMPILER_SUPPORT.md](COMPILER_SUPPORT.md); that migration is open.
 * Benchmarks are single-process smoke numbers, not the pinned-frequency statistical suite of P0.3.
 * `ScopedZone` costs ~70 ns (two `steady_clock` reads); fine for coarse zones, not for inner loops.
   It is off in Release by default. A calibrated TSC/QPC clock is planned.
 * `MemoryTag`, `ScopedMemoryTag`, per-tag budgets, live/peak/cumulative statistics, snapshot leak deltas, tracked external allocator callbacks, and scoped lifecycle leak reports are implemented (P1.2.2/P1.2.3). Hosts must use `tracked_external_alloc_bytes()` for custom allocator blocks; raw uninstrumented allocations cannot be introspected safely.
-* P1.2.5 is in progress: a fixed-capacity module allocator registry pins callback ownership until all blocks are freed, and `MappedFile` provides move-only whole-file mappings. Native Windows/macOS and actual plugin load/unload validation remain outstanding.
+* P1.2.5 remains partial: the fixed-capacity module allocator registry pins callback ownership until all blocks are freed, and `MappedFile` provides move-only whole-file mappings. Its platform-specific code is built/tested in the hosted Windows/macOS/Linux matrix; actual plugin load/unload and foreign-toolchain ABI validation remain outstanding.
 * No window, GPU or text exists yet: the showcase is console-only until M1.
 
 ## 8. Next work packages (in order)
 
-1. **Finish Phase 1 core** — `Vector/SmallVector/Span`, flat hash map, `String`/`Atom`,
-   `InlineFunction`, cross-module allocator ownership protocol, job system with thread roles, MPSC queue.
-   Gate: containers must beat `std::` in benchmarks or be dropped (P1.3.6).
-2. **Phase 0 evidence work in parallel** — CI matrix (Windows/Linux/macOS), benchmark noise-floor
-   measurement, ADR-0001…0027 written as files, the RHI build-vs-adopt spike (P0.4.9) and the
-   host-integration spike (P0.4.10), because they decide `rhi`/`platform` before any code is written.
-3. **Phase 2 platform with mock backend first**, then a GLFW bring-up window so the showcase can show
-   a real window at M1; native Win32 backend next (your primary environment).
-4. **Phase 3 minimal RHI** (clear + rect batching) on the backend chosen in P0.4.9.
+1. **Re-establish the latest-two MSVC baseline** — update the support manifest, policy checker,
+   and hosted matrix to MSVC 14.52/14.51, then pass the full native matrix with warnings-as-errors.
+2. **Complete P0.2 asset inventory** — record keep/rewrite/delete decisions for the earlier
+   scaffold and ImGui-derived prototype, with ADR-0018 and lessons learned.
+3. **Implement P0.3 benchmarking** — deliver the Tier-A harness, reference hardware/scenario
+   definitions, metrics/noise-floor method, repeatable results, and a fair baseline report.
+4. **Complete P0.4/P0.5** — run and document the research spikes, deliver ADR-0001…0027 as
+   accepted/rejected/superseded records, and finalize Phase 1–13 estimates and the first
+   reference-application decision. Phase 1 remains gated until all Phase 0 exit criteria pass.
 
 ## 9. Decisions that need your input
 
