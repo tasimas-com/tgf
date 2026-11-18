@@ -140,6 +140,12 @@ def check_repository(root: Path) -> list[str]:
         errors.append("ci.yml must use the Stable-channel latest x64/x86 MSVC component")
     if 'Where-Object { $_.Name -like "14.52.*" }' not in (ci or ""):
         errors.append("ci.yml must verify the exact installed MSVC 14.52 toolset directory")
+    if "Install MSVC 14.51 if missing" not in (ci or ""):
+        errors.append("ci.yml must install MSVC 14.51 when the hosted image does not provide it")
+    if "Microsoft.VisualStudio.Component.VC.14.51.18.0.x86.x64" not in (ci or ""):
+        errors.append("ci.yml must use the version-specific MSVC 14.51 x64/x86 component")
+    if 'Where-Object { $_.Name -like "14.51.*" }' not in (ci or ""):
+        errors.append("ci.yml must verify the exact installed MSVC 14.51 toolset directory")
     if "toolset: $" + "{{ matrix.target.toolset }}" not in (ci or ""):
         errors.append("ci.yml must pass each matrix toolset to the MSVC developer environment")
     if "VCToolsVersion" not in (ci or "") or r"cl\.exe:\s+Version\s+19\.\$expectedMinor\." not in (ci or ""):
