@@ -8,13 +8,21 @@ applications and games. TGF is licensed under [Apache-2.0](LICENSE); third-party
 * License: [`LICENSE`](LICENSE) · Notices: [`NOTICE`](NOTICE) · Third-party policy and dependency inventory: [`third_party/POLICY.md`](third_party/POLICY.md) · SBOM generation: [`docs/THIRD_PARTY.md`](docs/THIRD_PARTY.md)
 * Contributing: [`CONTRIBUTING.md`](CONTRIBUTING.md) · Code of conduct: [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md) · Build matrix and commands: [`docs/BUILDING.md`](docs/BUILDING.md) · Coding standard: [`docs/CODING_STANDARD.md`](docs/CODING_STANDARD.md) · Master plan: [`TODO.md`](TODO.md) · Design baseline: [`docs/DESIGN.md`](docs/DESIGN.md) ·
   Status ledger: [`docs/STATUS.md`](docs/STATUS.md) · CI policy: [`docs/CI.md`](docs/CI.md) · Compiler policy: [`docs/COMPILER_SUPPORT.md`](docs/COMPILER_SUPPORT.md) · ADRs: [`docs/adr/`](docs/adr/)
-* Build performance and header costs: [docs/BUILD_PERFORMANCE.md](docs/BUILD_PERFORMANCE.md) · Snapshot audit (2026-10-14): [`docs/audit/`](docs/audit/) · The current implementation is an early `tgf::core` foundation, not yet a GUI framework 1.0.0.
+* Build performance and header costs: [docs/BUILD_PERFORMANCE.md](docs/BUILD_PERFORMANCE.md) · Latest Phase 0 reassessment (2026-11-18): [audit report](docs/audit/2026-11-18/PHASE_0_REASSESSMENT.md) · The current implementation is an early `tgf::core` foundation, not yet a GUI framework 1.0.0.
 
 ## Current implementation slice
 
 The current executable verifies the `tgf::core` foundation; it is not yet a graphical UI
-framework. Core memory diagnostics now include subsystem tags, per-tag budgets, live/peak
-accounting and snapshot leak deltas for allocations routed through TGF. Revision 9 strengthened P1.2.5 with allocator concurrency/capacity tests and mapped-file ownership tests; Revision 10 completed the Phase 0 CMake preset matrix; Revision 11 adds the compiler-support policy and optional formatting/static-analysis workflows; Revision 12 adds cross-platform GitHub Actions build/test workflows; Revision 17 verifies the first hosted eight-job Windows/Linux/macOS baseline. See
+framework. Core memory diagnostics include subsystem tags, per-tag budgets, live/peak
+accounting and snapshot leak deltas for allocations routed through TGF. The Phase 0
+infrastructure now includes CMake preset and dependency-DAG gates, contributor governance,
+Apache-2.0 licensing, third-party provenance/SBOM generation, and clean/incremental build and
+public-header cost tracking. On 2026-11-17, the configured hosted matrix passed 14/14 jobs,
+source quality passed 2/2 LLVM jobs, build-performance passed, and SPDX SBOM generation
+passed. The matrix still uses MSVC 14.50/14.51; MSVC 14.52 became generally available on
+2026-11-16 and must be added before the latest-two MSVC policy is complete. Phase 0 remains
+open; the asset inventory, competitor benchmark suite, research spikes, and ADR set are not
+complete. Phase 1 is still gated. See
 [`docs/memory-diagnostics.md`](docs/memory-diagnostics.md) and
 [`docs/module-memory.md`](docs/module-memory.md) for their ownership contracts.
 
