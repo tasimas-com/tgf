@@ -73,7 +73,7 @@ def main() -> int:
                 "--wait",
                 "Microsoft.VisualStudio.Component.VC.Tools.x86.x64",
                 "Microsoft.VisualStudio.Component.VC.14.51.18.0.x86.x64",
-                                "Start-Process -FilePath $setup -ArgumentList $installerArguments -Wait -PassThru",
+                                "Start-Process -FilePath $bootstrapper -ArgumentList $installerArguments -Wait -PassThru",
                 "Start-Sleep -Seconds 5",
                 "toolset: ${{ matrix.target.toolset }}",
                 "EXPECTED_COMPILER_MAJOR",
@@ -219,7 +219,7 @@ def main() -> int:
             if msvc_install.get("if") != "matrix.target.compiler-key == 'msvc-14.52'":
                 errors.append("ci.yml: MSVC 14.52 installation must be scoped to the MSVC 14.52 target")
             msvc_install_script = msvc_install.get("run", "")
-            if "setup.exe" in msvc_install_script:
+            if "-FilePath $setup" in msvc_install_script or "Join-Path $installerRoot \"setup.exe\"" in msvc_install_script:
                 errors.append("ci.yml: use the Visual Studio bootstrapper, not setup.exe, for the MSVC 14.52 modify operation")
             if "VisualStudio.18.Release.LTSC.18.11" not in msvc_install_script:
                 errors.append("ci.yml: MSVC 14.52 modify operation must specify the LTSC 18.11 channel ID")
@@ -228,7 +228,7 @@ def main() -> int:
             if "Get-AuthenticodeSignature" not in msvc_install_script:
                 errors.append("ci.yml: downloaded MSVC bootstrapper must have its Microsoft signature verified")
             if "Microsoft.VisualStudio.Component.VC.Tools.x86.x64" not in msvc_install.get("run", ""):
-                errors.append("ci.yml: MSVC 14.52 must use its versioned Visual Studio 18.11 x64/x86 component")
+                errors.append("ci.yml: MSVC 14.52 must install the current x64/x86 component from its 18.11 LTSC channel")
             if "--channelId VisualStudio.18.Stable" in msvc_install.get("run", ""):
                 errors.append("ci.yml: MSVC 14.52 must use its LTSC channel rather than the Stable channel")
             if 'Where-Object { $_.Name -like "14.52.*" }' not in msvc_install.get("run", ""):
