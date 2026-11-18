@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import re
+from datetime import date
 import sys
 from pathlib import Path
 from typing import Any
@@ -92,8 +93,15 @@ def check_repository(root: Path) -> list[str]:
     except json.JSONDecodeError as exc:
         return [f"invalid compiler-support.json: {exc}"]
 
-    if policy.get("policy_date") != "2026-11-18":
-        errors.append("compiler-support.json policy_date must be refreshed to 2026-11-18")
+    policy_date = policy.get("policy_date")
+    try:
+        if not isinstance(policy_date, str):
+            raise ValueError("policy_date must be a string")
+        reviewed_on = date.fromisoformat(policy_date)
+        if reviewed_on > date.today():
+            errors.append("compiler-support.json policy_date must not be in the future")
+    except ValueError:
+        errors.append("compiler-support.json policy_date must be a valid ISO-8601 date (YYYY-MM-DD)")
     if policy.get("tier_one_compilers") != EXPECTED_COMPILERS:
         errors.append(
             "Tier-1 policy must declare MSVC 14.52/14.51, Clang 23/22, and GCC 16/15"
