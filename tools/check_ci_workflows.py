@@ -225,6 +225,8 @@ def main() -> int:
                 errors.append("ci.yml: MSVC 14.52 modify operation must specify the LTSC 18.11 channel ID")
             if "--wait" not in msvc_install_script:
                 errors.append("ci.yml: MSVC 14.52 bootstrapper must wait for servicing to complete")
+            if "'modify --installPath \"{0}\" --channelId \"{1}\" --add \"{2}\"" not in msvc_install_script:
+                errors.append("ci.yml: MSVC 14.52 bootstrapper arguments must quote the install path and component values")
             if "Get-AuthenticodeSignature" not in msvc_install_script:
                 errors.append("ci.yml: downloaded MSVC bootstrapper must have its Microsoft signature verified")
             if "Microsoft.VisualStudio.Component.VC.Tools.x86.x64" not in msvc_install.get("run", ""):
