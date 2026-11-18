@@ -67,7 +67,9 @@ def main() -> int:
                 "signed-by=/usr/share/keyrings/apt.llvm.org.asc",
                 "sudo apt-get install --yes clang-23",
                 "Install MSVC 14.52 if missing",
+                "Install MSVC 14.51 if missing",
                 "Microsoft.VisualStudio.Component.VC.Tools.x86.x64",
+                "Microsoft.VisualStudio.Component.VC.14.51.18.0.x86.x64",
                 "--channelId VisualStudio.18.Stable",
                 "Start-Process -FilePath $setup -ArgumentList $installerArguments -Wait -PassThru",
                 "Start-Sleep -Seconds 5",
@@ -218,6 +220,13 @@ def main() -> int:
                 errors.append("ci.yml: MSVC 14.52 must use the Stable-channel latest x64/x86 toolset component")
             if 'Where-Object { $_.Name -like "14.52.*" }' not in msvc_install.get("run", ""):
                 errors.append("ci.yml: MSVC 14.52 installer must verify the exact GA toolset directory")
+            previous_msvc_install = steps_by_name.get("Install MSVC 14.51 if missing", {})
+            if previous_msvc_install.get("if") != "matrix.target.compiler-key == 'msvc-14.51'":
+                errors.append("ci.yml: MSVC 14.51 installation must be scoped to the MSVC 14.51 target")
+            if "Microsoft.VisualStudio.Component.VC.14.51.18.0.x86.x64" not in previous_msvc_install.get("run", ""):
+                errors.append("ci.yml: MSVC 14.51 must use its version-specific x64/x86 component")
+            if 'Where-Object { $_.Name -like "14.51.*" }' not in previous_msvc_install.get("run", ""):
+                errors.append("ci.yml: MSVC 14.51 installer must verify the exact toolset directory")
 
             msvc_setup = steps_by_name.get("Set up MSVC developer environment", {})
             if msvc_setup.get("uses") != "ilammy/msvc-dev-cmd@0b201ec74fa43914dc39ae48a89fd1d8cb592756":
