@@ -1,15 +1,19 @@
 # TGF implementation status
 
-**Status date:** 13 November 2026 — Revision 26  
+**Status date:** 18 November 2026 — Revision 27  
 **Audited input:** `tasimas-com/tgf` on GitHub; task completion and current CI evidence are maintained in the root `TODO.md`  
 **Canonical task checklist:** [`../TODO.md`](../TODO.md)  
-**Full source-audit evidence:** [`audit/2026-10-14/`](audit/2026-10-14/)
+**Latest Phase 0 reassessment:** [`audit/2026-11-18/PHASE_0_REASSESSMENT.md`](audit/2026-11-18/PHASE_0_REASSESSMENT.md)  
+**Original source-audit evidence:** [`audit/2026-10-14/`](audit/2026-10-14/)
 
 ## Executive status
 
 TGF is an early engineering baseline, not yet a usable GUI framework and not ready for a
 1.0.0 release. The current working implementation is concentrated in `tgf::core`, its
-console showcase, CMake packaging for `TGF::Core`, and the dependency/hygiene checker.
+console showcase, CMake packaging for `TGF::Core`, and the repository's build, dependency,
+compiler, licensing/SBOM, source-quality, and measurement policy tooling. Phase 0 is not
+complete: the latest-two MSVC matrix is stale, the asset audit and competitor benchmark suite
+are not delivered, and most research spikes and ADRs remain open.
 
 The archive does **not** yet contain implementations of the native platform layer, RHI,
 renderer, text system, retained UI, standard widgets, professional-app components, host/plugin
@@ -71,10 +75,13 @@ passed. Visual Studio presets are defined but were not
 executed because this verification host is Linux; native MSVC validation belongs to the compiler
 and CI matrix tasks P0.1.3/P0.1.4.
 
-## Phase 0 progress — P0.1.3 compiler policy and quality tooling (completed 17 October 2026)
+## Historical Phase 0 evidence — P0.1.3 compiler policy baseline (17 October 2026; MSVC pair reopened 18 November)
 
-P0.1.3 is **complete**. The Tier-1 policy in `docs/COMPILER_SUPPORT.md` and
-`cmake/compiler-support.json` targets MSVC 14.51/14.50, Clang 23/22, and GCC 16/15.
+The 17 October implementation and verification completed the compiler-policy and source-quality
+work against the then-current matrix. It targeted MSVC 14.51/14.50, Clang 23/22, and GCC 16/15.
+This is a historical completion record, not the current task state: MSVC 14.52 became generally
+available on 16 November 2026, so the latest-two MSVC requirement is reopened. P0.1.3 is now
+partial until the support manifest, policy checker, and hosted matrix cover 14.52/14.51.
 `TGF_WARNINGS_AS_ERRORS` is ON by default; MSVC uses `/W4` + `/WX`, while GCC/Clang use
 the documented warning set + `-Werror`. Ninja presets export `compile_commands.json`, and
 the compiler-policy regression check is registered in CTest.
@@ -92,8 +99,9 @@ and Release, with warnings-as-errors enabled. All 14 CTest artifacts were downlo
 integrity checked, and inspected; each contained 11/11 passing CTest cases and the showcase
 reported 26 checks with zero failures (154/154 CTest executions).
 
-PR [#4](https://github.com/tasimas-com/tgf/pull/4) merged the enforcement implementation into
-`main`. P0.1.3.a–g are closed with implementation, regression coverage, and hosted evidence.
+PR [#4](https://github.com/tasimas-com/tgf/pull/4) merged the original enforcement implementation into
+`main`. The source-quality tooling and GCC/Clang lanes remain verified; P0.1.3.a and P0.1.3.g
+are now open for the MSVC latest-generation update.
 This does **not** satisfy the overall Phase 0 exit criteria: the separate benchmark/Tier-A,
 research-spike, and ADR work remains. Phase 1 remains gated.
 
@@ -106,7 +114,9 @@ research-spike, and ADR work remains. Phase 1 remains gated.
 - `tgf_showcase` console executable with 26 core checks, eight smoke benchmarks, and JSON output.
 - Versioned cross-module allocator registry (`ModuleAllocatorDesc`, generation handles, and an
   outstanding-allocation unload guard) plus move-only `MappedFile` read-only/read-write APIs.
-  POSIX mapping behavior is verified on Linux; Windows mapping code is present but not natively built.
+  POSIX and Windows mapping implementations are exercised by the hosted native Linux/Windows/macOS
+build-and-test matrix; actual dynamic-plugin load/unload and foreign-toolchain stable C ABI
+validation remain outstanding.
 - CMake install/export package for the `TGF::Core` target, verified with a separate consumer.
 - Repository layout and dependency checker. The bindings dependency rule identified in the audit
   has been corrected to permit only `tgf/c/...` dependencies and now has a positive/negative
@@ -141,8 +151,10 @@ Historical Revision 9 core verification (before the Revision 10 Phase 0 tooling 
 - Revision 7 tests continue to verify external allocator tracking, scoped shutdown reports, and 1,000 warmed steady-state iterations with zero allocations.
 
 
-**Not verified:** MSVC/Visual Studio, Windows, macOS, ARM, native Wayland/X11 windows, GPU APIs,
-GPU drivers, or a cross-platform CI matrix in the original audited snapshot. GitHub Actions workflows were introduced in Revision 12 and hardened in Revision 13; they still require a real remote execution.
+**Not verified in the current project state:** MSVC 14.52 (not yet added to the matrix), ARM,
+native Wayland/X11 windows, real GPU APIs/drivers, and a dedicated physical pinned-frequency
+benchmark host. Native Windows and macOS compiler/build/test lanes are verified for the currently
+configured MSVC 14.50/14.51 and AppleClang 17 matrix; see the dated current evidence below. GitHub Actions workflows were introduced in Revision 12 and hardened in Revision 13; they still require a real remote execution.
 
 ## Original core audit findings and current resolution
 
@@ -178,10 +190,11 @@ Details and exact verification are in `docs/audit/2026-10-14/TGF_CORE_REMEDIATIO
 
 ## Recommended next sequence
 
-1. P0.1.4, P0.1.6, P0.1.7, and P0.1.9 are closed for their documented scopes. The next unclosed foundation task is **P0.1.8**: formal license publication, SBOM tooling, and the third-party policy (ADR-0016).
-2. Complete P0.2: inventory existing assets, decide keep/rewrite/delete, and record the result in ADR-0018.
-3. Complete P0.3: implement the benchmark harness and publish fair Tier-A baselines and measurable targets.
-4. Complete P0.4 and P0.5: document research spikes, accept ADRs, and finalize estimates/reference application.
+1. Refresh P0.1.3/P0.1.4.g for the current latest-two MSVC matrix (14.52/14.51); GCC 16/15, Clang 23/22, and the LLVM quality lanes already pass.
+2. P0.1.8 is now complete: Apache-2.0 LICENSE/NOTICE, ADR-0016, direct dependency registry, policy checker, SPDX 2.3 generator, CTest gates, and SBOM artifact workflow are delivered.
+3. Complete P0.2: inventory existing assets, decide keep/rewrite/delete, and record the result in ADR-0018; preserve lessons in docs/lessons.md.
+4. Complete P0.3: implement the real cross-framework benchmark harness, statistical methodology, stored results, and fair Tier-A baselines.
+5. Complete P0.4 and P0.5: document research spikes, deliver ADR-0001–0027 as decision records, and finalize estimates/reference application.
 5. Keep Phase 1 blocked until the complete Phase 0 exit criteria are met.
 
 ## Revision 12 — CI workflow foundation
@@ -397,3 +410,20 @@ Per-artifact CTest IDs and the full evidence register are in
 
 P0.1.8 (license/SBOM/third-party policy) remains the next unclosed foundation task. P0.1.9
 closure does not authorize Phase 1; Phase 0 remains open and Phase 1 remains blocked.
+
+## Revision 27 — independent Phase 0 reassessment (2026-11-18)
+
+The current repository tree, C++ implementation, CMake configuration, test harnesses, policy/checker scripts, workflows, ADRs, and Markdown status pages were re-read against the Phase 0 acceptance criteria. Existing checkbox states were not treated as evidence. The current main code baseline at audit start was `7e9dad1581be59e1df6adf9caa7572a1129d518e`; documentation updates are recorded in the commits following this baseline. The task-by-task findings and exact scope limits are in [the 18 November reassessment](audit/2026-11-18/PHASE_0_REASSESSMENT.md).
+
+**Current hosted evidence (17 November):** [TGF CI run #412](https://github.com/tasimas-com/tgf/actions/runs/44089512975) passed 14/14 configured jobs; [Source Quality run #338](https://github.com/tasimas-com/tgf/actions/runs/44089512797) passed 2/2 jobs; [Build Performance run #18](https://github.com/tasimas-com/tgf/actions/runs/44089512759) passed; and [SBOM run #13](https://github.com/tasimas-com/tgf/actions/runs/44089512739) passed and uploaded its SPDX 2.3 artifact. The passing compiler matrix includes GCC 15/16, Clang 22/23, MSVC 14.50/14.51, and AppleClang 17 in Debug/Release.
+
+**Verified complete for the currently delivered scope:** P0.1.1, P0.1.2, P0.1.5, P0.1.6, P0.1.7, P0.1.8, and P0.1.9. The dependency policy has positive/negative edge and symlink tests; community governance and coding-standard policies are CTest gates; and P0.1.8 now has an accepted ADR, LICENSE/NOTICE, immutable dependency registry, fail-closed policy, SPDX 2.3 generator, tests, and uploaded artifact.
+
+**Downgraded/reopened:** P0.1.3 and P0.1.4 are partial because Microsoft released MSVC Build Tools 14.52 on 16 November 2026, but the checked-in support manifest, regression checker, and hosted matrix still target 14.50/14.51. The currently passing 14-job workflow therefore verifies its configured matrix, not the latest-two MSVC requirement. P0.1.3.a, P0.1.3.g, and P0.1.4.g remain open until MSVC 14.52/14.51 is added and the matrix passes. P0.1.4's physical pinned-frequency host and self-hosted runner provisioning remain explicitly owner-waived; no physical-host result is claimed.
+
+**Remaining partial/not complete:** P0.2.1–P0.2.3 have no current asset keep/rewrite/delete inventory, ADR-0018, or docs/lessons.md. P0.3 has only reference/scenario/tier planning and the console's eight smoke benchmarks: no executable competitor comparison, measured Tier-A baseline, full metric/noise-floor specification, persistent comparative result store, dashboard, regression gate, or fair baseline report. P0.4.11 has a useful 100-hour/192-kHz integer/camera-relative precision check but not GPU, 10^6-zoom node-canvas, or gigapixel-canvas validation. P0.5 still lacks the majority of ADR-0001–0027 as standalone records, and the phase estimates/first reference app are not finalized.
+
+**Not started:** P0.4.1–P0.4.10 and P0.4.12–P0.4.13 research spikes. A scenario name, architecture sketch, or existing core unit test is not a completed research spike.
+
+The Phase 0 exit criteria are not met: the benchmark harness is not green with Tier-A competitors, the ADR set is not accepted, and the research spikes are not documented. Phase 1 remains blocked.
+
