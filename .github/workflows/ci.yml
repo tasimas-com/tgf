@@ -52,17 +52,17 @@ jobs:
             compiler-major: "22"
             preset-prefix: ""
           - os: windows-2025
-            compiler: MSVC 14.51 (Windows hosted image)
+            compiler: MSVC 14.52
+            compiler-key: msvc-14.52
+            preset-prefix: msvc-ninja-
+            toolset: "14.52"
+            compiler-minor: "52"
+          - os: windows-2025
+            compiler: MSVC 14.51
             compiler-key: msvc-14.51
             preset-prefix: msvc-ninja-
             toolset: "14.51"
             compiler-minor: "51"
-          - os: windows-2025
-            compiler: MSVC 14.50
-            compiler-key: msvc-14.50
-            preset-prefix: msvc-ninja-
-            toolset: "14.50"
-            compiler-minor: "50"
           - os: macos-15
             compiler: AppleClang (Xcode)
             compiler-key: appleclang
@@ -119,21 +119,21 @@ jobs:
           sudo apt-get update
           sudo apt-get install --yes clang-23
 
-      - name: Install MSVC 14.50 if missing
-        if: matrix.target.compiler-key == 'msvc-14.50'
+      - name: Install MSVC 14.52 if missing
+        if: matrix.target.compiler-key == 'msvc-14.52'
         shell: pwsh
         run: |
           $ErrorActionPreference = "Stop"
-          $installerRoot = Join-Path ${env:ProgramFiles(x86)} "Microsoft Visual Studio\Installer"
+          $installerRoot = Join-Path ${env:ProgramFiles(x86)} "Microsoft Visual Studio\\Installer"
           $vswhere = Join-Path $installerRoot "vswhere.exe"
           $vsPath = & $vswhere -latest -products '*' -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
           if (-not $vsPath) {
-            throw "No Visual Studio installation with the x64 C++ tools was found."
+            throw "No Visual Studio 2026 installation with the x64 C++ tools was found."
           }
 
-          $toolsetRoot = Join-Path $vsPath "VC\Tools\MSVC"
+          $toolsetRoot = Join-Path $vsPath "VC\\Tools\\MSVC"
           $toolset = Get-ChildItem -LiteralPath $toolsetRoot -Directory -ErrorAction SilentlyContinue |
-            Where-Object { $_.Name -like "14.50.*" } |
+            Where-Object { $_.Name -like "14.52.*" } |
             Sort-Object Name -Descending |
             Select-Object -First 1
 
@@ -142,19 +142,23 @@ jobs:
             if (-not (Test-Path -LiteralPath $setup)) {
               throw "Visual Studio Installer was not found at $setup"
             }
-            $installerArguments = 'modify --installPath "{0}" --channelId VisualStudio.18.Stable --add Microsoft.VisualStudio.Component.VC.14.50.18.0.x86.x64 --passive --norestart' -f $vsPath
+            # Use the Stable-channel "latest x64/x86 MSVC" component. The
+            # exact toolset is verified after installation; a preview/newer
+            # toolset is never accepted as a silent substitute.
+            $componentId = "Microsoft.VisualStudio.Component.VC.Tools.x86.x64"
+            $installerArguments = 'modify --installPath "{0}" --channelId VisualStudio.18.Stable --add {1} --passive --norestart' -f $vsPath, $componentId
             $installerProcess = Start-Process -FilePath $setup -ArgumentList $installerArguments -Wait -PassThru
             $installExitCode = $installerProcess.ExitCode
             Write-Host "Visual Studio Installer exit code: $installExitCode"
             if ($installExitCode -notin @(0, 3010)) {
-              throw "Visual Studio Installer failed to add the MSVC 14.50 x64/x86 toolset (exit $installExitCode)."
+              throw "Visual Studio Installer failed to add the MSVC 14.52 x64/x86 toolset (exit $installExitCode)."
             }
 
             # The bootstrapper can finish before the component directory is visible.
-            # Wait for the exact toolset instead of accepting a silent fallback to 14.51.
+            # Wait for the exact GA toolset instead of accepting a different version.
             for ($attempt = 0; $attempt -lt 60; $attempt++) {
               $toolset = Get-ChildItem -LiteralPath $toolsetRoot -Directory -ErrorAction SilentlyContinue |
-                Where-Object { $_.Name -like "14.50.*" } |
+                Where-Object { $_.Name -like "14.52.*" } |
                 Sort-Object Name -Descending |
                 Select-Object -First 1
               if ($toolset) { break }
@@ -163,10 +167,9 @@ jobs:
           }
 
           if (-not $toolset) {
-            throw "MSVC 14.50 was not installed; refusing to fall back to the newer default toolset."
+            throw "MSVC 14.52 was not installed; refusing to fall back to another toolset."
           }
           Write-Host "Selected MSVC toolset directory: $($toolset.FullName)"
-
       - name: Set up MSVC developer environment
         if: runner.os == 'Windows'
         uses: ilammy/msvc-dev-cmd@0b201ec74fa43914dc39ae48a89fd1d8cb592756 # v1.13.0
