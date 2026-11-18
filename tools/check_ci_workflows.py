@@ -68,7 +68,10 @@ def main() -> int:
                 "sudo apt-get install --yes clang-23",
                 "Install MSVC 14.52 if missing",
                 "Install MSVC 14.51 if missing",
-                "Microsoft.VisualStudio.Component.VC.14.52.18.11.x86.x64",
+                "https://download.visualstudio.microsoft.com/download/pr/2d4073f5-2775-4a70-8c1d-b50ae62795a7/d95f7e7eb4ede7b559d3bff79b496d1797d989cae5b96d494beb6b9ebffe61d0/vs_Enterprise.exe",
+                "VisualStudio.18.Release.LTSC.18.11",
+                "--wait",
+                "Microsoft.VisualStudio.Component.VC.Tools.x86.x64",
                 "Microsoft.VisualStudio.Component.VC.14.51.18.0.x86.x64",
                                 "Start-Process -FilePath $setup -ArgumentList $installerArguments -Wait -PassThru",
                 "Start-Sleep -Seconds 5",
@@ -215,10 +218,19 @@ def main() -> int:
             msvc_install = steps_by_name.get("Install MSVC 14.52 if missing", {})
             if msvc_install.get("if") != "matrix.target.compiler-key == 'msvc-14.52'":
                 errors.append("ci.yml: MSVC 14.52 installation must be scoped to the MSVC 14.52 target")
+            msvc_install_script = msvc_install.get("run", "")
+            if "setup.exe" in msvc_install_script:
+                errors.append("ci.yml: use the Visual Studio bootstrapper, not setup.exe, for the MSVC 14.52 modify operation")
+            if "VisualStudio.18.Release.LTSC.18.11" not in msvc_install_script:
+                errors.append("ci.yml: MSVC 14.52 modify operation must specify the LTSC 18.11 channel ID")
+            if "--wait" not in msvc_install_script:
+                errors.append("ci.yml: MSVC 14.52 bootstrapper must wait for servicing to complete")
+            if "Get-AuthenticodeSignature" not in msvc_install_script:
+                errors.append("ci.yml: downloaded MSVC bootstrapper must have its Microsoft signature verified")
             if "Microsoft.VisualStudio.Component.VC.Tools.x86.x64" not in msvc_install.get("run", ""):
                 errors.append("ci.yml: MSVC 14.52 must use its versioned Visual Studio 18.11 x64/x86 component")
             if "--channelId VisualStudio.18.Stable" in msvc_install.get("run", ""):
-                errors.append("ci.yml: MSVC 14.52 provisioning must not change the selected Visual Studio channel")
+                errors.append("ci.yml: MSVC 14.52 must use its LTSC channel rather than the Stable channel")
             if 'Where-Object { $_.Name -like "14.52.*" }' not in msvc_install.get("run", ""):
                 errors.append("ci.yml: MSVC 14.52 installer must verify the exact GA toolset directory")
             previous_msvc_install = steps_by_name.get("Install MSVC 14.51 if missing", {})
