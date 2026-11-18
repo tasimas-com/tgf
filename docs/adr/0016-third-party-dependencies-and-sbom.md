@@ -100,9 +100,10 @@ vendored source files. The SBOM contains public dependency metadata only.
 
 ## Validation and rollout
 
-Run the policy checker and unit tests, configure/build/test the complete compiler
-matrix, run source-quality checks, and inspect the SPDX artifact from the dedicated
-workflow before closing P0.1.8.
+**Completed 2026-11-17:** the repository policy checker and SBOM regression suite are
+registered in CTest as `third_party_policy` and `license_sbom_tooling`. The configured hosted
+compiler/OS matrix passed 14/14 jobs in [CI run #412](https://github.com/tasimas-com/tgf/actions/runs/44089512975),
+and the LLVM source-quality lanes passed 2/2 in [run #338](https://github.com/tasimas-com/tgf/actions/runs/44089512797). The dedicated [SBOM workflow run #13](https://github.com/tasimas-com/tgf/actions/runs/44089512739) passed and uploaded the SPDX 2.3 JSON artifact. P0.1.8 is therefore complete for the direct repository-dependency inventory described in this ADR. This evidence does not claim a recursive inventory of upstream workflow actions, runner images, OS packages, or compiler/Python distributions. The separate MSVC latest-two matrix upgrade (14.52/14.51) remains open under P0.1.3/P0.1.4.g; it is not a missing P0.1.8 deliverable.
 
 ## References
 
