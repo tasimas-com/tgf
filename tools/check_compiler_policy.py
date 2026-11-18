@@ -148,7 +148,7 @@ def check_repository(root: Path) -> list[str]:
         errors.append("ci.yml must verify the exact installed MSVC 14.51 toolset directory")
     if "toolset: $" + "{{ matrix.target.toolset }}" not in (ci or ""):
         errors.append("ci.yml must pass each matrix toolset to the MSVC developer environment")
-    if "VCToolsVersion" not in (ci or "") or r"cl\.exe:\s+Version\s+19\.\$expectedMinor\." not in (ci or ""):
+    if "VCToolsVersion" not in (ci or "") or r"cl\.exe:\s+Version\s+19\." not in (ci or "") or "$expectedMinor" not in (ci or ""):
         errors.append("ci.yml must assert both the actual cl.exe and VCToolsVersion")
     if "Expected compiler major" not in (ci or ""):
         errors.append("ci.yml must verify GCC/Clang compiler majors")
