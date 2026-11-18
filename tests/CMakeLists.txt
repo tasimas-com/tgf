@@ -84,6 +84,8 @@ add_test(NAME benchmark_host_inventory
          COMMAND ${Python3_EXECUTABLE} ${PROJECT_SOURCE_DIR}/tools/test_collect_benchmark_host_inventory.py)
 add_test(NAME compiler_policy
          COMMAND ${Python3_EXECUTABLE} ${PROJECT_SOURCE_DIR}/tools/check_compiler_policy.py ${PROJECT_SOURCE_DIR})
+add_test(NAME compiler_policy_regressions
+         COMMAND ${Python3_EXECUTABLE} ${PROJECT_SOURCE_DIR}/tools/test_check_compiler_policy.py)
 add_test(NAME coding_standard_policy
          COMMAND ${Python3_EXECUTABLE} ${PROJECT_SOURCE_DIR}/tools/check_coding_standard.py ${PROJECT_SOURCE_DIR})
 add_test(NAME source_quality_workflow
