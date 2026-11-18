@@ -181,8 +181,8 @@ def main() -> int:
                     errors.append(f"ci.yml: {compiler} must select the exact compiler binaries and major version")
 
             for compiler, toolset, minor in (
-                ("MSVC 14.52", "14.51", "51"),
-                ("MSVC 14.51", "14.50", "50"),
+                ("MSVC 14.52", "14.52", "52"),
+                ("MSVC 14.51", "14.51", "51"),
             ):
                 target = target_by_compiler.get(compiler, {})
                 if (
