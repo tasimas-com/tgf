@@ -144,7 +144,7 @@ def check_repository(root: Path) -> list[str]:
         errors.append("ci.yml must pass each matrix toolset to the MSVC developer environment")
     if "VCToolsVersion" not in (ci or "") or r"cl\.exe:\s+Version\s+19\.\$expectedMinor\." not in (ci or ""):
         errors.append("ci.yml must assert both the actual cl.exe and VCToolsVersion")
-    if "expected compiler major" not in (ci or ""):
+    if "Expected compiler major" not in (ci or ""):
         errors.append("ci.yml must verify GCC/Clang compiler majors")
 
     cmake, error = read_text(root, "CMakeLists.txt")
