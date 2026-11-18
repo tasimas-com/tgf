@@ -1,24 +1,27 @@
 # TGF compiler and source-quality policy
 
-**Policy reviewed: 2026-10-17**
+**Policy re-audited: 2026-11-18**
 
-TGF uses C++20 (`CMAKE_CXX_STANDARD=20`) with language extensions disabled. The
-following are the two current stable/in-support compiler generations targeted
-for first-class support. A generation is not considered verified merely because
-it appears in this table: its CI job must build the library, showcase, and tests
-with warnings treated as errors.
+TGF uses C++20 (`CMAKE_CXX_STANDARD=20`) with language extensions disabled. A compiler
+generation is not considered verified merely because it appears in a policy table: its CI
+job must build the library, showcase, and tests with warnings treated as errors.
 
-| Compiler family | Current target | Previous target | Required CI status |
+| Compiler family | Required current pair (18 Nov 2026) | Pair still configured in CI | Status |
 |---|---:|---:|---|
-| Microsoft MSVC Build Tools | 14.51 (`_MSC_VER=1951`) | 14.50 (`_MSC_VER=1950`) | Windows x64 build and CTest |
-| LLVM Clang | 23.x | 22.x | Linux build and CTest; macOS Clang coverage separately |
-| GNU GCC | 16.x | 15.x | Linux build and CTest |
+| Microsoft MSVC Build Tools | 14.52 / 14.51 | 14.51 / 14.50 | **Open — matrix update required** |
+| LLVM Clang | 23.x / 22.x | 23.x / 22.x | Hosted matrix verified |
+| GNU GCC | 16.x / 15.x | 16.x / 15.x | Hosted matrix verified |
 
-MSVC 14.52 is preview as of this policy date and is not a release-gate toolset.
-The compiler version policy must be reviewed when vendors publish new stable
-releases or change support lifetimes.
+MSVC Build Tools 14.52 became generally available on 2026-11-16 and is now the current
+release; 14.51 is the preceding generation. The checked-in `cmake/compiler-support.json`,
+`tools/check_compiler_policy.py`, and `.github/workflows/ci.yml` still define and enforce
+14.51/14.50. The 14.52/14.51 policy and CI migration is therefore unfinished, and P0.1.3
+and P0.1.4.g remain partial/open until the new pair passes the full matrix. MSVC 14.50
+remains an additional useful compatibility toolset, but it does not replace 14.52 in the
+latest-two requirement. See Microsoft's [14.52 GA announcement](https://devblogs.microsoft.com/cppblog/msvc-build-tools-version-14-52-now-generally-available/)
+and [compiler-version table](https://learn.microsoft.com/en-us/cpp/overview/compiler-versions).
 
-## Hosted Tier-1 verification (2026-10-17)
+## Historical hosted Tier-1 verification (2026-10-17)
 
 The latest complete matrix passed in GitHub Actions [run #193](https://github.com/tasimas-com/tgf/actions/runs/39056856383)
 on commit `f9674c393c8ff09ed46625b4b4334350b413b6c2`: **14/14 jobs** across Debug and Release. An earlier baseline is retained in the project history.
@@ -42,6 +45,16 @@ All 14 CTest artifacts from run #193 were downloaded and inspected. Every ZIP is
 `LastTest.log` contains **11/11 passing CTest entries**, and every showcase reports
 26 checks with zero failures (**154/154 CTest test executions passed**).
 
+## Current hosted status (2026-11-17)
+
+On the current `main` commit `7e9dad1581be59e1df6adf9caa7572a1129d518e`,
+[TGF CI run #412](https://github.com/tasimas-com/tgf/actions/runs/44089512975) passed
+all 14 configured jobs across GCC 15/16, Clang 22/23, MSVC 14.50/14.51, and AppleClang
+17 in Debug and Release. [Source Quality run #338](https://github.com/tasimas-com/tgf/actions/runs/44089512797)
+passed both LLVM lanes. These results confirm the checked-in matrix, but the MSVC pair is
+now stale because 14.52 reached general availability on 2026-11-16. Do not describe the
+current MSVC target as the latest two until 14.52 and 14.51 are added and pass CI.
+
 ## Local developer environment
 
 The available local Linux environment has GCC 14.2 and Clang 17. Those are useful
@@ -50,7 +63,7 @@ Tier-1 targets. No native MSVC environment is available locally; the MSVC eviden
 above comes from the native Windows GitHub-hosted runner, not from a local
 cross-compiler.
 
-## Hosted source-quality verification (2026-10-17)
+## Historical hosted source-quality verification (2026-10-17)
 
 GitHub Actions [run #119](https://github.com/tasimas-com/tgf/actions/runs/39056856378)
 passed both source-quality jobs on commit `f9674c393c8ff09ed46625b4b4334350b413b6c2`.
