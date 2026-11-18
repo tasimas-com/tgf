@@ -1,8 +1,8 @@
 # Continuous integration and benchmark infrastructure
 
-**P0.1.4 hosted verification:** 13 November 2026 — [TGF CI run #383](https://github.com/tasimas-com/tgf/actions/runs/43413133994) passed all 14 compiler/platform/configuration jobs; all 14 CTest artifacts were downloaded, ZIP-integrity checked, and inspected, with 11/11 tests in every log (154/154 successful test executions). The preflight and inventory Python suites passed 11 and 6 cases respectively, including container rejection. [Source Quality run #309](https://github.com/tasimas-com/tgf/actions/runs/43413133983) passed both LLVM 22/23 jobs. The dedicated physical benchmark host remains waived for the current project stage and the nightly workflow remains gated. Full per-artifact evidence: [P0.1.4 CI evidence report](audit/2026-11-13/P0_1_4_CI_EVIDENCE.md).
+**Latest hosted evidence (2026-11-17):** On `main` commit `7e9dad1581be59e1df6adf9caa7572a1129d518e`, [TGF CI run #412](https://github.com/tasimas-com/tgf/actions/runs/44089512975) passed all 14 configured compiler/platform/configuration jobs; [Source Quality run #338](https://github.com/tasimas-com/tgf/actions/runs/44089512797) passed both LLVM 22/23 jobs; [Build Performance run #18](https://github.com/tasimas-com/tgf/actions/runs/44089512759) passed; and [SBOM run #13](https://github.com/tasimas-com/tgf/actions/runs/44089512739) passed and uploaded its SPDX 2.3 artifact. The CI matrix still targets MSVC 14.50/14.51: MSVC 14.52 became generally available on 2026-11-16, so the latest-two MSVC policy/matrix upgrade remains open under P0.1.3/P0.1.4.g. The physical benchmark host remains owner-waived and the nightly workflow remains gated. Historical per-artifact evidence for the 13 November matrix is in [P0.1.4 CI evidence report](audit/2026-11-13/P0_1_4_CI_EVIDENCE.md).
 
-TGF uses three GitHub Actions workflows:
+TGF uses five principal GitHub Actions workflows:
 
 - [`.github/workflows/ci.yml`](../.github/workflows/ci.yml) builds and runs CTest on pushes,
   pull requests, and manual dispatches.
@@ -10,8 +10,12 @@ TGF uses three GitHub Actions workflows:
 - [`.github/workflows/nightly-benchmarks.yml`](../.github/workflows/nightly-benchmarks.yml)
   runs the core showcase benchmarks only on a dedicated Linux host after its CPU-frequency
   preflight passes.
+- [`.github/workflows/build-performance.yml`](../.github/workflows/build-performance.yml)
+  measures clean/incremental build times and per-public-header compilation cost.
+- [`.github/workflows/sbom.yml`](../.github/workflows/sbom.yml)
+  enforces the third-party registry and publishes an SPDX 2.3 dependency SBOM.
 
-## Current P0.1.4 verification — 13 November 2026
+## Historical P0.1.4 verification — 13 November 2026
 
 The final hosted compiler matrix [run #383](https://github.com/tasimas-com/tgf/actions/runs/43413133994) and all CTest artifacts are recorded in [the P0.1.4 evidence report](audit/2026-11-13/P0_1_4_CI_EVIDENCE.md). The matrix covers GCC 15/16, Clang 22/23, MSVC 14.50/14.51 and AppleClang 17, each in Debug and Release. All 14 jobs passed; all 14 ZIPs passed integrity checks and contain an 11-test passing log. The host preflight and inventory tests now explicitly reject container virtualization. Source-quality run [#309](https://github.com/tasimas-com/tgf/actions/runs/43413133983) passed both LLVM lanes; clang-format checked all 29 repository-owned C/C++ sources, with complete clang-tidy and strict IWYU builds.
 
@@ -164,11 +168,11 @@ The dedicated source-quality workflow runs on pushes, pull requests, and manual 
 
 `source_quality_workflow` CTest protects the presence of this CI lane, its LLVM/IWYU compatibility pairs, and strict analyzer configuration. `format_checker_discovery` verifies that the formatter discovers source files in future module directories while excluding generated and vendored trees.
 
-## Latest source-quality completion evidence (P0.1.3) — 13 November 2026
+## Latest source-quality completion evidence (P0.1.3 quality tooling) — 17 November 2026
 
-The current LLVM 22/23 source-quality workflow [run #304](https://github.com/tasimas-com/tgf/actions/runs/43399402789) passed both jobs. clang-format checked all 29 repository-owned C/C++ files. Complete TGF Debug builds passed clang-tidy with warnings-as-errors, and strict IWYU passed using LLVM 22.1.8/IWYU 0.26 and LLVM 23.1.6/IWYU 0.27. The generated duplicate-include header self-containment harness is intentionally excluded from IWYU only; implementation and showcase translation units remain checked.
+The latest LLVM 22/23 source-quality workflow [run #338](https://github.com/tasimas-com/tgf/actions/runs/44089512797) passed both jobs on the current main commit. The workflow continues to enforce repository-wide formatting, complete TGF Debug clang-tidy builds with warnings-as-errors, and strict IWYU for implementation/showcase translation units. The generated duplicate-include public-header harness is intentionally excluded from IWYU only because its duplicate includes are the subject of that test.
 
-This is current evidence for P0.1.3. Full P0.1.4 matrix and CTest-artifact evidence is documented above and in [P0_1_4_CI_EVIDENCE.md](audit/2026-11-13/P0_1_4_CI_EVIDENCE.md). These results do not provision or enable the dedicated pinned-frequency benchmark runner, prove Tier-A competitor benchmarks, close the remaining ADR/research-spike work, or satisfy the overall Phase 0 exit criteria. Earlier run #193 and run #119 records are retained in GitHub Actions as historical evidence; the run #30 artifact inventory above is a historical baseline.
+This confirms the LLVM source-quality portion of P0.1.3, not the current MSVC generation requirement: MSVC 14.52 is now generally available, while the checked-in policy and CI matrix still use 14.50/14.51. The update and validation are open. The CI run #412 is green for the configured matrix but does not test 14.52. These checks do not provision a pinned-frequency benchmark host, produce Tier-A competitor benchmarks, close the remaining ADR/research-spike work, or satisfy the overall Phase 0 exit criteria. Earlier run #304, #309, #193, and #119 records are historical evidence.
 
 ## Second-run artifact evidence
 
@@ -262,3 +266,8 @@ All 14 CTest artifacts passed ZIP integrity checks and contained 12/12 passing t
 including `community_governance_policy` (168/168 CTest executions). [Source Quality run #318]
 (https://github.com/tasimas-com/tgf/actions/runs/43429879999) passed both LLVM jobs. See
 [`P0_1_7_COMMUNITY_GOVERNANCE_EVIDENCE.md`](audit/2026-11-13/P0_1_7_COMMUNITY_GOVERNANCE_EVIDENCE.md).
+
+
+## License, dependency provenance, and SBOM (P0.1.8)
+
+The project publishes Apache-2.0 in the repository-root `LICENSE` and scope/attribution information in `NOTICE`. `third_party/dependencies.json` is the machine-readable direct dependency registry; `tools/check_third_party.py` rejects unapproved licenses, mutable GitHub Action refs, missing registry entries, unregistered CMake dependencies, unsafe vendored paths, and vendored-file hash mismatches. The CTest gates are `third_party_policy` and `license_sbom_tooling`. [SBOM run #13](https://github.com/tasimas-com/tgf/actions/runs/44089512739) passed on 2026-11-17 and uploaded an SPDX 2.3 JSON artifact. The inventory is repository-level/direct-dependency scope, not a recursive SBOM for upstream workflow actions, hosted images, OS packages, or compiler/Python distributions; see [THIRD_PARTY.md](THIRD_PARTY.md) and [ADR-0016](adr/0016-third-party-dependencies-and-sbom.md).
