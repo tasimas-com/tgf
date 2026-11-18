@@ -148,9 +148,9 @@ jobs:
             if (-not (Test-Path -LiteralPath $setup)) {
               throw "Visual Studio Installer was not found at $setup"
             }
-            # Install the GA toolset as a versioned side-by-side component.
-            # Do not change the VS channel or accept the mutable "Latest" alias.
-            $componentId = "Microsoft.VisualStudio.Component.VC.14.52.18.0.x86.x64"
+            # Install the current channel's latest supported x64/x86 MSVC toolset.
+            # Do not change the selected VS channel; verify the concrete 14.52 folder below.
+            $componentId = "Microsoft.VisualStudio.Component.VC.Tools.x86.x64"
             Write-Host "Installing component: $componentId"
             $installerArguments = 'modify --installPath "{0}" --add {1} --quiet --norestart' -f $vsPath, $componentId
             $installerProcess = Start-Process -FilePath $setup -ArgumentList $installerArguments -Wait -PassThru
