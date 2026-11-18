@@ -15,7 +15,7 @@ compiler, licensing/SBOM, source-quality, and measurement policy tooling. Phase 
 complete: the latest-two MSVC matrix is stale, the asset audit and competitor benchmark suite
 are not delivered, and most research spikes and ADRs remain open.
 
-The archive does **not** yet contain implementations of the native platform layer, RHI,
+The current repository does **not** yet contain implementations of the native platform layer, RHI,
 renderer, text system, retained UI, standard widgets, professional-app components, host/plugin
 adapters, stable C ABI, language bindings, or release engineering. Those directories are
 architecture placeholders with README files, not functioning modules.
@@ -156,7 +156,7 @@ Historical Revision 9 core verification (before the Revision 10 Phase 0 tooling 
 **Not verified in the current project state:** MSVC 14.52 (not yet added to the matrix), ARM,
 native Wayland/X11 windows, real GPU APIs/drivers, and a dedicated physical pinned-frequency
 benchmark host. Native Windows and macOS compiler/build/test lanes are verified for the currently
-configured MSVC 14.50/14.51 and AppleClang 17 matrix; see the dated current evidence below. GitHub Actions workflows were introduced in Revision 12 and hardened in Revision 13; they still require a real remote execution.
+configured MSVC 14.50/14.51 and AppleClang 17 matrix; see the dated current evidence below. GitHub Actions workflows were introduced in Revision 12 and hardened in Revision 13; the current remote matrix and related policy workflows have since executed successfully (CI run #412, Source Quality run #338, Build Performance run #18, and SBOM run #13).
 
 ## Original core audit findings and current resolution
 
