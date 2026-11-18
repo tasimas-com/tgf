@@ -50,9 +50,11 @@ explicit status markers. Final artifact entries are included in the counts below
 The checklist uses `[p]` for partial, `[x]` for done, and `[ ]` for not started/not delivered.
 A `[x]` is not awarded merely because a local build passes. P0.1.2 is now complete with documented presets and an automated preset-graph test.
 
-The TODO now contains fifteen separate audit-remediation entries beyond the 272-entry baseline:
-thirteen are closed with regression evidence and two remain partial (formal realtime guarantees
-and native mapped-file portability).
+The original 14 October audit added fifteen remediation entries beyond its 272-task baseline.
+Thirteen were closed with regression evidence and two remained partial at that historical review.
+The current follow-up still keeps formal real-time guarantees and dynamically loaded plugin/
+foreign-compiler ABI validation partial; native Windows/macOS mapped-file build/test coverage
+has since been exercised in the hosted matrix.
 
 
 ## Phase 0 progress — P0.1.2 CMake preset matrix (Revision 10)
@@ -182,9 +184,10 @@ partial; allocation diagnostics now cover TGF-routed and explicitly adapted host
 8. **Cross-module memory ownership — partially implemented:** the module allocator registry blocks
    orderly unregister while blocks are still live and pairs frees with the registering callbacks.
    Native plugin load/unload and foreign-compiler C ABI validation remain open.
-9. **Memory-mapped files — partially implemented:** Linux POSIX whole-file read/write mappings,
-   flush, move ownership, and empty files pass regression tests. Windows/macOS native verification,
-   file mutation coordination, and large-file platform tests remain open.
+9. **Memory-mapped files — partially implemented:** Linux/POSIX and Windows/macOS native build/test
+   paths for whole-file read/write mappings, flush, move ownership, and empty files are exercised
+   by the hosted matrix. File mutation coordination, explicit large-file edge coverage, and
+   dynamic plugin lifecycle validation remain open.
 
 Details and exact verification are in `docs/audit/2026-10-14/TGF_CORE_REMEDIATION.md`.
 
@@ -195,7 +198,7 @@ Details and exact verification are in `docs/audit/2026-10-14/TGF_CORE_REMEDIATIO
 3. Complete P0.2: inventory existing assets, decide keep/rewrite/delete, and record the result in ADR-0018; preserve lessons in docs/lessons.md.
 4. Complete P0.3: implement the real cross-framework benchmark harness, statistical methodology, stored results, and fair Tier-A baselines.
 5. Complete P0.4 and P0.5: document research spikes, deliver ADR-0001–0027 as decision records, and finalize estimates/reference application.
-5. Keep Phase 1 blocked until the complete Phase 0 exit criteria are met.
+6. Keep Phase 1 blocked until the complete Phase 0 exit criteria are met.
 
 ## Revision 12 — CI workflow foundation
 
@@ -381,7 +384,7 @@ P0.1.7 closure does not complete the license/SBOM work in P0.1.8 or the remainin
 research, ADR, benchmark, and release criteria. Phase 0 remains open; Phase 1 remains blocked.
 
 
-## Revision 25 — current Phase 0 next-task sequence (2026-11-13)
+## Historical Revision 25 — Phase 0 next-task sequence (2026-11-13; superseded by Revision 27)
 
 Updated the recommended sequence to reflect the verified closures of P0.1.6 and P0.1.7.
 The next foundation task is P0.1.8 (license/SBOM/third-party policy), followed by P0.1.9
@@ -389,7 +392,7 @@ The next foundation task is P0.1.8 (license/SBOM/third-party policy), followed b
 not change task status or authorize Phase 1.
 
 
-## Revision 26 — P0.1.9 build-time and header-cost tracking completed (2026-11-13)
+## Historical Revision 26 — P0.1.9 build-time and header-cost tracking completed (2026-11-13; P0.1.8 status superseded by Revision 27)
 
 P0.1.9 is complete. A standardised no-cache Clang 23.1.6 / Ninja / Release workflow now measures
 clean and one-source incremental builds against checked-in hard ceilings (180 s and 45 s) and
