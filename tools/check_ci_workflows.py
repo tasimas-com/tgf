@@ -68,7 +68,7 @@ def main() -> int:
                 "sudo apt-get install --yes clang-23",
                 "Install MSVC 14.52 if missing",
                 "Install MSVC 14.51 if missing",
-                "Microsoft.VisualStudio.Component.VC.Tools.x86.x64",
+                "Microsoft.VisualStudio.Component.VC.14.52.18.11.x86.x64",
                 "Microsoft.VisualStudio.Component.VC.14.51.18.0.x86.x64",
                                 "Start-Process -FilePath $setup -ArgumentList $installerArguments -Wait -PassThru",
                 "Start-Sleep -Seconds 5",
@@ -216,7 +216,7 @@ def main() -> int:
             if msvc_install.get("if") != "matrix.target.compiler-key == 'msvc-14.52'":
                 errors.append("ci.yml: MSVC 14.52 installation must be scoped to the MSVC 14.52 target")
             if "Microsoft.VisualStudio.Component.VC.Tools.x86.x64" not in msvc_install.get("run", ""):
-                errors.append("ci.yml: MSVC 14.52 must use the current-channel latest x64/x86 component")
+                errors.append("ci.yml: MSVC 14.52 must use its versioned Visual Studio 18.11 x64/x86 component")
             if "--channelId VisualStudio.18.Stable" in msvc_install.get("run", ""):
                 errors.append("ci.yml: MSVC 14.52 provisioning must not change the selected Visual Studio channel")
             if 'Where-Object { $_.Name -like "14.52.*" }' not in msvc_install.get("run", ""):
