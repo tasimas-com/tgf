@@ -44,6 +44,11 @@ module that has already been unloaded.
 
 Showcase tests verify generation invalidation, outstanding allocation counts,
 `Busy` on premature unregister, callback pairing, read/write mapping, flush
-persistence, move ownership, and empty files. GCC Release, Debug, ASan+UBSan,
-TSan, Clang 17, and shared-library builds are required; Windows/MSVC and macOS
-validation remain open until run in their native environments.
+persistence, move ownership, and empty files. The hosted native Linux, Windows/MSVC,
+and macOS build/test matrix passed in Debug and Release for the configured toolchains
+(GCC 15/16, MSVC 14.50/14.51, AppleClang 17); see current CI run
+[#412](https://github.com/tasimas-com/tgf/actions/runs/44089512975). The mapping implementation
+therefore has native build/test coverage on those OS paths, but this does not establish
+real plugin unload safety in a dynamically loaded application, foreign-compiler/CRT
+interoperability, or the future stable C ABI. MSVC 14.52 is not yet in the current compiler
+matrix.
