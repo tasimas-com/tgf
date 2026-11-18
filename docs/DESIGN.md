@@ -1,7 +1,7 @@
 # TGF — Design (implementation baseline, Rev 1)
 
 This document records the current implementation baseline against the master plan (`TODO.md`).
-decisions and shows how each performance rule is enforced in code. Where this document and
+It records concrete engineering decisions and shows how each performance rule is enforced in code. Where this document and
 the TODO disagree, the TODO's ADRs win until a superseding ADR is accepted.
 
 ## 1. Decisions made now
