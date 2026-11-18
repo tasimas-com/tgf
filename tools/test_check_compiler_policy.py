@@ -42,6 +42,14 @@ class CompilerPolicyTests(unittest.TestCase):
     def test_current_repository_policy_and_matrix_pass(self) -> None:
         self.assertEqual(check_repository(self.root), [])
 
+    def test_policy_review_date_must_be_valid_iso_date(self) -> None:
+        path = self.root / "cmake/compiler-support.json"
+        policy = json.loads(path.read_text(encoding="utf-8"))
+        policy["policy_date"] = "18/11/2026"
+        path.write_text(json.dumps(policy), encoding="utf-8")
+        errors = check_repository(self.root)
+        self.assertTrue(any("policy_date must be a valid ISO-8601 date" in error for error in errors))
+
     def test_stale_compiler_manifest_is_rejected(self) -> None:
         path = self.root / "cmake/compiler-support.json"
         policy = json.loads(path.read_text(encoding="utf-8"))
