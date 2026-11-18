@@ -1,5 +1,7 @@
 # TGF GitHub repository — publication and hosted CI verification
 
+> This runbook retains the initial-publication history. Its first/second-matrix sections are historical; see the current status below before relying on compiler-version claims.
+
 **Repository:** https://github.com/tasimas-com/tgf  
 **Owner:** `tasimas-com`  
 **Default branch:** `main`  
@@ -14,7 +16,7 @@ repository root. The authoritative master checklist is
 
 The separate `tasimas-com/tasimas-com` website/profile repository was not modified.
 
-## First hosted CI baseline — verified
+## First hosted CI baseline — historical
 
 GitHub Actions run [#13](https://github.com/tasimas-com/tgf/actions/runs/38730051352) completed
 successfully on 2026-10-15:
@@ -28,15 +30,25 @@ successfully on 2026-10-15:
 The full run and artifact evidence is in
 [`docs/audit/2026-10-15/TGF_HOSTED_CI_RESULTS.md`](audit/2026-10-15/TGF_HOSTED_CI_RESULTS.md).
 
-## Still required
+## Current status — 2026-11-18
+
+The current `main` commit is `7e9dad1581be59e1df6adf9caa7572a1129d518e`.
+[TGF CI run #412](https://github.com/tasimas-com/tgf/actions/runs/44089512975) passed
+14/14 configured jobs on 2026-11-17; [Source Quality run #338](https://github.com/tasimas-com/tgf/actions/runs/44089512797),
+[Build Performance run #18](https://github.com/tasimas-com/tgf/actions/runs/44089512759), and
+[SBOM run #13](https://github.com/tasimas-com/tgf/actions/runs/44089512739) also passed.
+The configured matrix covers GCC 15/16, Clang 22/23, MSVC 14.50/14.51, and AppleClang 17.
+MSVC 14.52 became generally available on 2026-11-16, so the MSVC latest-two matrix upgrade
+(14.52/14.51) remains open under P0.1.3/P0.1.4.g; the green run #412 does not test 14.52.
 
 The dedicated pinned-frequency benchmark workflow remains gated. Do not set
 `TGF_BENCHMARK_RUNNER_READY=true` until a dedicated Linux x86-64 runner with labels
 `self-hosted`, `linux`, `x64`, `tgf-benchmark-pinned` is provisioned and
 `python3 tools/check_benchmark_host.py` passes.
 
-The hosted matrix is only a first compiler baseline. Complete the second supported generations
-(GCC 16, Clang 23, and MSVC 14.50) before marking the full Tier-1 compiler matrix complete.
+The historical matrix already added GCC 16 and Clang 23. The remaining matrix update is to add
+MSVC 14.52 while retaining 14.51 as the preceding generation, then rerun the full Debug/Release
+matrix. MSVC 14.50 can remain an optional compatibility lane but is not a substitute for 14.52.
 
 
 ## Hosted execution verified twice
@@ -47,4 +59,5 @@ The hosted matrix is only a first compiler baseline. Complete the second support
 - All jobs passed 7/7 CTest tests. All sixteen CTest artifact ZIPs across both runs were downloaded and inspected.
 
 The full run-#14 evidence and artifact IDs are recorded in `docs/CI.md` and the root `TODO.md`.
-The pinned-frequency benchmark runner and second-generation compiler matrix remain outstanding.
+The pinned-frequency benchmark runner remains owner-waived. The latest-two MSVC matrix requirement
+is newly open because MSVC 14.52 reached general availability after the prior matrix verification.
