@@ -40,7 +40,7 @@ are cited with their actual scope.
 **Phase 0 is not complete. Phase 1 remains blocked.**
 
 The foundational repository and policy infrastructure is much stronger than the original
-snapshot, and P0.1.8 is now genuinely complete. However, the latest-two MSVC matrix is stale;
+snapshot, and P0.1.8 is now genuinely complete. However, this report's MSVC release-status conclusion requires the 23 November erratum below;
 the asset inventory is absent; the P0.3 comparative benchmark harness and measured competitor
 baselines are absent; most research spikes and most individual ADRs have not been delivered.
 
@@ -70,37 +70,27 @@ reported job success. Earlier per-artifact inspection records remain available i
 |---|---|---|
 | P0.1.1 Repository layout | **Complete** | Required top-level module, tooling, sample, test, documentation, third-party and CMake layout exists. The future GUI modules remain README-only architecture placeholders; that is not a missing layout requirement. |
 | P0.1.2 CMake presets | **Complete** | Configure/build/test presets cover Debug, Release, RelWithDebInfo, profiling and sanitizers; shared Release and compatibility presets remain. Compiler-aware sanitizer selection and `tools/check_presets.py` are connected to CTest. Existing Linux build/test evidence covers supported configurations; native Visual Studio presets are separately defined. |
-| P0.1.3 Compiler policy and quality | **Partial — reopened** | Warnings-as-errors, clang-format, clang-tidy, IWYU and GCC/Clang policy lanes are implemented and hosted. The latest-two MSVC generation requirement is no longer met by the checked-in pair. |
-| P0.1.4 Hosted CI and benchmark runner | **Partial — reopened** | The workflows, matrix, artifacts, preflight, inventory collector, operator runbook and scope waiver are implemented. The physical benchmark host and self-hosted runner remain explicitly waived; the latest-two MSVC matrix subtask also needs refreshing. |
+| P0.1.3 Compiler policy and quality | **Partial — awaiting revalidation** | Warnings-as-errors, clang-format, clang-tidy, IWYU and GCC/Clang policy lanes are implemented and hosted. The 23 November correction confirms the stable MSVC pair is 14.51/14.50; the current revised manifest/checker/CI commit still needs its full matrix run. |
+| P0.1.4 Hosted CI and benchmark runner | **Partial** | The workflows, matrix, artifacts, preflight, inventory collector, operator runbook and scope waiver are implemented. The physical benchmark host and self-hosted runner remain explicitly waived; its 14.51/14.50 stable matrix is being reverified after the policy-checker update. |
 | P0.1.5 Coding standard | **Complete** | The normative standard, formatter/tidy alignment and CTest documentation-contract checker exist. This is a policy gate, not proof that every future code change is automatically semantically correct. |
 | P0.1.6 Dependency DAG | **Complete** | The checker is tied to the normative table and has broad positive/negative edge tests, symlink-boundary tests, literal-lookalike tests, required CTest registration and hosted evidence. The 13 November P0.1.6 report records the complete fixture and artifact inspection. |
 | P0.1.7 Contributor/governance files | **Complete** | Contributor guide, Code of Conduct, issue forms, PR template, ADR template/index and the community governance CTest guard exist. Server-side GitHub report-content configuration is correctly documented as external to repository files. |
 | P0.1.8 License/SBOM/third-party policy | **Complete — 17 November** | Root Apache-2.0 LICENSE and scoped NOTICE, accepted ADR-0016, machine-readable dependency inventory, fail-closed dependency/action/CMake/vendored-file policy, SPDX 2.3 generator, CTest regression suite and dedicated SBOM workflow/artifact exist. The SBOM is direct repository-dependency scope, not a recursive inventory of upstream actions, runner images, OS packages or compiler/Python distributions. |
 | P0.1.9 Build-time/header costs | **Complete** | Clean and incremental build timing budgets, incremental probe verification, per-header self-containment TUs, Clang time-trace parser/reports, CTest guards and dedicated hosted workflow exist. The historical run #4 report has concrete time and header-cost output. |
 
-#### P0.1.3 and P0.1.4 — why the MSVC items are reopened
+#### MSVC version policy — 23 November correction
 
-The repository currently declares MSVC 14.51 and 14.50 in
-`docs/COMPILER_SUPPORT.md`, `cmake/compiler-support.json`,
-`tools/check_compiler_policy.py`, and `.github/workflows/ci.yml`.
-Microsoft announced MSVC Build Tools 14.52 as generally available on **16 November 2026**.
-The previous policy can remain useful as a compatibility lane, but it cannot be described as
-the latest two generations after 14.52 GA. The required pair is now 14.52/14.51.
+This report's 18 November conclusion incorrectly treated MSVC Build Tools 14.52 as generally
+available. Microsoft's current [MSVC compiler-version table](https://learn.microsoft.com/en-us/cpp/overview/compiler-versions)
+marks 14.52 as **Preview**. The same table lists 14.51 as Standard support with EOL in
+February 2027 and 14.50 as Long-Term support with EOL in November 2028. The stable,
+supported Tier-1 pair is therefore **14.51/14.50**, not 14.52/14.51.
 
-References:
-- [Microsoft: MSVC Build Tools version 14.52 now generally available (16 November 2026)](https://devblogs.microsoft.com/cppblog/msvc-build-tools-version-14-52-now-generally-available/)
-- [Microsoft C++ compiler version table](https://learn.microsoft.com/en-us/cpp/overview/compiler-versions)
-
-Therefore:
-
-- P0.1.3.a is unchecked until the policy, manifest and checker are updated.
-- P0.1.3.g is unchecked until the full updated matrix passes.
-- P0.1.4.g is unchecked for the same reason.
-- P0.1.3.b–f remain complete; the actual warnings/format/tidy/IWYU wiring and LLVM runs are
-  not undone by this compiler-version update.
-- P0.1.4's physical host requirement is still owner-waived for the current stage. The waiver is
-  an administrative scope decision, not proof of physical hardware acceptance. The nightly
-  benchmark workflow must remain gated and `TGF_BENCHMARK_RUNNER_READY` unset.
+The CI matrix has been restored to the historically passing 14.51 hosted-image lane and the
+14.50 side-by-side installer lane. The preview compiler is intentionally excluded from the
+stable release gate. The 23 November policy update adds a stricter manifest-to-matrix checker
+and negative regression cases; the corrected current commit must pass all 14 compiler/OS/
+configuration jobs and the source-quality workflow before P0.1.3.g/P0.1.4.g are closed.
 
 ### P0.2 — Existing asset audit
 
@@ -188,3 +178,8 @@ The following Markdown files were reconciled with the re-audit:
 No production C++ implementation or workflow matrix was changed as part of this status audit.
 The MSVC 14.52 upgrade is deliberately left as an open task rather than being silently
 implemented without a dedicated task/review.
+
+
+## Erratum — 23 November 2026: MSVC 14.52 is Preview
+
+The original report's statement that MSVC 14.52 became generally available on 16 November was incorrect. Microsoft's official compiler-version table (last updated 28 May 2026 and rechecked on 23 November) explicitly labels 14.52 as Preview and has no GA/EOL date for it. Microsoft lists 14.51 as Standard support (February 2027 EOL) and 14.50 as Long-Term support (November 2028 EOL). TGF's latest two stable/in-support MSVC generations are 14.51 and 14.50. All references in the main task ledger and active policy documentation have been corrected accordingly. The failed exploratory 14.52 installation attempts are not relevant to P0.1.3 acceptance and are not counted as failures of the stable MSVC matrix.
