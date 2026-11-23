@@ -1,10 +1,10 @@
 {
-  "policy_date": "2026-11-18",
+  "policy_date": "2026-11-23",
   "language_standard": "C++20",
   "tier_one_compilers": {
     "msvc": [
-      "14.52",
-      "14.51"
+      "14.51",
+      "14.50"
     ],
     "clang": [
       "23",
