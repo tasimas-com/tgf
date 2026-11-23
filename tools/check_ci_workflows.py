@@ -67,6 +67,7 @@ def main() -> int:
                 "signed-by=/usr/share/keyrings/apt.llvm.org.asc",
                 "sudo apt-get install --yes clang-23",
                 "Install MSVC 14.51 if missing",
+                "[Environment]::GetFolderPath([Environment+SpecialFolder]::ProgramFilesX86)",
                 "Install MSVC 14.50 if missing",
                 "Microsoft.VisualStudio.Component.VC.14.50.18.0.x86.x64",
                 "--channelId VisualStudio.18.Stable",
