@@ -66,6 +66,7 @@ def main() -> int:
                 'expected_fingerprint="6084F3CF814B57C1CF12EFD515CF4D18AF4F7421"',
                 "signed-by=/usr/share/keyrings/apt.llvm.org.asc",
                 "sudo apt-get install --yes clang-23",
+                "Install MSVC 14.51 if missing",
                 "Install MSVC 14.50 if missing",
                 "Microsoft.VisualStudio.Component.VC.14.50.18.0.x86.x64",
                 "--channelId VisualStudio.18.Stable",
