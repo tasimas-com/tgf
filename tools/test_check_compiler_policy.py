@@ -58,6 +58,14 @@ class CompilerPolicyTests(unittest.TestCase):
         errors = check_repository(self.root)
         self.assertTrue(any("modify operation must set the Visual Studio 18.11 LTSC channel" in error for error in errors))
 
+    def test_msvc_install_must_request_explicit_14_52_component(self) -> None:
+        path = self.root / ".github/workflows/ci.yml"
+        text = path.read_text(encoding="utf-8")
+        text = text.replace("Microsoft.VisualStudio.Component.VC.14.52.18.11.x86.x64", "Microsoft.VisualStudio.Component.VC.Tools.x86.x64", 1)
+        path.write_text(text, encoding="utf-8")
+        errors = check_repository(self.root)
+        self.assertTrue(any("explicit MSVC 14.52 x64/x86 component" in error for error in errors))
+
     def test_stale_compiler_manifest_is_rejected(self) -> None:
         path = self.root / "cmake/compiler-support.json"
         policy = json.loads(path.read_text(encoding="utf-8"))
