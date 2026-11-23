@@ -142,21 +142,22 @@ def check_repository(root: Path) -> list[str]:
         errors.append("ci.yml must set TGF_WARNINGS_AS_ERRORS=ON for every matrix job")
     if "DTGF_WARNINGS_AS_ERRORS=ON" not in (ci or ""):
         errors.append("ci.yml CMake configure commands must pass TGF_WARNINGS_AS_ERRORS=ON")
+    msvc_14_52_step = (ci or "").split("      - name: Install MSVC 14.52 if missing", 1)[-1].split("      - name: Install MSVC 14.51 if missing", 1)[0]
     if "Install MSVC 14.52 if missing" not in (ci or ""):
         errors.append("ci.yml must install MSVC 14.52 when the hosted image does not provide it")
-    if "vs_Enterprise.exe" not in (ci or ""):
+    if "vs_Enterprise.exe" not in msvc_14_52_step:
         errors.append("ci.yml must use the Visual Studio 2026 LTSC Enterprise bootstrapper")
-    if "VisualStudio.18.Release.LTSC.18.11" not in (ci or ""):
+    if "VisualStudio.18.Release.LTSC.18.11" not in msvc_14_52_step:
         errors.append("ci.yml MSVC 14.52 modify operation must set the Visual Studio 18.11 LTSC channel")
-    if "--wait" not in (ci or ""):
-        errors.append("ci.yml MSVC bootstrapper must wait for servicing to finish")
-    if "'modify --installPath \"{0}\" --channelId \"{1}\" --add \"{2}\"" not in (ci or ""):
+    if "--wait" not in msvc_14_52_step:
+        errors.append("ci.yml MSVC 14.52 bootstrapper must wait for servicing to finish")
+    if "'modify --installPath \"{0}\" --channelId \"{1}\" --add \"{2}\"" not in msvc_14_52_step:
         errors.append("ci.yml must quote the Visual Studio install path and component arguments")
-    if "Microsoft.VisualStudio.Component.VC.14.52.18.11.x86.x64" not in (ci or ""):
+    if "Microsoft.VisualStudio.Component.VC.14.52.18.11.x86.x64" not in msvc_14_52_step:
         errors.append("ci.yml must add the explicit MSVC 14.52 x64/x86 component")
-    if "Get-AuthenticodeSignature" not in (ci or ""):
+    if "Get-AuthenticodeSignature" not in msvc_14_52_step:
         errors.append("ci.yml must verify the downloaded Microsoft bootstrapper signature")
-    if 'Where-Object { $_.Name -like "14.52.*" }' not in (ci or ""):
+    if 'Where-Object { $_.Name -like "14.52.*" }' not in msvc_14_52_step:
         errors.append("ci.yml must verify the exact installed MSVC 14.52 toolset directory")
     if "Install MSVC 14.51 if missing" not in (ci or ""):
         errors.append("ci.yml must install MSVC 14.51 when the hosted image does not provide it")
