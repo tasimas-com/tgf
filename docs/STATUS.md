@@ -12,8 +12,8 @@ TGF is an early engineering baseline, not yet a usable GUI framework and not rea
 1.0.0 release. The current working implementation is concentrated in `tgf::core`, its
 console showcase, CMake packaging for `TGF::Core`, and the repository's build, dependency,
 compiler, licensing/SBOM, source-quality, and measurement policy tooling. Phase 0 is not
-complete: the latest-two MSVC matrix is stale, the asset audit and competitor benchmark suite
-are not delivered, and most research spikes and ADRs remain open.
+complete: the asset audit and competitor benchmark suite are not delivered, and most research
+spikes and ADRs remain open. The MSVC stable Tier-1 pair is 14.51/14.50; 14.52 is Preview.
 
 The current repository does **not** yet contain implementations of the native platform layer, RHI,
 renderer, text system, retained UI, standard widgets, professional-app components, host/plugin
@@ -81,9 +81,10 @@ and CI matrix tasks P0.1.3/P0.1.4.
 
 The 17 October implementation and verification completed the compiler-policy and source-quality
 work against the then-current matrix. It targeted MSVC 14.51/14.50, Clang 23/22, and GCC 16/15.
-This is a historical completion record, not the current task state: MSVC 14.52 became generally
-available on 16 November 2026, so the latest-two MSVC requirement is reopened. P0.1.3 is now
-partial until the support manifest, policy checker, and hosted matrix cover 14.52/14.51.
+This is a historical completion record. A later compiler-version reassessment on 23 November
+corrected the 18 November conclusion: Microsoft's official table labels MSVC 14.52 as Preview,
+not GA. The stable/in-support Tier-1 pair remains 14.51/14.50. The current policy, manifest and
+CI matrix have been restored to that pair; their latest code revision is being revalidated.
 `TGF_WARNINGS_AS_ERRORS` is ON by default; MSVC uses `/W4` + `/WX`, while GCC/Clang use
 the documented warning set + `-Werror`. Ninja presets export `compile_commands.json`, and
 the compiler-policy regression check is registered in CTest.
@@ -103,7 +104,7 @@ reported 26 checks with zero failures (154/154 CTest executions).
 
 PR [#4](https://github.com/tasimas-com/tgf/pull/4) merged the original enforcement implementation into
 `main`. The source-quality tooling and GCC/Clang lanes remain verified; P0.1.3.a and P0.1.3.g
-are now open for the MSVC latest-generation update.
+are now being revalidated against the corrected stable 14.51/14.50 policy.
 This does **not** satisfy the overall Phase 0 exit criteria: the separate benchmark/Tier-A,
 research-spike, and ADR work remains. Phase 1 remains gated.
 
@@ -153,7 +154,7 @@ Historical Revision 9 core verification (before the Revision 10 Phase 0 tooling 
 - Revision 7 tests continue to verify external allocator tracking, scoped shutdown reports, and 1,000 warmed steady-state iterations with zero allocations.
 
 
-**Not verified in the current project state:** MSVC 14.52 (not yet added to the matrix), ARM,
+**Not verified in the current project state:** optional MSVC 14.52 preview testing, ARM,
 native Wayland/X11 windows, real GPU APIs/drivers, and a dedicated physical pinned-frequency
 benchmark host. Native Windows and macOS compiler/build/test lanes are verified for the currently
 configured MSVC 14.50/14.51 and AppleClang 17 matrix; see the dated current evidence below. GitHub Actions workflows were introduced in Revision 12 and hardened in Revision 13; the current remote matrix and related policy workflows have since executed successfully (CI run #412, Source Quality run #338, Build Performance run #18, and SBOM run #13).
@@ -193,7 +194,7 @@ Details and exact verification are in `docs/audit/2026-10-14/TGF_CORE_REMEDIATIO
 
 ## Recommended next sequence
 
-1. Refresh P0.1.3/P0.1.4.g for the current latest-two MSVC matrix (14.52/14.51); GCC 16/15, Clang 23/22, and the LLVM quality lanes already pass.
+1. Re-run the stable compiler matrix and policy regressions for P0.1.3/P0.1.4.g (MSVC 14.51/14.50, GCC 16/15, Clang 23/22, AppleClang); GCC/Clang and LLVM quality lanes have already passed on the preceding revision.
 2. P0.1.8 is now complete: Apache-2.0 LICENSE/NOTICE, ADR-0016, direct dependency registry, policy checker, SPDX 2.3 generator, CTest gates, and SBOM artifact workflow are delivered.
 3. Complete P0.2: inventory existing assets, decide keep/rewrite/delete, and record the result in ADR-0018; preserve lessons in docs/lessons.md.
 4. Complete P0.3: implement the real cross-framework benchmark harness, statistical methodology, stored results, and fair Tier-A baselines.
@@ -422,7 +423,7 @@ The current repository tree, C++ implementation, CMake configuration, test harne
 
 **Verified complete for the currently delivered scope:** P0.1.1, P0.1.2, P0.1.5, P0.1.6, P0.1.7, P0.1.8, and P0.1.9. The dependency policy has positive/negative edge and symlink tests; community governance and coding-standard policies are CTest gates; and P0.1.8 now has an accepted ADR, LICENSE/NOTICE, immutable dependency registry, fail-closed policy, SPDX 2.3 generator, tests, and uploaded artifact.
 
-**Downgraded/reopened:** P0.1.3 and P0.1.4 are partial because Microsoft released MSVC Build Tools 14.52 on 16 November 2026, but the checked-in support manifest, regression checker, and hosted matrix still target 14.50/14.51. The currently passing 14-job workflow therefore verifies its configured matrix, not the latest-two MSVC requirement. P0.1.3.a, P0.1.3.g, and P0.1.4.g remain open until MSVC 14.52/14.51 is added and the matrix passes. P0.1.4's physical pinned-frequency host and self-hosted runner provisioning remain explicitly owner-waived; no physical-host result is claimed.
+**MSVC policy correction (23 November 2026):** the 18 November reassessment incorrectly treated MSVC 14.52 as generally available. Microsoft's official compiler-version table labels it Preview; 14.51 (Standard support) and 14.50 (Long-Term support) are the latest stable/in-support pair. The manifest, CI matrix and checker have been restored to 14.51/14.50. P0.1.3.a is complete; P0.1.3.g and P0.1.4.g remain open until the corrected current revision passes the full hosted matrix and policy regressions. P0.1.4's physical pinned-frequency host and self-hosted runner provisioning remain explicitly owner-waived; no physical-host result is claimed.
 
 **Remaining partial/not complete:** P0.2.1–P0.2.3 have no current asset keep/rewrite/delete inventory, ADR-0018, or docs/lessons.md. P0.3 has only reference/scenario/tier planning and the console's eight smoke benchmarks: no executable competitor comparison, measured Tier-A baseline, full metric/noise-floor specification, persistent comparative result store, dashboard, regression gate, or fair baseline report. P0.4.11 has a useful 100-hour/192-kHz integer/camera-relative precision check but not GPU, 10^6-zoom node-canvas, or gigapixel-canvas validation. P0.5 still lacks the majority of ADR-0001–0027 as standalone records, and the phase estimates/first reference app are not finalized.
 
@@ -430,3 +431,8 @@ The current repository tree, C++ implementation, CMake configuration, test harne
 
 The Phase 0 exit criteria are not met: the benchmark harness is not green with Tier-A competitors, the ADR set is not accepted, and the research spikes are not documented. Phase 1 remains blocked.
 
+
+
+## Revision 28 — MSVC stable-release policy correction (2026-11-23)
+
+The 18 November Phase 0 reassessment incorrectly classified MSVC Build Tools 14.52 as GA. Microsoft's current compiler-version table marks 14.52 as Preview. The latest stable/in-support MSVC pair remains 14.51 (Standard support) and 14.50 (Long-Term support). The compiler support manifest, CI matrix and compiler-policy checker now consistently enforce 14.51/14.50. The current commit is being reverified; no 14.52 preview test is claimed or required by P0.1.3.
