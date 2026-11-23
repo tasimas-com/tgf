@@ -71,7 +71,7 @@ def main() -> int:
                 "https://download.visualstudio.microsoft.com/download/pr/2d4073f5-2775-4a70-8c1d-b50ae62795a7/d95f7e7eb4ede7b559d3bff79b496d1797d989cae5b96d494beb6b9ebffe61d0/vs_Enterprise.exe",
                 "VisualStudio.18.Release.LTSC.18.11",
                 "--wait",
-                "Microsoft.VisualStudio.Component.VC.Tools.x86.x64",
+                "Microsoft.VisualStudio.Component.VC.14.52.18.11.x86.x64",
                 "Microsoft.VisualStudio.Component.VC.14.51.18.0.x86.x64",
                                 "Start-Process -FilePath $bootstrapper -ArgumentList $installerArguments -Wait -PassThru",
                 "Start-Sleep -Seconds 5",
@@ -229,7 +229,7 @@ def main() -> int:
                 errors.append("ci.yml: MSVC 14.52 bootstrapper arguments must quote the install path and component values")
             if "Get-AuthenticodeSignature" not in msvc_install_script:
                 errors.append("ci.yml: downloaded MSVC bootstrapper must have its Microsoft signature verified")
-            if "Microsoft.VisualStudio.Component.VC.Tools.x86.x64" not in msvc_install.get("run", ""):
+            if "Microsoft.VisualStudio.Component.VC.14.52.18.11.x86.x64" not in msvc_install.get("run", ""):
                 errors.append("ci.yml: MSVC 14.52 must install the current x64/x86 component from its 18.11 LTSC channel")
             if "--channelId VisualStudio.18.Stable" in msvc_install.get("run", ""):
                 errors.append("ci.yml: MSVC 14.52 must use its LTSC channel rather than the Stable channel")
