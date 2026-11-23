@@ -52,12 +52,6 @@ jobs:
             compiler-major: "22"
             preset-prefix: ""
           - os: windows-2025
-            compiler: MSVC 14.51
-            compiler-key: msvc-14.51
-            preset-prefix: msvc-ninja-
-            toolset: "14.51"
-            compiler-minor: "51"
-          - os: windows-2025
             compiler: MSVC 14.51 (Windows hosted image)
             compiler-key: msvc-14.51
             preset-prefix: msvc-ninja-
