@@ -110,6 +110,16 @@ def check_repository(root: Path) -> list[str]:
     if "DTGF_WARNINGS_AS_ERRORS=ON" not in (ci or ""):
         errors.append("ci.yml CMake configure commands must pass TGF_WARNINGS_AS_ERRORS=ON")
 
+    install_51_step = "Install MSVC 14.51 if missing"
+    if install_51_step not in (ci or ""):
+        errors.append("ci.yml must provision MSVC 14.51 when the hosted image does not provide it")
+    if "matrix.target.compiler-key == 'msvc-14.51'" not in (ci or ""):
+        errors.append("ci.yml MSVC 14.51 installer must be scoped to the MSVC 14.51 target")
+    if "Microsoft.VisualStudio.Component.VC.14.51.18.0.x86.x64" not in (ci or ""):
+        errors.append("ci.yml must use the explicit MSVC 14.51 x64/x86 component")
+    if 'Where-Object { $_.Name -like "14.51.*" }' not in (ci or ""):
+        errors.append("ci.yml must verify the exact installed MSVC 14.51 toolset directory")
+
     install_step = "Install MSVC 14.50 if missing"
     if install_step not in (ci or ""):
         errors.append("ci.yml must provision MSVC 14.50 when the hosted image does not provide it")
