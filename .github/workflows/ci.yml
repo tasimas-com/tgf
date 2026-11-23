@@ -126,7 +126,7 @@ jobs:
           $ErrorActionPreference = "Stop"
           $installerRoot = Join-Path ${env:ProgramFiles(x86)} "Microsoft Visual Studio\Installer"
           $vswhere = Join-Path $installerRoot "vswhere.exe"
-          $vsPath = & $vswhere -latest -products '*' -requires Microsoft.VisualStudio.Component.VC.14.52.18.11.x86.x64 -property installationPath
+          $vsPath = & $vswhere -latest -products '*' -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
           if (-not $vsPath) {
             throw "No Visual Studio 2026 installation with the x64 C++ tools was found."
           }
