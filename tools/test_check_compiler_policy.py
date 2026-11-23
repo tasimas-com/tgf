@@ -74,6 +74,14 @@ class CompilerPolicyTests(unittest.TestCase):
         errors = check_repository(self.root)
         self.assertTrue(any("exactly seven unique targets" in error for error in errors))
 
+    def test_both_msvc_installers_must_use_programfilesx86_discovery(self) -> None:
+        path = self.root / ".github/workflows/ci.yml"
+        text = path.read_text(encoding="utf-8")
+        text = text.replace("[Environment]::GetFolderPath([Environment+SpecialFolder]::ProgramFilesX86)", "$env:ProgramFiles(x86)")
+        path.write_text(text, encoding="utf-8")
+        errors = check_repository(self.root)
+        self.assertTrue(any("both MSVC installer paths through ProgramFilesX86" in error for error in errors))
+
     def test_msvc_14_50_must_use_its_explicit_component(self) -> None:
         path = self.root / ".github/workflows/ci.yml"
         text = path.read_text(encoding="utf-8")
