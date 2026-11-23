@@ -154,7 +154,7 @@ jobs:
               throw "Downloaded Visual Studio LTSC bootstrapper does not have a valid Microsoft signature."
             }
 
-            $componentId = "Microsoft.VisualStudio.Component.VC.Tools.x86.x64"
+            $componentId = "Microsoft.VisualStudio.Component.VC.14.52.18.11.x86.x64"
             $channelId = "VisualStudio.18.Release.LTSC.18.11"
             # Start-Process joins ArgumentList array elements with spaces. Build one
             # explicitly quoted command line so the install path is preserved as one argument.
