@@ -53,7 +53,7 @@ class CompilerPolicyTests(unittest.TestCase):
     def test_msvc_install_must_use_channel_aware_waiting_bootstrapper(self) -> None:
         path = self.root / ".github/workflows/ci.yml"
         text = path.read_text(encoding="utf-8")
-        text = text.replace("VisualStudio.18.Release.LTSC.18.11", "VisualStudio.18.Stable", 1)
+        text = text.replace("VisualStudio.18.Release.LTSC.18.11", "VisualStudio.18.Stable")
         path.write_text(text, encoding="utf-8")
         errors = check_repository(self.root)
         self.assertTrue(any("modify operation must set the Visual Studio 18.11 LTSC channel" in error for error in errors))
