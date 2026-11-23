@@ -120,6 +120,8 @@ def check_repository(root: Path) -> list[str]:
     if 'Where-Object { $_.Name -like "14.51.*" }' not in (ci or ""):
         errors.append("ci.yml must verify the exact installed MSVC 14.51 toolset directory")
 
+    if ci.count("[Environment]::GetFolderPath([Environment+SpecialFolder]::ProgramFilesX86)") != 2:
+        errors.append("ci.yml must resolve both MSVC installer paths through ProgramFilesX86")
     install_step = "Install MSVC 14.50 if missing"
     if install_step not in (ci or ""):
         errors.append("ci.yml must provision MSVC 14.50 when the hosted image does not provide it")
