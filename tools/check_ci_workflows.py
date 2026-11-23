@@ -49,8 +49,8 @@ def main() -> int:
                 "GCC 15",
                 "LLVM Clang 23",
                 "LLVM Clang 22",
-                "MSVC 14.51 (Windows hosted image)",
-                "MSVC 14.50",
+                "MSVC 14.52",
+                "MSVC 14.51",
                 "AppleClang",
                 "configuration: [debug, release]",
                 "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7",
@@ -66,10 +66,14 @@ def main() -> int:
                 'expected_fingerprint="6084F3CF814B57C1CF12EFD515CF4D18AF4F7421"',
                 "signed-by=/usr/share/keyrings/apt.llvm.org.asc",
                 "sudo apt-get install --yes clang-23",
-                "Install MSVC 14.50 if missing",
-                "Microsoft.VisualStudio.Component.VC.14.50.18.0.x86.x64",
-                "--channelId VisualStudio.18.Stable",
-                "Start-Process -FilePath $setup -ArgumentList $installerArguments -Wait -PassThru",
+                "Install MSVC 14.52 if missing",
+                "Install MSVC 14.51 if missing",
+                "https://download.visualstudio.microsoft.com/download/pr/2d4073f5-2775-4a70-8c1d-b50ae62795a7/d95f7e7eb4ede7b559d3bff79b496d1797d989cae5b96d494beb6b9ebffe61d0/vs_Enterprise.exe",
+                "VisualStudio.18.Release.LTSC.18.11",
+                "--wait",
+                "Microsoft.VisualStudio.Component.VC.14.52.18.11.x86.x64",
+                "Microsoft.VisualStudio.Component.VC.14.51.18.0.x86.x64",
+                                "Start-Process -FilePath $bootstrapper -ArgumentList $installerArguments -Wait -PassThru",
                 "Start-Sleep -Seconds 5",
                 "toolset: ${{ matrix.target.toolset }}",
                 "EXPECTED_COMPILER_MAJOR",
@@ -144,8 +148,8 @@ def main() -> int:
                 "GCC 15",
                 "LLVM Clang 23",
                 "LLVM Clang 22",
-                "MSVC 14.51 (Windows hosted image)",
-                "MSVC 14.50",
+                "MSVC 14.52",
+                "MSVC 14.51",
                 "AppleClang (Xcode)",
             }
             if configurations != ["debug", "release"]:
@@ -181,8 +185,8 @@ def main() -> int:
                     errors.append(f"ci.yml: {compiler} must select the exact compiler binaries and major version")
 
             for compiler, toolset, minor in (
-                ("MSVC 14.51 (Windows hosted image)", "14.51", "51"),
-                ("MSVC 14.50", "14.50", "50"),
+                ("MSVC 14.52", "14.52", "52"),
+                ("MSVC 14.51", "14.51", "51"),
             ):
                 target = target_by_compiler.get(compiler, {})
                 if (
@@ -211,9 +215,33 @@ def main() -> int:
             clang_install = steps_by_name.get("Install LLVM Clang 23 on Ubuntu 26.04", {})
             if clang_install.get("if") != "matrix.target.compiler-key == 'clang-23'":
                 errors.append("ci.yml: Clang 23 installation must be scoped to the Clang 23 target")
-            msvc_install = steps_by_name.get("Install MSVC 14.50 if missing", {})
-            if msvc_install.get("if") != "matrix.target.compiler-key == 'msvc-14.50'":
-                errors.append("ci.yml: MSVC 14.50 installation must be scoped to the MSVC 14.50 target")
+            msvc_install = steps_by_name.get("Install MSVC 14.52 if missing", {})
+            if msvc_install.get("if") != "matrix.target.compiler-key == 'msvc-14.52'":
+                errors.append("ci.yml: MSVC 14.52 installation must be scoped to the MSVC 14.52 target")
+            msvc_install_script = msvc_install.get("run", "")
+            if "-FilePath $setup" in msvc_install_script or "Join-Path $installerRoot \"setup.exe\"" in msvc_install_script:
+                errors.append("ci.yml: use the Visual Studio bootstrapper, not setup.exe, for the MSVC 14.52 modify operation")
+            if "VisualStudio.18.Release.LTSC.18.11" not in msvc_install_script:
+                errors.append("ci.yml: MSVC 14.52 modify operation must specify the LTSC 18.11 channel ID")
+            if "--wait" not in msvc_install_script:
+                errors.append("ci.yml: MSVC 14.52 bootstrapper must wait for servicing to complete")
+            if "'modify --installPath \"{0}\" --channelId \"{1}\" --add \"{2}\"" not in msvc_install_script:
+                errors.append("ci.yml: MSVC 14.52 bootstrapper arguments must quote the install path and component values")
+            if "Get-AuthenticodeSignature" not in msvc_install_script:
+                errors.append("ci.yml: downloaded MSVC bootstrapper must have its Microsoft signature verified")
+            if "Microsoft.VisualStudio.Component.VC.14.52.18.11.x86.x64" not in msvc_install.get("run", ""):
+                errors.append("ci.yml: MSVC 14.52 must install the current x64/x86 component from its 18.11 LTSC channel")
+            if "--channelId VisualStudio.18.Stable" in msvc_install.get("run", ""):
+                errors.append("ci.yml: MSVC 14.52 must use its LTSC channel rather than the Stable channel")
+            if 'Where-Object { $_.Name -like "14.52.*" }' not in msvc_install.get("run", ""):
+                errors.append("ci.yml: MSVC 14.52 installer must verify the exact GA toolset directory")
+            previous_msvc_install = steps_by_name.get("Install MSVC 14.51 if missing", {})
+            if previous_msvc_install.get("if") != "matrix.target.compiler-key == 'msvc-14.51'":
+                errors.append("ci.yml: MSVC 14.51 installation must be scoped to the MSVC 14.51 target")
+            if "Microsoft.VisualStudio.Component.VC.14.51.18.0.x86.x64" not in previous_msvc_install.get("run", ""):
+                errors.append("ci.yml: MSVC 14.51 must use its version-specific x64/x86 component")
+            if 'Where-Object { $_.Name -like "14.51.*" }' not in previous_msvc_install.get("run", ""):
+                errors.append("ci.yml: MSVC 14.51 installer must verify the exact toolset directory")
 
             msvc_setup = steps_by_name.get("Set up MSVC developer environment", {})
             if msvc_setup.get("uses") != "ilammy/msvc-dev-cmd@0b201ec74fa43914dc39ae48a89fd1d8cb592756":
@@ -255,7 +283,7 @@ def main() -> int:
         return 1
 
     print("PASS: CI matrix defines the complete two-generation MSVC, Clang, and GCC Tier-1 matrix plus AppleClang compatibility")
-    print("PASS: older MSVC is explicitly installed when absent; GCC/Clang/MSVC compiler versions are asserted")
+    print("PASS: MSVC 14.52 is explicitly installed when absent; GCC/Clang/MSVC compiler versions are asserted")
     print("PASS: all compiler targets run Debug and Release with warnings-as-errors, incremental caching, and CTest artifacts")
     if yaml is not None:
         print("PASS: YAML structure, seven compiler targets, pinned toolsets, and installation conditions verified")
