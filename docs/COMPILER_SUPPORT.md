@@ -1,25 +1,26 @@
 # TGF compiler and source-quality policy
 
-**Policy re-audited: 2026-11-18**
+**Policy re-audited: 2026-11-23**
 
 TGF uses C++20 (`CMAKE_CXX_STANDARD=20`) with language extensions disabled. A compiler
 generation is not considered verified merely because it appears in a policy table: its CI
 job must build the library, showcase, and tests with warnings treated as errors.
 
-| Compiler family | Required current pair (18 Nov 2026) | Pair still configured in CI | Status |
+| Compiler family | Required stable/in-support Tier-1 pair | Checked-in CI pair | Status |
 |---|---:|---:|---|
-| Microsoft MSVC Build Tools | 14.52 / 14.51 | 14.51 / 14.50 | **Open — matrix update required** |
+| Microsoft MSVC Build Tools | 14.51 / 14.50 | 14.51 / 14.50 | Stable pair; current hosted matrix evidence available |
 | LLVM Clang | 23.x / 22.x | 23.x / 22.x | Hosted matrix verified |
 | GNU GCC | 16.x / 15.x | 16.x / 15.x | Hosted matrix verified |
 
-MSVC Build Tools 14.52 became generally available on 2026-11-16 and is now the current
-release; 14.51 is the preceding generation. The checked-in `cmake/compiler-support.json`,
-`tools/check_compiler_policy.py`, and `.github/workflows/ci.yml` still define and enforce
-14.51/14.50. The 14.52/14.51 policy and CI migration is therefore unfinished, and P0.1.3
-and P0.1.4.g remain partial/open until the new pair passes the full matrix. MSVC 14.50
-remains an additional useful compatibility toolset, but it does not replace 14.52 in the
-latest-two requirement. See Microsoft's [14.52 GA announcement](https://devblogs.microsoft.com/cppblog/msvc-build-tools-version-14-52-now-generally-available/)
-and [compiler-version table](https://learn.microsoft.com/en-us/cpp/overview/compiler-versions).
+**MSVC preview policy:** Microsoft's compiler-version table currently marks MSVC Build Tools
+14.52 as **Preview**, with no general-availability date or EOL date established. It is not
+part of TGF's stable Tier-1 support pair and must not replace either supported stable release.
+The two MSVC generations required by P0.1.3 are therefore 14.51 (Standard support, EOL
+February 2027) and 14.50 (Long-Term support, EOL November 2028). A future 14.52 preview
+smoke lane may be added separately, but it must not replace the stable release-gate lanes.
+
+References: [Microsoft MSVC compiler versioning and support table](https://learn.microsoft.com/en-us/cpp/overview/compiler-versions)
+(last updated 2026-05-28; consulted 2026-11-23), [Visual Studio 2026 LTSC 18.11 release notes](https://learn.microsoft.com/en-us/visualstudio/releases/2026/release-notes-v18.11).
 
 ## Historical hosted Tier-1 verification (2026-10-17)
 
