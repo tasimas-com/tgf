@@ -152,8 +152,8 @@ def check_repository(root: Path) -> list[str]:
         errors.append("ci.yml MSVC bootstrapper must wait for servicing to finish")
     if "'modify --installPath \"{0}\" --channelId \"{1}\" --add \"{2}\"" not in (ci or ""):
         errors.append("ci.yml must quote the Visual Studio install path and component arguments")
-    if "Microsoft.VisualStudio.Component.VC.Tools.x86.x64" not in (ci or ""):
-        errors.append("ci.yml must add the x64/x86 MSVC Build Tools component")
+    if "Microsoft.VisualStudio.Component.VC.14.52.18.11.x86.x64" not in (ci or ""):
+        errors.append("ci.yml must add the explicit MSVC 14.52 x64/x86 component")
     if "Get-AuthenticodeSignature" not in (ci or ""):
         errors.append("ci.yml must verify the downloaded Microsoft bootstrapper signature")
     if 'Where-Object { $_.Name -like "14.52.*" }' not in (ci or ""):
