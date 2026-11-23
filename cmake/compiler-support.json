@@ -3,8 +3,8 @@
   "language_standard": "C++20",
   "tier_one_compilers": {
     "msvc": [
-      "14.51",
-      "14.50"
+      "14.52",
+      "14.51"
     ],
     "clang": [
       "23",
