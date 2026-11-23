@@ -38,17 +38,17 @@ The current `main` commit is `7e9dad1581be59e1df6adf9caa7572a1129d518e`.
 [Build Performance run #18](https://github.com/tasimas-com/tgf/actions/runs/44089512759), and
 [SBOM run #13](https://github.com/tasimas-com/tgf/actions/runs/44089512739) also passed.
 The configured matrix covers GCC 15/16, Clang 22/23, MSVC 14.50/14.51, and AppleClang 17.
-MSVC 14.52 became generally available on 2026-11-16, so the MSVC latest-two matrix upgrade
-(14.52/14.51) remains open under P0.1.3/P0.1.4.g; the green run #412 does not test 14.52.
+Microsoft's current compiler-version table labels MSVC 14.52 as Preview. The latest two
+stable/in-support MSVC toolsets remain 14.51 and 14.50, which are both covered by hosted run #412.
 
 The dedicated pinned-frequency benchmark workflow remains gated. Do not set
 `TGF_BENCHMARK_RUNNER_READY=true` until a dedicated Linux x86-64 runner with labels
 `self-hosted`, `linux`, `x64`, `tgf-benchmark-pinned` is provisioned and
 `python3 tools/check_benchmark_host.py` passes.
 
-The historical matrix already added GCC 16 and Clang 23. The remaining matrix update is to add
-MSVC 14.52 while retaining 14.51 as the preceding generation, then rerun the full Debug/Release
-matrix. MSVC 14.50 can remain an optional compatibility lane but is not a substitute for 14.52.
+The historical matrix already added GCC 16 and Clang 23. Its MSVC pair is 14.51 and 14.50,
+the latest two stable/in-support releases. MSVC 14.52 remains a preview and is not required
+for the stable Tier-1 release gate.
 
 
 ## Hosted execution verified twice
@@ -59,5 +59,5 @@ matrix. MSVC 14.50 can remain an optional compatibility lane but is not a substi
 - All jobs passed 7/7 CTest tests. All sixteen CTest artifact ZIPs across both runs were downloaded and inspected.
 
 The full run-#14 evidence and artifact IDs are recorded in `docs/CI.md` and the root `TODO.md`.
-The pinned-frequency benchmark runner remains owner-waived. The latest-two MSVC matrix requirement
-is newly open because MSVC 14.52 reached general availability after the prior matrix verification.
+The pinned-frequency benchmark runner remains owner-waived. The current MSVC latest-two stable requirement remains 14.51/14.50; 14.52 is still Preview
+and is deliberately excluded from the stable matrix.
