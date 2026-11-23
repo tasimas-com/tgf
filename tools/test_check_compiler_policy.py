@@ -45,50 +45,54 @@ class CompilerPolicyTests(unittest.TestCase):
     def test_policy_review_date_must_be_valid_iso_date(self) -> None:
         path = self.root / "cmake/compiler-support.json"
         policy = json.loads(path.read_text(encoding="utf-8"))
-        policy["policy_date"] = "18/11/2026"
+        policy["policy_date"] = "23/11/2026"
         path.write_text(json.dumps(policy), encoding="utf-8")
         errors = check_repository(self.root)
         self.assertTrue(any("policy_date must be a valid ISO-8601 date" in error for error in errors))
 
-    def test_msvc_install_must_use_channel_aware_waiting_bootstrapper(self) -> None:
-        path = self.root / ".github/workflows/ci.yml"
-        text = path.read_text(encoding="utf-8")
-        text = text.replace("VisualStudio.18.Release.LTSC.18.11", "VisualStudio.18.Stable")
-        path.write_text(text, encoding="utf-8")
-        errors = check_repository(self.root)
-        self.assertTrue(any("modify operation must set the Visual Studio 18.11 LTSC channel" in error for error in errors))
-
-    def test_msvc_install_must_request_explicit_14_52_component(self) -> None:
-        path = self.root / ".github/workflows/ci.yml"
-        text = path.read_text(encoding="utf-8")
-        text = text.replace("Microsoft.VisualStudio.Component.VC.14.52.18.11.x86.x64", "Microsoft.VisualStudio.Component.VC.Tools.x86.x64", 1)
-        path.write_text(text, encoding="utf-8")
-        errors = check_repository(self.root)
-        self.assertTrue(any("explicit MSVC 14.52 x64/x86 component" in error for error in errors))
-
-    def test_stale_compiler_manifest_is_rejected(self) -> None:
+    def test_preview_msvc_14_52_is_not_a_tier_one_stable_compiler(self) -> None:
         path = self.root / "cmake/compiler-support.json"
         policy = json.loads(path.read_text(encoding="utf-8"))
-        policy["tier_one_compilers"]["msvc"] = ["14.51", "14.50"]
+        policy["tier_one_compilers"]["msvc"] = ["14.52", "14.51"]
         path.write_text(json.dumps(policy), encoding="utf-8")
         errors = check_repository(self.root)
-        self.assertTrue(any("Tier-1 policy" in error for error in errors))
+        self.assertTrue(any("stable MSVC 14.51/14.50" in error for error in errors))
 
     def test_manifest_and_ci_matrix_must_agree(self) -> None:
         path = self.root / ".github/workflows/ci.yml"
         text = path.read_text(encoding="utf-8")
-        text = text.replace('toolset: "14.52"', 'toolset: "14.50"', 1)
+        text = text.replace('toolset: "14.51"', 'toolset: "14.52"', 1)
         path.write_text(text, encoding="utf-8")
         errors = check_repository(self.root)
-        self.assertTrue(any("msvc-14.52 must set toolset" in error for error in errors))
+        self.assertTrue(any("msvc-14.51 must set toolset='14.51'" in error for error in errors))
 
     def test_a_missing_compiler_target_is_rejected(self) -> None:
         path = self.root / ".github/workflows/ci.yml"
         text = path.read_text(encoding="utf-8")
-        text = text.replace("compiler-key: msvc-14.51", "compiler-key: msvc-14.50", 1)
+        text = text.replace("compiler-key: msvc-14.51", "compiler-key: msvc-14.52", 1)
         path.write_text(text, encoding="utf-8")
         errors = check_repository(self.root)
         self.assertTrue(any("exactly seven unique targets" in error for error in errors))
+
+    def test_msvc_14_50_must_use_its_explicit_component(self) -> None:
+        path = self.root / ".github/workflows/ci.yml"
+        text = path.read_text(encoding="utf-8")
+        text = text.replace(
+            "Microsoft.VisualStudio.Component.VC.14.50.18.0.x86.x64",
+            "Microsoft.VisualStudio.Component.VC.Tools.x86.x64",
+            1,
+        )
+        path.write_text(text, encoding="utf-8")
+        errors = check_repository(self.root)
+        self.assertTrue(any("explicit MSVC 14.50 x64/x86 component" in error for error in errors))
+
+    def test_msvc_compiler_and_toolset_versions_must_be_probed(self) -> None:
+        path = self.root / ".github/workflows/ci.yml"
+        text = path.read_text(encoding="utf-8")
+        text = text.replace("VCToolsVersion", "VCToolsVersionProbe", 1)
+        path.write_text(text, encoding="utf-8")
+        errors = check_repository(self.root)
+        self.assertTrue(any("both the actual cl.exe and VCToolsVersion" in error for error in errors))
 
     def test_ci_must_keep_warnings_as_errors_for_every_target(self) -> None:
         path = self.root / ".github/workflows/ci.yml"
