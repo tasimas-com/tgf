@@ -19,8 +19,9 @@ infrastructure now includes CMake preset and dependency-DAG gates, contributor g
 Apache-2.0 licensing, third-party provenance/SBOM generation, and clean/incremental build and
 public-header cost tracking. On 2026-11-17, the configured hosted matrix passed 14/14 jobs,
 source quality passed 2/2 LLVM jobs, build-performance passed, and SPDX SBOM generation
-passed. The matrix still uses MSVC 14.50/14.51; MSVC 14.52 became generally available on
-2026-11-16 and must be added before the latest-two MSVC policy is complete. Phase 0 remains
+passed. The matrix uses the latest two stable, supported MSVC toolsets: 14.51 and 14.50. Microsoft
+currently labels 14.52 as Preview, so it is deliberately excluded from the stable Tier-1
+release gate. Phase 0 remains
 open; the asset inventory, competitor benchmark suite, research spikes, and ADR set are not
 complete. Phase 1 is still gated. See
 [`docs/memory-diagnostics.md`](docs/memory-diagnostics.md) and
