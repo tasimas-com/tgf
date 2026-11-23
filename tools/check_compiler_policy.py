@@ -4,13 +4,13 @@ from __future__ import annotations
 
 import json
 import re
-from datetime import date
 import sys
+from datetime import date
 from pathlib import Path
 from typing import Any
 
 EXPECTED_COMPILERS = {
-    "msvc": ["14.52", "14.51"],
+    "msvc": ["14.51", "14.50"],
     "clang": ["23", "22"],
     "gcc": ["16", "15"],
 }
@@ -31,14 +31,14 @@ EXPECTED_TARGETS = {
         "compiler": "LLVM Clang 22", "os": "ubuntu-26.04",
         "cc": "clang-22", "cxx": "clang++-22", "compiler-major": "22",
     },
-    "msvc-14.52": {
-        "compiler": "MSVC 14.52", "os": "windows-2025",
-        "toolset": "14.52", "compiler-minor": "52",
+    "msvc-14.51": {
+        "compiler": "MSVC 14.51 (Windows hosted image)", "os": "windows-2025",
+        "toolset": "14.51", "compiler-minor": "51",
         "preset-prefix": "msvc-ninja-",
     },
-    "msvc-14.51": {
-        "compiler": "MSVC 14.51", "os": "windows-2025",
-        "toolset": "14.51", "compiler-minor": "51",
+    "msvc-14.50": {
+        "compiler": "MSVC 14.50", "os": "windows-2025",
+        "toolset": "14.50", "compiler-minor": "50",
         "preset-prefix": "msvc-ninja-",
     },
     "appleclang": {
@@ -85,6 +85,7 @@ def parse_ci_target_matrix(source: str) -> list[dict[str, str]]:
 
 def check_repository(root: Path) -> list[str]:
     errors: list[str] = []
+
     policy_text, error = read_text(root, "cmake/compiler-support.json")
     if error:
         return [error]
@@ -102,9 +103,10 @@ def check_repository(root: Path) -> list[str]:
             errors.append("compiler-support.json policy_date must not be in the future")
     except ValueError:
         errors.append("compiler-support.json policy_date must be a valid ISO-8601 date (YYYY-MM-DD)")
+
     if policy.get("tier_one_compilers") != EXPECTED_COMPILERS:
         errors.append(
-            "Tier-1 policy must declare MSVC 14.52/14.51, Clang 23/22, and GCC 16/15"
+            "Tier-1 policy must declare stable MSVC 14.51/14.50, Clang 23/22, and GCC 16/15"
         )
     if policy.get("language_standard") != "C++20":
         errors.append("TGF's language standard must remain C++20")
@@ -123,7 +125,7 @@ def check_repository(root: Path) -> list[str]:
     if len(targets) != len(EXPECTED_TARGETS) or set(by_key) != set(EXPECTED_TARGETS):
         errors.append(
             "ci.yml must define exactly seven unique targets: GCC 15/16, Clang 22/23, "
-            "MSVC 14.52/14.51, and AppleClang"
+            "stable MSVC 14.51/14.50, and AppleClang"
         )
     for key, expected in EXPECTED_TARGETS.items():
         actual = by_key.get(key)
@@ -142,28 +144,23 @@ def check_repository(root: Path) -> list[str]:
         errors.append("ci.yml must set TGF_WARNINGS_AS_ERRORS=ON for every matrix job")
     if "DTGF_WARNINGS_AS_ERRORS=ON" not in (ci or ""):
         errors.append("ci.yml CMake configure commands must pass TGF_WARNINGS_AS_ERRORS=ON")
-    if "Install MSVC 14.52 if missing" not in (ci or ""):
-        errors.append("ci.yml must install MSVC 14.52 when the hosted image does not provide it")
-    if "vs_Enterprise.exe" not in (ci or ""):
-        errors.append("ci.yml must use the Visual Studio 2026 LTSC Enterprise bootstrapper")
-    if "VisualStudio.18.Release.LTSC.18.11" not in (ci or ""):
-        errors.append("ci.yml MSVC 14.52 modify operation must set the Visual Studio 18.11 LTSC channel")
-    if "--wait" not in (ci or ""):
-        errors.append("ci.yml MSVC bootstrapper must wait for servicing to finish")
-    if "'modify --installPath \"{0}\" --channelId \"{1}\" --add \"{2}\"" not in (ci or ""):
-        errors.append("ci.yml must quote the Visual Studio install path and component arguments")
-    if "Microsoft.VisualStudio.Component.VC.14.52.18.11.x86.x64" not in (ci or ""):
-        errors.append("ci.yml must add the explicit MSVC 14.52 x64/x86 component")
-    if "Get-AuthenticodeSignature" not in (ci or ""):
-        errors.append("ci.yml must verify the downloaded Microsoft bootstrapper signature")
-    if 'Where-Object { $_.Name -like "14.52.*" }' not in (ci or ""):
-        errors.append("ci.yml must verify the exact installed MSVC 14.52 toolset directory")
-    if "Install MSVC 14.51 if missing" not in (ci or ""):
-        errors.append("ci.yml must install MSVC 14.51 when the hosted image does not provide it")
-    if "Microsoft.VisualStudio.Component.VC.14.51.18.0.x86.x64" not in (ci or ""):
-        errors.append("ci.yml must use the version-specific MSVC 14.51 x64/x86 component")
-    if 'Where-Object { $_.Name -like "14.51.*" }' not in (ci or ""):
-        errors.append("ci.yml must verify the exact installed MSVC 14.51 toolset directory")
+
+    # 14.51 is supplied by the pinned Windows hosted image; 14.50 is added
+    # side-by-side using its explicit, versioned Visual Studio component.
+    install_step = "Install MSVC 14.50 if missing"
+    if install_step not in (ci or ""):
+        errors.append("ci.yml must provision MSVC 14.50 when the hosted image does not provide it")
+    if "matrix.target.compiler-key == 'msvc-14.50'" not in (ci or ""):
+        errors.append("ci.yml MSVC 14.50 installer must be scoped to the MSVC 14.50 target")
+    if "Microsoft.VisualStudio.Component.VC.14.50.18.0.x86.x64" not in (ci or ""):
+        errors.append("ci.yml must use the explicit MSVC 14.50 x64/x86 component")
+    if "--channelId VisualStudio.18.Stable" not in (ci or ""):
+        errors.append("ci.yml MSVC 14.50 installer must use the Visual Studio Stable channel")
+    if 'Where-Object { $_.Name -like "14.50.*" }' not in (ci or ""):
+        errors.append("ci.yml must verify the exact installed MSVC 14.50 toolset directory")
+    if "Install MSVC 14.52 if missing" in (ci or "") or "compiler-key: msvc-14.52" in (ci or ""):
+        errors.append("preview MSVC 14.52 must not be substituted for the stable Tier-1 pair")
+
     if "toolset: $" + "{{ matrix.target.toolset }}" not in (ci or ""):
         errors.append("ci.yml must pass each matrix toolset to the MSVC developer environment")
     if "VCToolsVersion" not in (ci or "") or r"cl\.exe:\s+Version\s+19\." not in (ci or "") or "$expectedMinor" not in (ci or ""):
@@ -228,7 +225,7 @@ def main() -> int:
             print(f"FAIL: {error}", file=sys.stderr)
         return 1
     print(
-        "PASS: C++20; manifest and exact CI matrix agree (MSVC 14.52/14.51, "
+        "PASS: C++20; manifest and exact CI matrix agree (stable MSVC 14.51/14.50, "
         "Clang 23/22, GCC 16/15, AppleClang); warnings-as-errors; clang-format, "
         "clang-tidy, and version-matched IWYU"
     )
