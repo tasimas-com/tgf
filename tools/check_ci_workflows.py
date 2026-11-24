@@ -288,7 +288,7 @@ def main() -> int:
         return 1
 
     print("PASS: CI matrix defines the complete two-generation MSVC, Clang, and GCC Tier-1 matrix plus AppleClang compatibility")
-    print("PASS: older MSVC is explicitly installed when absent; GCC/Clang/MSVC compiler versions are asserted")
+    print("PASS: MSVC 14.52/14.51 are explicitly selected and verified; GCC/Clang/MSVC compiler versions are asserted")
     print("PASS: all compiler targets run Debug and Release with warnings-as-errors, incremental caching, and CTest artifacts")
     if yaml is not None:
         print("PASS: YAML structure, seven compiler targets, pinned toolsets, and installation conditions verified")
