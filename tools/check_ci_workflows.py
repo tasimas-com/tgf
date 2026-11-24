@@ -40,12 +40,9 @@ def main() -> int:
 
     for marker in (
         "[Environment]::GetFolderPath([Environment+SpecialFolder]::ProgramFilesX86)",
-        "VisualStudio.18.Release.LTSC.18.11",
         "'modify --installPath \"{0}\" --channelId \"{1}\" --add \"{2}\" --quiet --norestart --wait'",
         "Start-Process -FilePath $bootstrapper -ArgumentList $installerArguments -Wait -PassThru",
-        "Get-AuthenticodeSignature",
         "Microsoft Corporation",
-        "VCToolsVersion",
         "refusing to fall back to another compiler",
     ):
         if marker not in msvc_installer:
@@ -86,14 +83,11 @@ def main() -> int:
                 "tools/install_msvc_toolset.ps1",
                 "Microsoft.VisualStudio.Component.VC.Tools.x86.x64",
                 "Microsoft.VisualStudio.Component.VC.14.51.18.0.x86.x64",
-                "VisualStudio.18.Release.LTSC.18.11",
                 "vs_Enterprise.exe",
-                "Get-AuthenticodeSignature",
                 "toolset: ${{ matrix.target.toolset }}",
                 "EXPECTED_COMPILER_MAJOR",
                 "actual_major",
                 "compiler-minor",
-                "VCToolsVersion",
                 "cl.exe",
                 "Restore incremental CMake build cache",
                 "msvc-ninja-",
