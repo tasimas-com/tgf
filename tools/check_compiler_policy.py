@@ -112,7 +112,7 @@ def check_repository(root: Path) -> list[str]:
         errors.append("ci.yml CMake configure commands must pass TGF_WARNINGS_AS_ERRORS=ON")
 
     # Each Windows matrix lane calls the same fail-closed installer, pinned to the
-    # Visual Studio 2026 LTSC 18.11 channel used by windows-2025.
+    # Visual Studio 2026 Stable 18.12 channel used by windows-2025.
     for version, key, component in (
         ("14.52", "msvc-14.52", "Microsoft.VisualStudio.Component.VC.Tools.x86.x64"),
         ("14.51", "msvc-14.51", "Microsoft.VisualStudio.Component.VC.14.51.18.0.x86.x64"),
@@ -132,8 +132,8 @@ def check_repository(root: Path) -> list[str]:
     installer, error = read_text(root, "tools/install_msvc_toolset.ps1")
     if error:
         return errors + [error]
-    if "VisualStudio.18.Release.LTSC.18.11" not in (ci or ""):
-        errors.append("ci.yml must pass the matching Visual Studio 18.11 LTSC channel to both MSVC installer calls")
+    if "VisualStudio.18.Release" not in (ci or ""):
+        errors.append("ci.yml must pass the matching Visual Studio 18.12 Stable channel to both MSVC installer calls")
     version_filter = 'Where-Object { $_.Name -like "$ToolsetVersion.*" }'
     if installer.count(version_filter) < 2:
         errors.append("tools/install_msvc_toolset.ps1 must check the exact requested toolset before and after installation")
