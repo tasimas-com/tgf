@@ -244,8 +244,8 @@ def main() -> int:
             msvc_51 = steps_by_name.get("Install MSVC 14.51 if missing", {})
             if "Microsoft.VisualStudio.Component.VC.14.51.18.0.x86.x64" not in msvc_51.get("run", ""):
                 errors.append("ci.yml: MSVC 14.51 must request its explicit x64/x86 component")
-            if "VisualStudio.18.Release.LTSC.18.11" not in (ci or ""):
-                errors.append("ci.yml: both MSVC installers must target the matching Visual Studio 18.11 LTSC channel")
+            if "VisualStudio.18.Release" not in (ci or ""):
+                errors.append("ci.yml: both MSVC installers must target the matching Visual Studio 18.12 Stable channel")
 
             msvc_setup = steps_by_name.get("Set up MSVC developer environment", {})
             if msvc_setup.get("uses") != "ilammy/msvc-dev-cmd@0b201ec74fa43914dc39ae48a89fd1d8cb592756":
