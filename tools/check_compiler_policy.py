@@ -132,15 +132,18 @@ def check_repository(root: Path) -> list[str]:
     installer, error = read_text(root, "tools/install_msvc_toolset.ps1")
     if error:
         return errors + [error]
+    if "VisualStudio.18.Release.LTSC.18.11" not in (ci or ""):
+        errors.append("ci.yml must pass the matching Visual Studio 18.11 LTSC channel to both MSVC installer calls")
+    version_filter = 'Where-Object { $_.Name -like "$ToolsetVersion.*" }'
+    if installer.count(version_filter) < 2:
+        errors.append("tools/install_msvc_toolset.ps1 must check the exact requested toolset before and after installation")
     for marker in (
         "[Environment]::GetFolderPath([Environment+SpecialFolder]::ProgramFilesX86)",
-        "VisualStudio.18.Release.LTSC.18.11",
         "'modify --installPath \"{0}\" --channelId \"{1}\" --add \"{2}\" --quiet --norestart --wait'",
         "Start-Process -FilePath $bootstrapper -ArgumentList $installerArguments -Wait -PassThru",
         "Get-AuthenticodeSignature",
         '$signature.Status -ne "Valid"',
         "Microsoft Corporation",
-        'Where-Object { $_.Name -like \"$ToolsetVersion.*\" }',
         "$installExitCode -notin @(0, 3010)",
         "Get-Content -LiteralPath $log.FullName -Tail 100",
         "refusing to fall back to another compiler",
