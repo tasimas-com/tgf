@@ -74,7 +74,7 @@ $toolset = Get-ChildItem -LiteralPath $toolsetRoot -Directory -ErrorAction Silen
     Select-Object -First 1
 
 if (-not $toolset) {
-    $bootstrapper = Join-Path $env:RUNNER_TEMP "vs_enterprise_18.11.4_ltsc.exe"
+    $bootstrapper = Join-Path $env:RUNNER_TEMP "vs_enterprise_18.12.0_stable.exe"
     Invoke-WebRequest -Uri $BootstrapperUri -OutFile $bootstrapper
 
     $signature = Get-AuthenticodeSignature -FilePath $bootstrapper
@@ -83,7 +83,7 @@ if (-not $toolset) {
     }
 
     # A single quoted command line is required because the installation path contains spaces.
-    # The fixed 18.11 LTSC bootstrapper must modify the matching LTSC Visual Studio instance.
+    # The fixed 18.12 Stable bootstrapper must modify the matching Stable Visual Studio instance.
     $installerArguments = 'modify --installPath "{0}" --channelId "{1}" --add "{2}" --quiet --norestart --wait' -f $vsPath, $ChannelId, $ComponentId
     Write-Host "Visual Studio bootstrapper command: $installerArguments"
 
