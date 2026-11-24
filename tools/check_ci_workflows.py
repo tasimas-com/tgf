@@ -40,6 +40,11 @@ def main() -> int:
 
     for marker in (
         "[Environment]::GetFolderPath([Environment+SpecialFolder]::ProgramFilesX86)",
+        "-all -products '*' -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -format json",
+        "ConvertFrom-Json",
+        "$_.channelId -eq $ChannelId",
+        "$_.isComplete -eq $true",
+        "$_.isLaunchable -eq $true",
         "'modify --installPath \"{0}\" --channelId \"{1}\" --add \"{2}\" --quiet --norestart --wait'",
         "Start-Process -FilePath $bootstrapper -ArgumentList $installerArguments -Wait -PassThru",
         "Microsoft Corporation",
