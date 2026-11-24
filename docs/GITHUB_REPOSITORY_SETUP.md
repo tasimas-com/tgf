@@ -38,17 +38,18 @@ The current `main` commit is `7e9dad1581be59e1df6adf9caa7572a1129d518e`.
 [Build Performance run #18](https://github.com/tasimas-com/tgf/actions/runs/44089512759), and
 [SBOM run #13](https://github.com/tasimas-com/tgf/actions/runs/44089512739) also passed.
 The configured matrix covers GCC 15/16, Clang 22/23, MSVC 14.50/14.51, and AppleClang 17.
-Microsoft's current compiler-version table labels MSVC 14.52 as Preview. The latest two
-stable/in-support MSVC toolsets remain 14.51 and 14.50, which are both covered by hosted run #412.
+Microsoft announced MSVC 14.52 as generally available and an LTS release on 2026-11-16.
+The current two-generation MSVC matrix must therefore cover 14.52 and 14.51; run #412 is
+historical evidence for the preceding 14.50/14.51 pair.
 
 The dedicated pinned-frequency benchmark workflow remains gated. Do not set
 `TGF_BENCHMARK_RUNNER_READY=true` until a dedicated Linux x86-64 runner with labels
 `self-hosted`, `linux`, `x64`, `tgf-benchmark-pinned` is provisioned and
 `python3 tools/check_benchmark_host.py` passes.
 
-The historical matrix already added GCC 16 and Clang 23. Its MSVC pair is 14.51 and 14.50,
-the latest two stable/in-support releases. MSVC 14.52 remains a preview and is not required
-for the stable Tier-1 release gate.
+The historical matrix already added GCC 16 and Clang 23. Its MSVC pair has now been refreshed
+to 14.52 and 14.51. Both Windows jobs use the Visual Studio 2026 LTSC 18.11 channel and verify
+the selected compiler/toolset versions before configuring CMake.
 
 
 ## Hosted execution verified twice
@@ -59,5 +60,5 @@ for the stable Tier-1 release gate.
 - All jobs passed 7/7 CTest tests. All sixteen CTest artifact ZIPs across both runs were downloaded and inspected.
 
 The full run-#14 evidence and artifact IDs are recorded in `docs/CI.md` and the root `TODO.md`.
-The pinned-frequency benchmark runner remains owner-waived. The current MSVC latest-two stable requirement remains 14.51/14.50; 14.52 is still Preview
-and is deliberately excluded from the stable matrix.
+The pinned-frequency benchmark runner remains owner-waived. The current MSVC latest-two requirement is 14.52/14.51. The full Debug/Release matrix must pass
+before the compiler-policy task can be closed.
