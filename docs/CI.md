@@ -1,6 +1,6 @@
 # Continuous integration and benchmark infrastructure
 
-**Latest hosted evidence (2026-11-17):** On `main` commit `7e9dad1581be59e1df6adf9caa7572a1129d518e`, [TGF CI run #412](https://github.com/tasimas-com/tgf/actions/runs/44089512975) passed all 14 configured compiler/platform/configuration jobs; [Source Quality run #338](https://github.com/tasimas-com/tgf/actions/runs/44089512797) passed both LLVM 22/23 jobs; [Build Performance run #18](https://github.com/tasimas-com/tgf/actions/runs/44089512759) passed; and [SBOM run #13](https://github.com/tasimas-com/tgf/actions/runs/44089512739) passed and uploaded its SPDX 2.3 artifact. The MSVC matrix targets 14.51 and 14.50, the two stable/in-support generations required by the current policy. Microsoft's compiler-version table still labels 14.52 as Preview; it is intentionally excluded from the Tier-1 release gate. The physical benchmark host remains owner-waived and the nightly workflow remains gated. Historical per-artifact evidence for the 13 November matrix is in [P0.1.4 CI evidence report](audit/2026-11-13/P0_1_4_CI_EVIDENCE.md).
+**Latest hosted evidence (2026-11-17):** On `main` commit `7e9dad1581be59e1df6adf9caa7572a1129d518e`, [TGF CI run #412](https://github.com/tasimas-com/tgf/actions/runs/44089512975) passed all 14 configured compiler/platform/configuration jobs; [Source Quality run #338](https://github.com/tasimas-com/tgf/actions/runs/44089512797) passed both LLVM 22/23 jobs; [Build Performance run #18](https://github.com/tasimas-com/tgf/actions/runs/44089512759) passed; and [SBOM run #13](https://github.com/tasimas-com/tgf/actions/runs/44089512739) passed and uploaded its SPDX 2.3 artifact. The MSVC matrix targets 14.52 and 14.51. Microsoft announced 14.52 as generally available and an LTS release on 2026-11-16, available through Visual Studio 2026 18.12 Stable and LTSC 18.11. The physical benchmark host remains owner-waived and the nightly workflow remains gated. Historical per-artifact evidence for the 13 November matrix is in [P0.1.4 CI evidence report](audit/2026-11-13/P0_1_4_CI_EVIDENCE.md).
 
 TGF uses five principal GitHub Actions workflows:
 
@@ -172,7 +172,7 @@ The dedicated source-quality workflow runs on pushes, pull requests, and manual 
 
 The latest LLVM 22/23 source-quality workflow [run #338](https://github.com/tasimas-com/tgf/actions/runs/44089512797) passed both jobs on the current main commit. The workflow continues to enforce repository-wide formatting, complete TGF Debug clang-tidy builds with warnings-as-errors, and strict IWYU for implementation/showcase translation units. The generated duplicate-include public-header harness is intentionally excluded from IWYU only because its duplicate includes are the subject of that test.
 
-This confirms the LLVM source-quality portion of P0.1.3. The MSVC matrix in CI run #412 used 14.50/14.51, which remains the correct stable pair because Microsoft still lists 14.52 as Preview. The stable pair is being retained and the new manifest/matrix consistency regression checks are being re-run on the current commit. These checks do not provision a pinned-frequency benchmark host, produce Tier-A competitor benchmarks, close the remaining ADR/research-spike work, or satisfy the overall Phase 0 exit criteria. Earlier run #304, #309, #193, and #119 records are historical evidence.
+This confirms the LLVM source-quality portion of P0.1.3. CI run #412 is historical evidence for the previous 14.50/14.51 matrix; the current release gate has moved to 14.52/14.51 and must pass the full hosted run. These checks do not provision a pinned-frequency benchmark host, produce Tier-A competitor benchmarks, close the remaining ADR/research-spike work, or satisfy the overall Phase 0 exit criteria. Earlier run #304, #309, #193, and #119 records are historical evidence.
 
 ## Second-run artifact evidence
 
@@ -276,3 +276,8 @@ The project publishes Apache-2.0 in the repository-root `LICENSE` and scope/attr
 ## MSVC preview versus stable Tier-1 policy (reviewed 2026-11-23)
 
 Microsoft's official [MSVC compiler-version table](https://learn.microsoft.com/en-us/cpp/overview/compiler-versions) marks 14.52 as Preview, 14.51 as Standard support, and 14.50 as Long-Term support. Therefore TGF's required stable Tier-1 pair remains 14.51/14.50. The failed exploratory 14.52 provisioning attempts are not release-gate evidence and must not be used to downgrade the known-good stable pair. The policy checker rejects 14.52 as a Tier-1 manifest or matrix target.
+
+
+## MSVC 14.52/14.51 stable compiler matrix (reviewed 2026-11-24)
+
+Microsoft's 16 November 2026 announcement designates MSVC 14.52 generally available and an LTS release. Visual Studio 2026 18.11 LTSC includes MSVC 14.52 and 14.50; 14.51 remains the preceding Standard-support generation. TGF's matrix selects 14.52 and 14.51, with channel-aware side-by-side installation, signature verification, exact toolset discovery, compiler-banner verification, and CTest in Debug and Release. Do not mark P0.1.3.g or P0.1.4.g complete until the current commit's complete 14-job workflow has passed.
