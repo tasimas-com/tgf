@@ -35,7 +35,8 @@ if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace(($vswhereJson -join "")
     throw "vswhere.exe could not enumerate Visual Studio instances with x64/x86 MSVC tools."
 }
 
-$vsInstances = @($vswhereJson | ConvertFrom-Json)
+$vswhereOutput = $vswhereJson -join [Environment]::NewLine
+$vsInstances = @($vswhereOutput | ConvertFrom-Json)
 $vsInstance = $vsInstances |
     Where-Object {
         $_.channelId -eq $ChannelId -and
