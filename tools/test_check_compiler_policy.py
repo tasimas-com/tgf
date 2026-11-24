@@ -75,21 +75,21 @@ class CompilerPolicyTests(unittest.TestCase):
         errors = check_repository(self.root)
         self.assertTrue(any("exactly seven unique targets" in error for error in errors))
 
-    def test_msvc_installer_must_use_the_matching_ltsc_channel(self) -> None:
+    def test_msvc_installer_must_use_the_matching_stable_channel(self) -> None:
         path = self.root / ".github/workflows/ci.yml"
         text = path.read_text(encoding="utf-8")
         text = text.replace(
-            "VisualStudio.18.Release.LTSC.18.11",
-            "VisualStudio.18.Stable",
+            "VisualStudio.18.Release",
+            "VisualStudio.18.Release",
         )
         path.write_text(text, encoding="utf-8")
         errors = check_repository(self.root)
-        self.assertTrue(any("matching Visual Studio 18.11 LTSC channel" in error for error in errors))
+        self.assertTrue(any("matching Visual Studio 18.12 Stable channel" in error for error in errors))
 
     def test_msvc_installer_must_select_the_requested_visual_studio_channel(self) -> None:
         path = self.root / "tools/install_msvc_toolset.ps1"
         text = path.read_text(encoding="utf-8")
-        text = text.replace("$_.channelId -eq $ChannelId", '$_.channelId -eq "VisualStudio.18.Stable"', 1)
+        text = text.replace("$_.channelId -eq $ChannelId", '$_.channelId -eq "VisualStudio.18.Release"', 1)
         path.write_text(text, encoding="utf-8")
         errors = check_repository(self.root)
         self.assertTrue(any("matching requested Visual Studio channel" in error for error in errors))
