@@ -10,7 +10,7 @@ from pathlib import Path
 from typing import Any
 
 EXPECTED_COMPILERS = {
-    "msvc": ["14.51", "14.50"],
+    "msvc": ["14.52", "14.51"],
     "clang": ["23", "22"],
     "gcc": ["16", "15"],
 }
@@ -19,8 +19,8 @@ EXPECTED_TARGETS = {
     "gcc-15": {"compiler": "GCC 15", "os": "ubuntu-26.04", "cc": "gcc-15", "cxx": "g++-15", "compiler-major": "15"},
     "clang-23": {"compiler": "LLVM Clang 23", "os": "ubuntu-26.04", "cc": "clang-23", "cxx": "clang++-23", "compiler-major": "23"},
     "clang-22": {"compiler": "LLVM Clang 22", "os": "ubuntu-26.04", "cc": "clang-22", "cxx": "clang++-22", "compiler-major": "22"},
-    "msvc-14.51": {"compiler": "MSVC 14.51 (Windows hosted image)", "os": "windows-2025", "toolset": "14.51", "compiler-minor": "51", "preset-prefix": "msvc-ninja-"},
-    "msvc-14.50": {"compiler": "MSVC 14.50", "os": "windows-2025", "toolset": "14.50", "compiler-minor": "50", "preset-prefix": "msvc-ninja-"},
+    "msvc-14.52": {"compiler": "MSVC 14.52", "os": "windows-2025", "toolset": "14.52", "compiler-minor": "52", "preset-prefix": "msvc-ninja-"},
+    "msvc-14.51": {"compiler": "MSVC 14.51", "os": "windows-2025", "toolset": "14.51", "compiler-minor": "51", "preset-prefix": "msvc-ninja-"},
     "appleclang": {"compiler": "AppleClang (Xcode)", "os": "macos-15", "cc": "clang", "cxx": "clang++", "compiler-major": ""},
 }
 
@@ -58,6 +58,7 @@ def parse_ci_target_matrix(source: str) -> list[dict[str, str]]:
 
 def check_repository(root: Path) -> list[str]:
     errors: list[str] = []
+
     policy_text, error = read_text(root, "cmake/compiler-support.json")
     if error:
         return [error]
@@ -77,7 +78,7 @@ def check_repository(root: Path) -> list[str]:
         errors.append("compiler-support.json policy_date must be a valid ISO-8601 date (YYYY-MM-DD)")
 
     if policy.get("tier_one_compilers") != EXPECTED_COMPILERS:
-        errors.append("Tier-1 policy must declare stable MSVC 14.51/14.50, Clang 23/22, and GCC 16/15")
+        errors.append("Tier-1 policy must declare MSVC 14.52/14.51, Clang 23/22, and GCC 16/15")
     if policy.get("language_standard") != "C++20":
         errors.append("TGF's language standard must remain C++20")
     if policy.get("warnings_as_errors_default") is not True:
@@ -93,7 +94,7 @@ def check_repository(root: Path) -> list[str]:
 
     by_key = {target.get("compiler-key", ""): target for target in targets}
     if len(targets) != len(EXPECTED_TARGETS) or set(by_key) != set(EXPECTED_TARGETS):
-        errors.append("ci.yml must define exactly seven unique targets: GCC 15/16, Clang 22/23, stable MSVC 14.51/14.50, and AppleClang")
+        errors.append("ci.yml must define exactly seven unique targets: GCC 15/16, Clang 22/23, MSVC 14.52/14.51, and AppleClang")
     for key, expected in EXPECTED_TARGETS.items():
         actual = by_key.get(key)
         if actual is None:
@@ -110,31 +111,42 @@ def check_repository(root: Path) -> list[str]:
     if "DTGF_WARNINGS_AS_ERRORS=ON" not in (ci or ""):
         errors.append("ci.yml CMake configure commands must pass TGF_WARNINGS_AS_ERRORS=ON")
 
-    install_51_step = "Install MSVC 14.51 if missing"
-    if install_51_step not in (ci or ""):
-        errors.append("ci.yml must provision MSVC 14.51 when the hosted image does not provide it")
-    if "matrix.target.compiler-key == 'msvc-14.51'" not in (ci or ""):
-        errors.append("ci.yml MSVC 14.51 installer must be scoped to the MSVC 14.51 target")
-    if "Microsoft.VisualStudio.Component.VC.14.51.18.0.x86.x64" not in (ci or ""):
-        errors.append("ci.yml must use the explicit MSVC 14.51 x64/x86 component")
-    if 'Where-Object { $_.Name -like "14.51.*" }' not in (ci or ""):
-        errors.append("ci.yml must verify the exact installed MSVC 14.51 toolset directory")
+    # Each Windows matrix lane calls the same fail-closed installer, pinned to the
+    # Visual Studio 2026 LTSC 18.11 channel used by windows-2025.
+    for version, key, component in (
+        ("14.52", "msvc-14.52", "Microsoft.VisualStudio.Component.VC.Tools.x86.x64"),
+        ("14.51", "msvc-14.51", "Microsoft.VisualStudio.Component.VC.14.51.18.0.x86.x64"),
+    ):
+        step_name = f"Install MSVC {version} if missing"
+        if step_name not in (ci or ""):
+            errors.append(f"ci.yml must define {step_name}")
+        if f"matrix.target.compiler-key == '{key}'" not in (ci or ""):
+            errors.append(f"ci.yml: {version} installer must be scoped to {key}")
+        if "-ToolsetVersion" not in (ci or "") or f'"{version}"' not in (ci or ""):
+            errors.append(f"ci.yml: {version} install step must pass its exact toolset version")
+        if component not in (ci or ""):
+            errors.append(f"ci.yml: {version} install step must use component {component}")
+    if ci.count("tools/install_msvc_toolset.ps1") != 2:
+        errors.append("ci.yml must invoke the shared MSVC installer helper for both Windows targets")
 
-    if ci.count("[Environment]::GetFolderPath([Environment+SpecialFolder]::ProgramFilesX86)") != 2:
-        errors.append("ci.yml must resolve both MSVC installer paths through ProgramFilesX86")
-    install_step = "Install MSVC 14.50 if missing"
-    if install_step not in (ci or ""):
-        errors.append("ci.yml must provision MSVC 14.50 when the hosted image does not provide it")
-    if "matrix.target.compiler-key == 'msvc-14.50'" not in (ci or ""):
-        errors.append("ci.yml MSVC 14.50 installer must be scoped to the MSVC 14.50 target")
-    if "Microsoft.VisualStudio.Component.VC.14.50.18.0.x86.x64" not in (ci or ""):
-        errors.append("ci.yml must use the explicit MSVC 14.50 x64/x86 component")
-    if "--channelId VisualStudio.18.Stable" not in (ci or ""):
-        errors.append("ci.yml MSVC 14.50 installer must use the Visual Studio Stable channel")
-    if 'Where-Object { $_.Name -like "14.50.*" }' not in (ci or ""):
-        errors.append("ci.yml must verify the exact installed MSVC 14.50 toolset directory")
-    if "Install MSVC 14.52 if missing" in (ci or "") or "compiler-key: msvc-14.52" in (ci or ""):
-        errors.append("preview MSVC 14.52 must not be substituted for the stable Tier-1 pair")
+    installer, error = read_text(root, "tools/install_msvc_toolset.ps1")
+    if error:
+        return errors + [error]
+    for marker in (
+        "[Environment]::GetFolderPath([Environment+SpecialFolder]::ProgramFilesX86)",
+        "VisualStudio.18.Release.LTSC.18.11",
+        "'modify --installPath \"{0}\" --channelId \"{1}\" --add \"{2}\" --quiet --norestart --wait'",
+        "Start-Process -FilePath $bootstrapper -ArgumentList $installerArguments -Wait -PassThru",
+        "Get-AuthenticodeSignature",
+        '$signature.Status -ne "Valid"',
+        "Microsoft Corporation",
+        'Where-Object { $_.Name -like \"$ToolsetVersion.*\" }',
+        "$installExitCode -notin @(0, 3010)",
+        "Get-Content -LiteralPath $log.FullName -Tail 100",
+        "refusing to fall back to another compiler",
+    ):
+        if marker not in installer:
+            errors.append(f"tools/install_msvc_toolset.ps1 is missing required safety/verification contract: {marker}")
 
     if "toolset: $" + "{{ matrix.target.toolset }}" not in (ci or ""):
         errors.append("ci.yml must pass each matrix toolset to the MSVC developer environment")
@@ -182,6 +194,7 @@ def check_repository(root: Path) -> list[str]:
     ):
         if marker not in (quality_workflow or ""):
             errors.append(f"source-quality.yml is missing required LLVM/quality contract: {marker}")
+
     return errors
 
 
@@ -196,7 +209,7 @@ def main() -> int:
             print(f"FAIL: {error}", file=sys.stderr)
         return 1
     print(
-        "PASS: C++20; manifest and exact CI matrix agree (stable MSVC 14.51/14.50, "
+        "PASS: C++20; manifest and exact CI matrix agree (MSVC 14.52/14.51, "
         "Clang 23/22, GCC 16/15, AppleClang); warnings-as-errors; clang-format, "
         "clang-tidy, and version-matched IWYU"
     )
