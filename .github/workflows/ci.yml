@@ -126,8 +126,8 @@ jobs:
           & tools/install_msvc_toolset.ps1 `
             -ToolsetVersion "14.52" `
             -ComponentId "Microsoft.VisualStudio.Component.VC.Tools.x86.x64" `
-            -ChannelId "VisualStudio.18.Release.LTSC.18.11" `
-            -BootstrapperUri "https://download.visualstudio.microsoft.com/download/pr/2d4073f5-2775-4a70-8c1d-b50ae62795a7/d95f7e7eb4ede7b559d3bff79b496d1797d989cae5b96d494beb6b9ebffe61d0/vs_Enterprise.exe"
+            -ChannelId "VisualStudio.18.Release" `
+            -BootstrapperUri "https://download.visualstudio.microsoft.com/download/pr/4aa37a90-1dc9-4507-9e7b-49134341b6c4/518adc0cc4c27a0441a60d04be1e3d3f40721ae879e83f51ad89162fd11301d9/vs_Enterprise.exe"
 
       - name: Install MSVC 14.51 if missing
         if: matrix.target.compiler-key == 'msvc-14.51'
@@ -136,8 +136,8 @@ jobs:
           & tools/install_msvc_toolset.ps1 `
             -ToolsetVersion "14.51" `
             -ComponentId "Microsoft.VisualStudio.Component.VC.14.51.18.0.x86.x64" `
-            -ChannelId "VisualStudio.18.Release.LTSC.18.11" `
-            -BootstrapperUri "https://download.visualstudio.microsoft.com/download/pr/2d4073f5-2775-4a70-8c1d-b50ae62795a7/d95f7e7eb4ede7b559d3bff79b496d1797d989cae5b96d494beb6b9ebffe61d0/vs_Enterprise.exe"
+            -ChannelId "VisualStudio.18.Release" `
+            -BootstrapperUri "https://download.visualstudio.microsoft.com/download/pr/4aa37a90-1dc9-4507-9e7b-49134341b6c4/518adc0cc4c27a0441a60d04be1e3d3f40721ae879e83f51ad89162fd11301d9/vs_Enterprise.exe"
 
       - name: Set up MSVC developer environment
         if: runner.os == 'Windows'
