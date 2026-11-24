@@ -14,9 +14,11 @@ job must build the library, showcase, and tests with warnings treated as errors.
 
 Microsoft announced MSVC Build Tools 14.52 as generally available on 2026-11-16 and
 designated it an LTS release. It is available with Visual Studio 2026 18.12 on the Stable
-channel and Visual Studio 2026 LTSC 18.11. MSVC 14.51 remains the preceding Standard-support
+channel and Visual Studio 2026 LTSC 18.11. The GitHub `windows-2025` runner uses the
+18.12.0 Stable channel; the helper explicitly selects that same instance before servicing.
+MSVC 14.51 remains the preceding Standard-support
 generation. TGF's stable Tier-1 release gate therefore uses 14.52/14.51. The Windows CI jobs
-use the 18.11 LTSC channel, request the latest x64/x86 toolset for 14.52 and the explicit
+use the runner's 18.12 Stable channel, request the latest x64/x86 toolset for 14.52 and the explicit
 14.51 component, then verify the actual `cl.exe` version and `VCToolsVersion` before building.
 
 References: Microsoft's [14.52 general-availability and LTS announcement (16 November 2026)](https://devblogs.microsoft.com/cppblog/msvc-build-tools-version-14-52-now-generally-available/),
@@ -54,8 +56,8 @@ On the current `main` commit `7e9dad1581be59e1df6adf9caa7572a1129d518e`,
 all 14 configured jobs across GCC 15/16, Clang 22/23, MSVC 14.50/14.51, and AppleClang
 17 in Debug and Release. [Source Quality run #338](https://github.com/tasimas-com/tgf/actions/runs/44089512797)
 passed both LLVM lanes. These results confirm the checked-in matrix, but the MSVC pair is
-now stale because 14.52 reached general availability on 2026-11-16. Do not describe the
-current MSVC target as the latest two until 14.52 and 14.51 are added and pass CI.
+now stale because 14.52 reached general availability on 2026-11-16. That run is historical evidence for the previous compiler pair; the new 14.52/14.51 policy is
+not verified until the refreshed matrix passes.
 
 ## Local developer environment
 
