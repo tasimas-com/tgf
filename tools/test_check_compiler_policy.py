@@ -102,7 +102,7 @@ class CompilerPolicyTests(unittest.TestCase):
     def test_installer_must_verify_the_actual_version_and_fail_closed(self) -> None:
         path = self.root / "tools/install_msvc_toolset.ps1"
         text = path.read_text(encoding="utf-8")
-        text = text.replace('Where-Object { $_.Name -like "$ToolsetVersion.*" }', "Where-Object { $_.Name -like '*' }", 1)
+        text = text.replace('Where-Object { $_.Name -like "$ToolsetVersion.*" }', "Where-Object { $_.Name -like '*' }")
         path.write_text(text, encoding="utf-8")
         errors = check_repository(self.root)
         self.assertTrue(any("Where-Object" in error and "ToolsetVersion" in error for error in errors))
@@ -110,7 +110,7 @@ class CompilerPolicyTests(unittest.TestCase):
     def test_msvc_compiler_and_toolset_versions_must_be_probed(self) -> None:
         path = self.root / ".github/workflows/ci.yml"
         text = path.read_text(encoding="utf-8")
-        text = text.replace("VCToolsVersion", "VCToolsVersionProbe")
+        text = text.replace("VCToolsVersion", "VCVersionProbe")
         path.write_text(text, encoding="utf-8")
         errors = check_repository(self.root)
         self.assertTrue(any("both the actual cl.exe and VCToolsVersion" in error for error in errors))
