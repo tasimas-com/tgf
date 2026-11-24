@@ -52,17 +52,17 @@ jobs:
             compiler-major: "22"
             preset-prefix: ""
           - os: windows-2025
-            compiler: MSVC 14.51 (Windows hosted image)
+            compiler: MSVC 14.52
+            compiler-key: msvc-14.52
+            preset-prefix: msvc-ninja-
+            toolset: "14.52"
+            compiler-minor: "52"
+          - os: windows-2025
+            compiler: MSVC 14.51
             compiler-key: msvc-14.51
             preset-prefix: msvc-ninja-
             toolset: "14.51"
             compiler-minor: "51"
-          - os: windows-2025
-            compiler: MSVC 14.50
-            compiler-key: msvc-14.50
-            preset-prefix: msvc-ninja-
-            toolset: "14.50"
-            compiler-minor: "50"
           - os: macos-15
             compiler: AppleClang (Xcode)
             compiler-key: appleclang
@@ -119,102 +119,25 @@ jobs:
           sudo apt-get update
           sudo apt-get install --yes clang-23
 
-      - name: Install MSVC 14.50 if missing
-        if: matrix.target.compiler-key == 'msvc-14.50'
+      - name: Install MSVC 14.52 if missing
+        if: matrix.target.compiler-key == 'msvc-14.52'
         shell: pwsh
         run: |
-          $ErrorActionPreference = "Stop"
-          $programFilesX86 = [Environment]::GetFolderPath([Environment+SpecialFolder]::ProgramFilesX86)
-          $installerRoot = Join-Path $programFilesX86 "Microsoft Visual Studio\Installer"
-          $vswhere = Join-Path $installerRoot "vswhere.exe"
-          $vsPath = & $vswhere -latest -products '*' -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
-          if (-not $vsPath) {
-            throw "No Visual Studio installation with the x64 C++ tools was found."
-          }
-
-          $toolsetRoot = Join-Path $vsPath "VC\Tools\MSVC"
-          $toolset = Get-ChildItem -LiteralPath $toolsetRoot -Directory -ErrorAction SilentlyContinue |
-            Where-Object { $_.Name -like "14.50.*" } |
-            Sort-Object Name -Descending |
-            Select-Object -First 1
-
-          if (-not $toolset) {
-            $setup = Join-Path $installerRoot "setup.exe"
-            if (-not (Test-Path -LiteralPath $setup)) {
-              throw "Visual Studio Installer was not found at $setup"
-            }
-            $installerArguments = 'modify --installPath "{0}" --channelId VisualStudio.18.Stable --add Microsoft.VisualStudio.Component.VC.14.50.18.0.x86.x64 --passive --norestart' -f $vsPath
-            $installerProcess = Start-Process -FilePath $setup -ArgumentList $installerArguments -Wait -PassThru
-            $installExitCode = $installerProcess.ExitCode
-            Write-Host "Visual Studio Installer exit code: $installExitCode"
-            if ($installExitCode -notin @(0, 3010)) {
-              throw "Visual Studio Installer failed to add the MSVC 14.50 x64/x86 toolset (exit $installExitCode)."
-            }
-
-            # The bootstrapper can finish before the component directory is visible.
-            # Wait for the exact toolset instead of accepting a silent fallback to 14.51.
-            for ($attempt = 0; $attempt -lt 60; $attempt++) {
-              $toolset = Get-ChildItem -LiteralPath $toolsetRoot -Directory -ErrorAction SilentlyContinue |
-                Where-Object { $_.Name -like "14.50.*" } |
-                Sort-Object Name -Descending |
-                Select-Object -First 1
-              if ($toolset) { break }
-              Start-Sleep -Seconds 5
-            }
-          }
-
-          if (-not $toolset) {
-            throw "MSVC 14.50 was not installed; refusing to fall back to the newer default toolset."
-          }
-          Write-Host "Selected MSVC toolset directory: $($toolset.FullName)"
+          & tools/install_msvc_toolset.ps1 `
+            -ToolsetVersion "14.52" `
+            -ComponentId "Microsoft.VisualStudio.Component.VC.Tools.x86.x64" `
+            -ChannelId "VisualStudio.18.Release.LTSC.18.11" `
+            -BootstrapperUri "https://download.visualstudio.microsoft.com/download/pr/2d4073f5-2775-4a70-8c1d-b50ae62795a7/d95f7e7eb4ede7b559d3bff79b496d1797d989cae5b96d494beb6b9ebffe61d0/vs_Enterprise.exe"
 
       - name: Install MSVC 14.51 if missing
         if: matrix.target.compiler-key == 'msvc-14.51'
         shell: pwsh
         run: |
-          $ErrorActionPreference = "Stop"
-          $programFilesX86 = [Environment]::GetFolderPath([Environment+SpecialFolder]::ProgramFilesX86)
-          $installerRoot = Join-Path $programFilesX86 "Microsoft Visual Studio\Installer"
-          $vswhere = Join-Path $installerRoot "vswhere.exe"
-          $vsPath = & $vswhere -latest -products '*' -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
-          if (-not $vsPath) {
-            throw "No Visual Studio installation with the x64 C++ tools was found."
-          }
-
-          $toolsetRoot = Join-Path $vsPath "VC\Tools\MSVC"
-          $toolset = Get-ChildItem -LiteralPath $toolsetRoot -Directory -ErrorAction SilentlyContinue |
-            Where-Object { $_.Name -like "14.51.*" } |
-            Sort-Object Name -Descending |
-            Select-Object -First 1
-
-          if (-not $toolset) {
-            $setup = Join-Path $installerRoot "setup.exe"
-            if (-not (Test-Path -LiteralPath $setup)) {
-              throw "Visual Studio Installer was not found at $setup"
-            }
-            $componentId = "Microsoft.VisualStudio.Component.VC.14.51.18.0.x86.x64"
-            $installerArguments = 'modify --installPath "{0}" --channelId VisualStudio.18.Stable --add {1} --passive --norestart' -f $vsPath, $componentId
-            $installerProcess = Start-Process -FilePath $setup -ArgumentList $installerArguments -Wait -PassThru
-            $installExitCode = $installerProcess.ExitCode
-            Write-Host "Visual Studio Installer exit code: $installExitCode"
-            if ($installExitCode -notin @(0, 3010)) {
-              throw "Visual Studio Installer failed to add the MSVC 14.51 x64/x86 toolset (exit $installExitCode)."
-            }
-
-            for ($attempt = 0; $attempt -lt 60; $attempt++) {
-              $toolset = Get-ChildItem -LiteralPath $toolsetRoot -Directory -ErrorAction SilentlyContinue |
-                Where-Object { $_.Name -like "14.51.*" } |
-                Sort-Object Name -Descending |
-                Select-Object -First 1
-              if ($toolset) { break }
-              Start-Sleep -Seconds 5
-            }
-          }
-
-          if (-not $toolset) {
-            throw "MSVC 14.51 was not installed; refusing to fall back to another toolset."
-          }
-          Write-Host "Selected MSVC toolset directory: $($toolset.FullName)"
+          & tools/install_msvc_toolset.ps1 `
+            -ToolsetVersion "14.51" `
+            -ComponentId "Microsoft.VisualStudio.Component.VC.14.51.18.0.x86.x64" `
+            -ChannelId "VisualStudio.18.Release.LTSC.18.11" `
+            -BootstrapperUri "https://download.visualstudio.microsoft.com/download/pr/2d4073f5-2775-4a70-8c1d-b50ae62795a7/d95f7e7eb4ede7b559d3bff79b496d1797d989cae5b96d494beb6b9ebffe61d0/vs_Enterprise.exe"
 
       - name: Set up MSVC developer environment
         if: runner.os == 'Windows'
