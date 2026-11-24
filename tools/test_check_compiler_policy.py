@@ -81,7 +81,6 @@ class CompilerPolicyTests(unittest.TestCase):
         text = text.replace(
             "VisualStudio.18.Release.LTSC.18.11",
             "VisualStudio.18.Stable",
-            1,
         )
         path.write_text(text, encoding="utf-8")
         errors = check_repository(self.root)
