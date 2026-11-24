@@ -80,7 +80,7 @@ class CompilerPolicyTests(unittest.TestCase):
         text = path.read_text(encoding="utf-8")
         text = text.replace(
             "VisualStudio.18.Release",
-            "VisualStudio.18.Release",
+            "VisualStudio.18.Preview",
         )
         path.write_text(text, encoding="utf-8")
         errors = check_repository(self.root)
