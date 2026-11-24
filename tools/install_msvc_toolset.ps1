@@ -30,13 +30,32 @@ if (-not (Test-Path -LiteralPath $vswhere -PathType Leaf)) {
     throw "vswhere.exe was not found at '$vswhere'."
 }
 
-$vsPath = & $vswhere -latest -products '*' -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
-if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($vsPath)) {
-    throw "No Visual Studio installation with the x64/x86 MSVC tools was found."
+$vswhereJson = & $vswhere -all -products '*' -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -format json
+if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace(($vswhereJson -join ""))) {
+    throw "vswhere.exe could not enumerate Visual Studio instances with x64/x86 MSVC tools."
 }
 
-$installationVersion = & $vswhere -latest -products '*' -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationVersion
-$productId = & $vswhere -latest -products '*' -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property productId
+$vsInstances = @($vswhereJson | ConvertFrom-Json)
+$vsInstance = $vsInstances |
+    Where-Object {
+        $_.channelId -eq $ChannelId -and
+        $_.isComplete -eq $true -and
+        $_.isLaunchable -eq $true
+    } |
+    Sort-Object { [version]$_.installationVersion } -Descending |
+    Select-Object -First 1
+
+if (-not $vsInstance) {
+    Write-Host "Visual Studio instances found:"
+    foreach ($instance in $vsInstances) {
+        Write-Host "  $($instance.installationPath) | $($instance.installationVersion) | $($instance.channelId) | complete=$($instance.isComplete) | launchable=$($instance.isLaunchable)"
+    }
+    throw "No complete, launchable Visual Studio instance matches requested channel '$ChannelId'. Refusing to service a different channel."
+}
+
+$vsPath = $vsInstance.installationPath
+$installationVersion = $vsInstance.installationVersion
+$productId = $vsInstance.productId
 $toolsetRoot = Join-Path $vsPath "VC\Tools\MSVC"
 
 Write-Host "Selected Visual Studio instance: $vsPath"
