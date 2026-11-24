@@ -180,6 +180,11 @@ The MSVC 14.52 upgrade is deliberately left as an open task rather than being si
 implemented without a dedicated task/review.
 
 
-## Erratum — 23 November 2026: MSVC 14.52 is Preview
+## Erratum — 23 November 2026: superseded MSVC status correction
 
-The original report's statement that MSVC 14.52 became generally available on 16 November was incorrect. Microsoft's official compiler-version table (last updated 28 May 2026 and rechecked on 23 November) explicitly labels 14.52 as Preview and has no GA/EOL date for it. Microsoft lists 14.51 as Standard support (February 2027 EOL) and 14.50 as Long-Term support (November 2028 EOL). TGF's latest two stable/in-support MSVC generations are 14.51 and 14.50. All references in the main task ledger and active policy documentation have been corrected accordingly. The failed exploratory 14.52 installation attempts are not relevant to P0.1.3 acceptance and are not counted as failures of the stable MSVC matrix.
+The 23 November correction below was itself incorrect. It relied on a Microsoft Learn compiler-version table that had not incorporated the 16 November MSVC 14.52 GA announcement. See the 24 November erratum immediately below; the correct stable Tier-1 pair is 14.52/14.51.
+
+
+## Erratum — 24 November 2026: MSVC 14.52 GA/LTS confirmed
+
+Microsoft's C++ Team Blog published [MSVC Build Tools version 14.52 now generally available](https://devblogs.microsoft.com/cppblog/msvc-build-tools-version-14-52-now-generally-available/) on 16 November 2026. It explicitly states that 14.52 is generally available as an LTS release and is available with Visual Studio 2026 18.12 Stable and 18.11 LTSC. The Visual Studio 2026 LTSC 18.11 announcement also lists 14.52 as an LTS toolset. The prior compiler-version table used by the 23 November correction was stale and still contained the May 2026 preview description. The current stable/in-support MSVC Tier-1 pair is therefore 14.52/14.51. The manifest, checker, CI matrix, installer, tests, and active documentation have been updated. P0.1.3.g and P0.1.4.g remain unchecked until the current full 14-job matrix and source-quality workflows pass. The previous 14.52 provisioning attempts failed before the compiler was used and are not test evidence.
