@@ -23,6 +23,7 @@ FIXTURE_FILES = (
     ".clang-tidy",
     "docs/COMPILER_SUPPORT.md",
     "tools/check_format.py",
+    "tools/install_msvc_toolset.ps1",
 )
 
 
@@ -45,59 +46,71 @@ class CompilerPolicyTests(unittest.TestCase):
     def test_policy_review_date_must_be_valid_iso_date(self) -> None:
         path = self.root / "cmake/compiler-support.json"
         policy = json.loads(path.read_text(encoding="utf-8"))
-        policy["policy_date"] = "23/11/2026"
+        policy["policy_date"] = "24/11/2026"
         path.write_text(json.dumps(policy), encoding="utf-8")
         errors = check_repository(self.root)
         self.assertTrue(any("policy_date must be a valid ISO-8601 date" in error for error in errors))
 
-    def test_preview_msvc_14_52_is_not_a_tier_one_stable_compiler(self) -> None:
+    def test_stale_msvc_manifest_is_rejected(self) -> None:
         path = self.root / "cmake/compiler-support.json"
         policy = json.loads(path.read_text(encoding="utf-8"))
-        policy["tier_one_compilers"]["msvc"] = ["14.52", "14.51"]
+        policy["tier_one_compilers"]["msvc"] = ["14.51", "14.50"]
         path.write_text(json.dumps(policy), encoding="utf-8")
         errors = check_repository(self.root)
-        self.assertTrue(any("stable MSVC 14.51/14.50" in error for error in errors))
+        self.assertTrue(any("Tier-1 policy must declare MSVC 14.52/14.51" in error for error in errors))
 
     def test_manifest_and_ci_matrix_must_agree(self) -> None:
         path = self.root / ".github/workflows/ci.yml"
         text = path.read_text(encoding="utf-8")
-        text = text.replace('toolset: "14.51"', 'toolset: "14.52"', 1)
+        text = text.replace('toolset: "14.52"', 'toolset: "14.50"', 1)
         path.write_text(text, encoding="utf-8")
         errors = check_repository(self.root)
-        self.assertTrue(any("msvc-14.51 must set toolset='14.51'" in error for error in errors))
+        self.assertTrue(any("msvc-14.52 must set toolset='14.52'" in error for error in errors))
 
     def test_a_missing_compiler_target_is_rejected(self) -> None:
         path = self.root / ".github/workflows/ci.yml"
         text = path.read_text(encoding="utf-8")
-        text = text.replace("compiler-key: msvc-14.51", "compiler-key: msvc-14.52", 1)
+        text = text.replace("compiler-key: msvc-14.51", "compiler-key: msvc-14.50", 1)
         path.write_text(text, encoding="utf-8")
         errors = check_repository(self.root)
         self.assertTrue(any("exactly seven unique targets" in error for error in errors))
 
-    def test_both_msvc_installers_must_use_programfilesx86_discovery(self) -> None:
-        path = self.root / ".github/workflows/ci.yml"
-        text = path.read_text(encoding="utf-8")
-        text = text.replace("[Environment]::GetFolderPath([Environment+SpecialFolder]::ProgramFilesX86)", "$env:ProgramFiles(x86)")
-        path.write_text(text, encoding="utf-8")
-        errors = check_repository(self.root)
-        self.assertTrue(any("both MSVC installer paths through ProgramFilesX86" in error for error in errors))
-
-    def test_msvc_14_50_must_use_its_explicit_component(self) -> None:
-        path = self.root / ".github/workflows/ci.yml"
+    def test_msvc_installer_must_use_the_matching_ltsc_channel(self) -> None:
+        path = self.root / "tools/install_msvc_toolset.ps1"
         text = path.read_text(encoding="utf-8")
         text = text.replace(
-            "Microsoft.VisualStudio.Component.VC.14.50.18.0.x86.x64",
-            "Microsoft.VisualStudio.Component.VC.Tools.x86.x64",
+            "VisualStudio.18.Release.LTSC.18.11",
+            "VisualStudio.18.Stable",
             1,
         )
         path.write_text(text, encoding="utf-8")
         errors = check_repository(self.root)
-        self.assertTrue(any("explicit MSVC 14.50 x64/x86 component" in error for error in errors))
+        self.assertTrue(any("VisualStudio.18.Release.LTSC.18.11" in error for error in errors))
+
+    def test_msvc_installer_command_must_preserve_quoted_install_path(self) -> None:
+        path = self.root / "tools/install_msvc_toolset.ps1"
+        text = path.read_text(encoding="utf-8")
+        text = text.replace(
+            'modify --installPath "{0}" --channelId "{1}"',
+            "modify --installPath {0} --channelId {1}",
+            1,
+        )
+        path.write_text(text, encoding="utf-8")
+        errors = check_repository(self.root)
+        self.assertTrue(any("modify --installPath" in error for error in errors))
+
+    def test_installer_must_verify_the_actual_version_and_fail_closed(self) -> None:
+        path = self.root / "tools/install_msvc_toolset.ps1"
+        text = path.read_text(encoding="utf-8")
+        text = text.replace('Where-Object { $_.Name -like "$ToolsetVersion.*" }', "Where-Object { $_.Name -like '*' }", 1)
+        path.write_text(text, encoding="utf-8")
+        errors = check_repository(self.root)
+        self.assertTrue(any("Where-Object" in error and "ToolsetVersion" in error for error in errors))
 
     def test_msvc_compiler_and_toolset_versions_must_be_probed(self) -> None:
         path = self.root / ".github/workflows/ci.yml"
         text = path.read_text(encoding="utf-8")
-        text = text.replace("VCToolsVersion", "VCVersionProbe")
+        text = text.replace("VCToolsVersion", "VCToolsVersionProbe", 1)
         path.write_text(text, encoding="utf-8")
         errors = check_repository(self.root)
         self.assertTrue(any("both the actual cl.exe and VCToolsVersion" in error for error in errors))
