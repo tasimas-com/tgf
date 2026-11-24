@@ -76,7 +76,7 @@ class CompilerPolicyTests(unittest.TestCase):
         self.assertTrue(any("exactly seven unique targets" in error for error in errors))
 
     def test_msvc_installer_must_use_the_matching_ltsc_channel(self) -> None:
-        path = self.root / "tools/install_msvc_toolset.ps1"
+        path = self.root / ".github/workflows/ci.yml"
         text = path.read_text(encoding="utf-8")
         text = text.replace(
             "VisualStudio.18.Release.LTSC.18.11",
@@ -105,7 +105,7 @@ class CompilerPolicyTests(unittest.TestCase):
         text = text.replace('Where-Object { $_.Name -like "$ToolsetVersion.*" }', "Where-Object { $_.Name -like '*' }")
         path.write_text(text, encoding="utf-8")
         errors = check_repository(self.root)
-        self.assertTrue(any("Where-Object" in error and "ToolsetVersion" in error for error in errors))
+        self.assertTrue(any("exact requested toolset before and after installation" in error for error in errors))
 
     def test_msvc_compiler_and_toolset_versions_must_be_probed(self) -> None:
         path = self.root / ".github/workflows/ci.yml"
