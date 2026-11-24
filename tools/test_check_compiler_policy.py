@@ -110,7 +110,7 @@ class CompilerPolicyTests(unittest.TestCase):
     def test_msvc_compiler_and_toolset_versions_must_be_probed(self) -> None:
         path = self.root / ".github/workflows/ci.yml"
         text = path.read_text(encoding="utf-8")
-        text = text.replace("VCToolsVersion", "VCToolsVersionProbe", 1)
+        text = text.replace("VCToolsVersion", "VCToolsVersionProbe")
         path.write_text(text, encoding="utf-8")
         errors = check_repository(self.root)
         self.assertTrue(any("both the actual cl.exe and VCToolsVersion" in error for error in errors))
