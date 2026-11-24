@@ -22,9 +22,10 @@ def main() -> int:
     workflow_dir = root / ".github" / "workflows"
     ci_path = workflow_dir / "ci.yml"
     nightly_path = workflow_dir / "nightly-benchmarks.yml"
+    msvc_installer_path = root / "tools" / "install_msvc_toolset.ps1"
     errors: list[str] = []
 
-    for path in (ci_path, nightly_path):
+    for path in (ci_path, nightly_path, msvc_installer_path):
         if not path.is_file():
             errors.append(f"Missing workflow: {path.relative_to(root)}")
 
@@ -35,6 +36,20 @@ def main() -> int:
 
     ci = ci_path.read_text(encoding="utf-8")
     nightly = nightly_path.read_text(encoding="utf-8")
+    msvc_installer = msvc_installer_path.read_text(encoding="utf-8")
+
+    for marker in (
+        "[Environment]::GetFolderPath([Environment+SpecialFolder]::ProgramFilesX86)",
+        "VisualStudio.18.Release.LTSC.18.11",
+        "'modify --installPath \"{0}\" --channelId \"{1}\" --add \"{2}\" --quiet --norestart --wait'",
+        "Start-Process -FilePath $bootstrapper -ArgumentList $installerArguments -Wait -PassThru",
+        "Get-AuthenticodeSignature",
+        "Microsoft Corporation",
+        "VCToolsVersion",
+        "refusing to fall back to another compiler",
+    ):
+        if marker not in msvc_installer:
+            errors.append(f"install_msvc_toolset.ps1 is missing required installation safety check: {marker}")
 
     errors.extend(
         require(
@@ -49,8 +64,8 @@ def main() -> int:
                 "GCC 15",
                 "LLVM Clang 23",
                 "LLVM Clang 22",
-                "MSVC 14.51 (Windows hosted image)",
-                "MSVC 14.50",
+                "MSVC 14.52",
+                "MSVC 14.51",
                 "AppleClang",
                 "configuration: [debug, release]",
                 "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7",
@@ -66,13 +81,14 @@ def main() -> int:
                 'expected_fingerprint="6084F3CF814B57C1CF12EFD515CF4D18AF4F7421"',
                 "signed-by=/usr/share/keyrings/apt.llvm.org.asc",
                 "sudo apt-get install --yes clang-23",
+                "Install MSVC 14.52 if missing",
                 "Install MSVC 14.51 if missing",
-                "[Environment]::GetFolderPath([Environment+SpecialFolder]::ProgramFilesX86)",
-                "Install MSVC 14.50 if missing",
-                "Microsoft.VisualStudio.Component.VC.14.50.18.0.x86.x64",
-                "--channelId VisualStudio.18.Stable",
-                "Start-Process -FilePath $setup -ArgumentList $installerArguments -Wait -PassThru",
-                "Start-Sleep -Seconds 5",
+                "tools/install_msvc_toolset.ps1",
+                "Microsoft.VisualStudio.Component.VC.Tools.x86.x64",
+                "Microsoft.VisualStudio.Component.VC.14.51.18.0.x86.x64",
+                "VisualStudio.18.Release.LTSC.18.11",
+                "vs_Enterprise.exe",
+                "Get-AuthenticodeSignature",
                 "toolset: ${{ matrix.target.toolset }}",
                 "EXPECTED_COMPILER_MAJOR",
                 "actual_major",
@@ -146,8 +162,8 @@ def main() -> int:
                 "GCC 15",
                 "LLVM Clang 23",
                 "LLVM Clang 22",
-                "MSVC 14.51 (Windows hosted image)",
-                "MSVC 14.50",
+                "MSVC 14.52",
+                "MSVC 14.51",
                 "AppleClang (Xcode)",
             }
             if configurations != ["debug", "release"]:
@@ -183,8 +199,8 @@ def main() -> int:
                     errors.append(f"ci.yml: {compiler} must select the exact compiler binaries and major version")
 
             for compiler, toolset, minor in (
-                ("MSVC 14.51 (Windows hosted image)", "14.51", "51"),
-                ("MSVC 14.50", "14.50", "50"),
+                ("MSVC 14.52", "14.52", "52"),
+                ("MSVC 14.51", "14.51", "51"),
             ):
                 target = target_by_compiler.get(compiler, {})
                 if (
@@ -213,9 +229,24 @@ def main() -> int:
             clang_install = steps_by_name.get("Install LLVM Clang 23 on Ubuntu 26.04", {})
             if clang_install.get("if") != "matrix.target.compiler-key == 'clang-23'":
                 errors.append("ci.yml: Clang 23 installation must be scoped to the Clang 23 target")
-            msvc_install = steps_by_name.get("Install MSVC 14.50 if missing", {})
-            if msvc_install.get("if") != "matrix.target.compiler-key == 'msvc-14.50'":
-                errors.append("ci.yml: MSVC 14.50 installation must be scoped to the MSVC 14.50 target")
+            for version in ("14.52", "14.51"):
+                key = version.replace(".", "-")
+                install = steps_by_name.get(f"Install MSVC {version} if missing", {})
+                if install.get("if") != f"matrix.target.compiler-key == 'msvc-{key}'":
+                    errors.append(f"ci.yml: MSVC {version} installation must be scoped to its matrix target")
+                if "tools/install_msvc_toolset.ps1" not in install.get("run", ""):
+                    errors.append(f"ci.yml: MSVC {version} must call the shared fail-closed installer")
+                if f'-ToolsetVersion "{version}"' not in install.get("run", ""):
+                    errors.append(f"ci.yml: MSVC {version} installer must pin its exact toolset version")
+
+            msvc_52 = steps_by_name.get("Install MSVC 14.52 if missing", {})
+            if "Microsoft.VisualStudio.Component.VC.Tools.x86.x64" not in msvc_52.get("run", ""):
+                errors.append("ci.yml: MSVC 14.52 must request the channel's current x64/x86 toolset component")
+            msvc_51 = steps_by_name.get("Install MSVC 14.51 if missing", {})
+            if "Microsoft.VisualStudio.Component.VC.14.51.18.0.x86.x64" not in msvc_51.get("run", ""):
+                errors.append("ci.yml: MSVC 14.51 must request its explicit x64/x86 component")
+            if "VisualStudio.18.Release.LTSC.18.11" not in (ci or ""):
+                errors.append("ci.yml: both MSVC installers must target the matching Visual Studio 18.11 LTSC channel")
 
             msvc_setup = steps_by_name.get("Set up MSVC developer environment", {})
             if msvc_setup.get("uses") != "ilammy/msvc-dev-cmd@0b201ec74fa43914dc39ae48a89fd1d8cb592756":
